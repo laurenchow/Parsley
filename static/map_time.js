@@ -14,18 +14,6 @@ var autocomplete3 = new google.maps.places.Autocomplete(input3);
 }
 
 
-var input = document.getElementById('searchTextField');
-var autocomplete = new google.maps.places.Autocomplete(input);
-
-
-var input2 = document.getElementById('searchTextField2');
-var autocomplete2 = new google.maps.places.Autocomplete(input2);
-
-
-var input3 = document.getElementById('searchTextField3');
-var autocomplete3 = new google.maps.places.Autocomplete(input3);
-
-
   var mapOptions = {
     center: new google.maps.LatLng(-33.8688, 151.2195),
     zoom: 13

@@ -1,27 +1,16 @@
 {% extends 'base.html' %}
  
 
-     <script src="/static/autocomplete.js"> </script>
-  		
-
+	 <link rel="stylesheet" type="text/css" href="/static/map_time.css">
 {% block body %}
 
- <style type="text/css">
-      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
-    </style>
-  
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
+	<script src="/static/autocomplete.js"> </script>
 
-      <link rel="stylesheet" type="text/css" href="/static/map_time.css">
+
      <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
 
-    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
     
-    <script src="/static/map_time.js"> </script>
-
-
-	      
-	     <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
-
 
         <br><br>
         Looking for a new spot to try?

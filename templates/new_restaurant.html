@@ -1,12 +1,8 @@
 {% extends 'base.html' %}
   
-	
-{% block body %}
-
 
  <style type="text/css">
       html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
-
     </style>
   
 
@@ -16,16 +12,13 @@
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
     
     <script src="/static/map_time.js"> </script>
-
     
+     
+    
+{% block body %}
 
-
-    <!-- ORDER MATTERS-->
-      This should show up as a map. </a>
-
-
-
-
+  
+      This should show up as a map. 
     
 
         <div id="map-canvas"></div>
