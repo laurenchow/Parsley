@@ -315,6 +315,9 @@ def signup_user():
     print session
     return render_template("index.html")
 
+@app.route('/slider', methods = ['GET'])
+def slider():
+    return render_template("slider.html")
 
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():

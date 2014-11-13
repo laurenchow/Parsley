@@ -1,9 +1,10 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import create_engine, update
+from sqlalchemy import create_engine
 from sqlalchemy import Column, Integer, String, Float, Boolean
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
+
 
 ENGINE = None
 Session = None
@@ -129,11 +130,16 @@ class Restaurant_Features(Base):
 
 class Restaurant_Category(Base):
     __tablename__="restaurant_categories"
-    pass
+    id = Column(Integer, primary_key=True)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
+    category = Column(String(128), nullable=True)
 
-class Restaurant_Neighborhoood(Base):
+class Restaurant_Neighborhood(Base):
     __tablename__="restaurant_neighborhoods"
-    pass
+    id = Column(Integer, primary_key=True)
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
+    neighborhood = Column(String(128), nullable=True)
+    
     
 
 
@@ -189,12 +195,13 @@ class Yelp_Review(Base):
     id = Column(Integer, primary_key=True)
     stars = Column(Integer, nullable = True)
     business_id = Column(String(128), nullable = True)
-    text = Column(String(3000), nullable = True)
-    date = Column(String(128), nullable = True)
-    timestamp = Column(Integer, nullable=True)
-    votes = timestamp = Column(Integer, nullable=True)
     user_id = Column(String(128), nullable = True)
+    date = Column(String(128), nullable = True)
+    votes_funny = Column(Integer, nullable=True)
+    votes_useful = Column(Integer, nullable=True)
+    votes_cool = Column(Integer, nullable=True)
     timestamp = Column(Integer, nullable=True)
+    text = Column(String(3000), nullable = True)
 
 
 #for Yelp users
@@ -206,7 +213,9 @@ class Yelp_User(Base):
     review_count = Column(Integer, nullable=True)
     user_id = Column(String(128), nullable = True)
     average_stars = Column(Float(Precision=64), nullable=True)
-    votes = Column(Integer, nullable=True)
+    votes_funny = Column(Integer, nullable=True)
+    votes_useful = Column(Integer, nullable=True)
+    votes_cool = Column(Integer, nullable=True)
     friends = Column(String(128), nullable = True)
     elite = Column(String(128), nullable = True)
     yelping_since = Column(String(128), nullable = True)
@@ -228,20 +237,23 @@ class Yelp_Business(Base):
     review_count =  Column(Integer, nullable=True)
     is_still_open = Column(Boolean, unique=False, default=False)
     #these are likely to be lists and a problem unless unpacked
-    categories =  Column(String(64), nullable=True) 
-    neighborhoods = Column(String(128), nullable=True) 
     timestamp = Column(Integer, nullable=True)
 
 
 class Yelp_Business_Category(Base):
     __tablename__="yelp_business_categories"
-    pass
-    
+    id = Column(Integer, primary_key=True)
+    yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
+    category = Column(String(128), nullable=True)
+   
 class Yelp_Business_Neighborhoood(Base):
     __tablename__="yelp_business_neighborhoods"
-    pass
+    id = Column(Integer, primary_key=True)
+    yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
+    neighborhood = Column(String(128), nullable=True)
+
     
-    
+
 def connect():
     global ENGINE
     global Session
@@ -253,7 +265,6 @@ def connect():
  
 
 def main():
-    """In case we need this for something"""
     Base.metadata.create_all(ENGINE)
 
 if __name__ == "__main__":
