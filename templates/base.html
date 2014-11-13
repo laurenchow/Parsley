@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+        <!-- <link rel="stylesheet" href="/static/css/style.css" /> -->
+
+    <script src ="static/autocomplete.js"></script>
+    </head>
+    <body>
+
+        <div class="navbar navbar-inverse navbar-static-top">
+            <div class="container">
+                <div class="navbar-header">
+                  <a class="navbar-brand" href="/"> nom nom </a>
+                </div>
+                <div class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                    
+                        {% if session %}
+                        <li><a href="/logout">Logout</a></li>
+
+                        {% else %}
+                        <li><a href="/login">Login</a></li>
+                        <li><a href="/signup">Register</a></li>
+                        {% endif %}
+
+                       
+                        
+                        
+                       
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+
+       
+
+        <div class="container">
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            {% for message in messages %}
+            <ul class="flashes">
+                <li>{{message}}</li>
+            </ul>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+            {% block body %}{% endblock %}
+        </div>
+
+        <div class="container"><br>
+        <div class="navbar navbar-bottom"> 
+        </div></div>
+    </body>
+</html>

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+  
+	
+{% block body %}
+
+
+ <style type="text/css">
+      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+
+    </style>
+  
+
+      <link rel="stylesheet" type="text/css" href="/static/map_time.css">
+     <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
+    
+    <script src="/static/map_time.js"> </script>
+
+    
+
+
+    <!-- ORDER MATTERS-->
+      This should show up as a map. </a>
+
+
+
+
+    
+
+        <div id="map-canvas"></div>
+    	<input id="pac-input" class="controls" type="text" placeholder="Enter a location">
+		 <div id="type-selector" class="controls">
+      <input type="radio" name="type" id="changetype-all" checked="checked">
+      <label for="changetype-all">All</label>
+
+      <input type="radio" name="type" id="changetype-establishment">
+      <label for="changetype-establishment">Establishments</label>
+
+      <input type="radio" name="type" id="changetype-address">
+      <label for="changetype-address">Addresses</label>
+
+      <input type="radio" name="type" id="changetype-geocode">
+      <label for="changetype-geocode">Geocodes</label>
+    </div>
+
+
+
+   
+
+{%endblock%}
