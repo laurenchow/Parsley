@@ -35,11 +35,25 @@
  -->
 
  <form class="form-signin" method="POST">
-    <h2 class="form-signin-heading" width = "40px" align ="center">Please tell us more.</h2>
+    <h4 class="form-signin-heading" width = "40px">A bit more about you:</h2>
     <input type="text" name="age" class="form-control" placeholder="Age" required autofocus width = "40px" />
     <input type="text" name="gender" class="form-control" placeholder="Gender" required  width = "40px" />
     <input type="text" name="zip" class="form-control" placeholder="Zip" required  width = "40px" />
-    <button type="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+    <input type="text" name="job" class="form-control" placeholder="Job" required  width = "40px" />
+   
+
+     <div class="checkbox">
+    <label>
+      <input type="checkbox"> I agree to give you my firstborn
+    </label>
+  </div>
+    
+     <h4 class="form-signin-heading" width = "40px" > When you're looking for a restaurant, how important are these things to you on a scale of 1 to 5?  <br>If it varies -- um, we'll figure something out for that. </h2>
+    <input type="number" name="wifi"  min="1" max="5" class="form-control" required  width = "10px" />
+
+     <input type="number" name="organic"   min="1" max="5" class="form-control" required  width = "10px" />
+ <button type="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+
  
 </form>
 <!-- 

@@ -14,14 +14,16 @@ def add_restaurants(session):
     business_id = restaurant_data.get("business_id", None)
     full_address = restaurant_data.get("full_address", None)
     city = restaurant_data.get("city", None)
+    # categories = restaurant_data.get("categories", None)
     latitude = restaurant_data.get("latitude", None)
     longitude = restaurant_data.get("longitude", None)
+    # neighborhoods = restaurant_data.get("neighborhoods", None)
     stars = restaurant_data.get("longitude", None)
     review_count = restaurant_data.get("review_count", None)
     is_still_open = restaurant_data.get("is_still_open", None)
     #these are likely to be lists and a problem unless unpacked -- will need to put in another table
     # categories =  Column(String(64), nullable=True) 
-    # neighborhoods = Column(String(128), nullable=True) 
+    
     # timestamp = strftime
 
     new_business = model.Yelp_Business(name = name, business_id = business_id, 
@@ -44,7 +46,7 @@ def add_restaurants(session):
     
 
 def add_reviews(session):
-  json_data=open("static/yelp_academic_dataset_review.json")
+  json_data=open("static/yelp_academic_dataset_reviews_small.json")
 
   for line in json_data:
     review_data = json.loads(line)
@@ -73,29 +75,34 @@ def add_reviews(session):
   json_data.close() 
 
 def add_users(session):
-  json_data=open("static/yelp_academic_dataset_user_small.json")
+  json_data=open("static/yelp_academic_dataset_user.json")
 
   for line in json_data:
     user_data = json.loads(line)
     user_id = user_data.get("user_id", None)
     name = user_data.get("name", None)
-    review_count = user_data.get("review_count", None)
-    review_count = unicode(review_count)
-    average_stars = user_data.get("average_stars", None)
-    average_stars = unicode(average_stars)
+    review_count = user_data.get("review_count", 0)
+    review_count = int(review_count)
+    average_stars = user_data.get("average_stars", 0.0)
+    average_stars = float(average_stars)
     votes = user_data.get("votes", 0)
     votes_funny = votes.get("funny", 0)
-    votes_funny = unicode(votes_funny)
+    votes_funny = int(votes_funny)
     votes_useful = votes.get("useful", 0)
-    votes_useful = unicode(votes_useful)
+    votes_useful = int(votes_useful)
     votes_cool = votes.get("cool", 0)
-    votes_cool = unicode(votes_cool)
-    friends = user_data.get("friends", None)
-    elite = user_data.get("elite", None)
+    votes_cool = int(votes_cool)
+    # friends = user_data.get("friends", None)
+    friends = "friends"
+    elite = "elite"
     yelping_since = user_data.get("yelping_since", None)
-    compliments = user_data.get("compliments", None)
-    compliment_type = user_data.get("compliment_type", None)
-    fans = user_data.get("fans", None)
+    compliments = user_data.get("compliments", 0)
+    compliment_type = user_data.get("compliment_type", 0)
+    compliment_type = int(compliment_type)
+    compliments = 0
+    compliment_type = 0
+    fans = user_data.get("fans", 0)
+    fans = int(fans)
 
      
 

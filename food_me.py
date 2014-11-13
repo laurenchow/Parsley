@@ -4,6 +4,7 @@ from factual import Factual
 import model
 import os
 import jinja2
+import correlation
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
@@ -289,6 +290,10 @@ def check_db_for_restos(restaurant_data):
 def user_signup():
     if request.method == "GET":
         return render_template("signup.html")
+        if session:
+            print "User is already signed in"
+            flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
+            return render_template("login.html")
     else:
         return signup_user()
 
@@ -304,6 +309,12 @@ def signup_user():
         user_email = request.form['email']
         user_password = request.form['password']
         print "This is what user_password is stored as %r" % type(user_password)
+
+        already_registered = model.session.query(model.User).filter_by(email = user_email).first()
+
+        if already_registered:
+            flash("Looks like you already have an account. Want to try signing in?")
+        
         # if len(user_password) <= 4:
         #     flash("You need a longer password.")
         #     return redirect("/signup")
@@ -336,24 +347,19 @@ def new_user_welcome():
 def submit_user_details():
     current_user_id = session['user_id']
 
-    print "Here's the current user id %r" % session['user_id']
+    # print "Here's the current user id %r" % session['user_id']
 
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
 
-    print "I don't know what's broken"
-    print "Here's what is stored in new_user_info ID %r" % new_user_info.id 
+    # print "Here's what is stored in new_user_info ID %r" % new_user_info.id 
     new_user_age = request.form['age']
-
-    print "I still don't know what's broken"
     new_user_gender = request.form['gender']
-
-    print "I STILL don't know what's broken"
     new_user_zip = request.form['zip']
+    new_user_job = request.form['job']
 
-    print "I still STILL STILL don't know what's broken"
 
     new_user_info = model.User(id = current_user_id, age = new_user_age, 
-        gender = new_user_gender, zip = new_user_zip)
+        gender = new_user_gender, zip = new_user_zip, occupation = new_user_job)
 
     model.session.merge(new_user_info)
     model.session.commit()
@@ -378,31 +384,26 @@ def show_login():
 def login_user():
     user_email = request.form['email']
 
-    if session:
     # does a user with this email exist?
-        current_user = model.session.query(model.User).filter_by(email = user_email).first()
+    current_user = model.session.query(model.User).filter_by(email = user_email).first()
 
         # if so, get their password (which is stored in hash form)
-        if current_user:
-            input_password = request.form['password']
-            print "This is what user_password is stored as %r" % type(input_password)
+    if current_user:
+        input_password = request.form['password']
+        print "This is what user_password is stored as %r" % type(input_password)
+        
+        if pbkdf2_sha256.verify(input_password, current_user.password):
+            session['user_email'] = current_user.email    
+            print session
+            return redirect("/")    
             
-            if pbkdf2_sha256.verify(input_password, current_user.password):
-                session['user_email'] = current_user.email    
-                print session
-                return redirect("/")    
-                
-            else:
-                flash("Invalid username or password", "error")
-                return redirect("/signup") 
         else:
             flash("Invalid username or password", "error")
             return redirect("/signup") 
     else:
-            flash("Invalid username or password", "error")
-            return redirect("/signup") 
-
-             
+        flash("Invalid username or password", "error")
+        return redirect("/signup") 
+ 
 @app.route('/logout')
 def logout_user():
     session.clear()
