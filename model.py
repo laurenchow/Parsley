@@ -31,11 +31,11 @@ class User(Base):
     zip = Column(String(64), nullable=True)
     email = Column(String(64), nullable=True)
     password = Column(String(256), nullable=True)
-
+    timestamp = Column(Integer, nullable=True)
 
     # make a quick form to get additional user demo info for machine learning
-    # age = Column(Integer, nullable=True)
-    # zipcode =  Column(String(15), nullable= True) 
+    age = Column(Integer, nullable=True)
+    zipcode =  Column(String(15), nullable= True) 
 
     # rest = models.Restaurant()
     # rest.name = "Bob's"
@@ -76,7 +76,7 @@ class Restaurant(Base):
     region =  Column(String(64), nullable=True)  
     tel = Column(String(64), nullable=True)  
     website = Column(String(64), nullable=True)  
-
+    timestamp = Column(Integer, nullable=True)
     #look at notes for list of strings to deal with
  
 class Restaurant_Features(Base):
@@ -121,10 +121,21 @@ class Restaurant_Features(Base):
     smoking=  Column(Boolean, unique=False, default=False)
     wifi= Column(Boolean, unique=False, default=False)
     reservations = Column(Boolean, unique=False, default=False)
-
+    timestamp = Column(Integer, nullable=True)
 
     restaurant = relationship("Restaurant", backref=backref("restaurant_features", order_by=restaurant_id))
     #the point of this table is to start storing values to figure out how often a user wants these 
+
+
+class Restaurant_Category(Base):
+    __tablename__="restaurant_categories"
+    pass
+
+class Restaurant_Neighborhoood(Base):
+    __tablename__="restaurant_neighborhoods"
+    pass
+    
+
 
 class User_Preferences(Base):
     __tablename__="user_preferences"
@@ -167,22 +178,70 @@ class User_Preferences(Base):
     smoking= Column(String(64), nullable=True) 
     wifi= Column(String(64), nullable=True)
     reservations = Column(String(64), nullable=True)
-    
+    timestamp = Column(Integer, nullable=True)
 
     user = relationship("User", backref=backref("user_preferences", order_by=user_id))
     restaurant = relationship("Restaurant", backref=backref("user_preferences", order_by=restaurant_id))
 
-# #for Yelp
-# class Review(Base):
-#     __tablename__="reviews"
-#     id = Column(Integer, primary_key=True)
-#     stars = Column(Integer, nullable = True)
-#     business_id = Column(String(128), nullable = True)
-#     text = Column(String(3000), nullable = True)
+#for Yelp reviews
+class Yelp_Review(Base):
+    __tablename__="yelp_reviews"
+    id = Column(Integer, primary_key=True)
+    stars = Column(Integer, nullable = True)
+    business_id = Column(String(128), nullable = True)
+    text = Column(String(3000), nullable = True)
+    date = Column(String(128), nullable = True)
+    timestamp = Column(Integer, nullable=True)
+    votes = timestamp = Column(Integer, nullable=True)
+    user_id = Column(String(128), nullable = True)
+    timestamp = Column(Integer, nullable=True)
 
 
+#for Yelp users
+class Yelp_User(Base):
+    __tablename__="yelp_users"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String(128), nullable = True)
+    name = Column(String(128), nullable = True)
+    review_count = Column(Integer, nullable=True)
+    user_id = Column(String(128), nullable = True)
+    average_stars = Column(Float(Precision=64), nullable=True)
+    votes = Column(Integer, nullable=True)
+    friends = Column(String(128), nullable = True)
+    elite = Column(String(128), nullable = True)
+    yelping_since = Column(String(128), nullable = True)
+    compliments = Column(Integer, nullable=True)
+    compliment_type = Column(Integer, nullable=True)
+    fans = Column(Integer, nullable=True)
+    timestamp = Column(Integer, nullable=True)
+
+class Yelp_Business(Base):
+    __tablename__="yelp_businesses"
+    id = Column(Integer, primary_key=True) #autoincrement
+    name = Column(String(64), nullable=True)
+    business_id =  Column(String(128), nullable=True) 
+    full_address = Column(String(128), nullable=True) 
+    city =  Column(String(128), nullable=True) 
+    latitude =  Column(Float(Precision=64), nullable=True)
+    longitude = Column(Float(Precision=64), nullable=True)
+    stars = Column(Float(Precision=64), nullable=True)
+    review_count =  Column(Integer, nullable=True)
+    is_still_open = Column(Boolean, unique=False, default=False)
+    #these are likely to be lists and a problem unless unpacked
+    categories =  Column(String(64), nullable=True) 
+    neighborhoods = Column(String(128), nullable=True) 
+    timestamp = Column(Integer, nullable=True)
 
 
+class Yelp_Business_Category(Base):
+    __tablename__="yelp_business_categories"
+    pass
+    
+class Yelp_Business_Neighborhoood(Base):
+    __tablename__="yelp_business_neighborhoods"
+    pass
+    
+    
 def connect():
     global ENGINE
     global Session
