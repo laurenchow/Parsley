@@ -266,23 +266,24 @@ def check_db_for_restos(restaurant_data):
                     
                     model.session.add(new_restaurant_features)
                     model.session.commit()
-        
-    return suggest_new_resto(restaurant_data)
 
-def suggest_new_resto(restaurant_data):
+    return redirect("/")  
+#     return suggest_new_resto(restaurant_data)
 
-    # factual = Factual(KEY, SECRET)
-    # table = factual.table('restaurants')
+# def suggest_new_resto(restaurant_data):
 
-    # if restaurant_data[0].data() != []:
-    #     # new_q1 = table.search("'restaurant_data[0].name").limit(1)
-    #     #figure out how many times each parameter is present in the three entries
-    #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE"
-    # else:
-    #     print "*******You need to type in a different restaurant****"
+#     # factual = Factual(KEY, SECRET)
+#     # table = factual.table('restaurants')
+
+#     # if restaurant_data[0].data() != []:
+#     #     # new_q1 = table.search("'restaurant_data[0].name").limit(1)
+#     #     #figure out how many times each parameter is present in the three entries
+#     #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE"
+#     # else:
+#     #     print "*******You need to type in a different restaurant****"
          
-
-    return render_template("new_restaurant.html")
+#     #you'll want to ask if they like this restaurant also
+#     return render_template("new_restaurant.html")
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():
@@ -295,28 +296,76 @@ def user_signup():
 def signup_user():
     #make this offer to let you signup with Facebook
     #how to make this all popup with JS?
+    if session:
+        print "User is already signed in"
+        flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
+        return render_template("login.html")
+    else:
+        user_email = request.form['email']
+        user_password = request.form['password']
+        print "This is what user_password is stored as %r" % type(user_password)
+        # if len(user_password) <= 4:
+        #     flash("You need a longer password.")
+        #     return redirect("/signup")
+        # elif user_password.isalpha() == True:
+        #     flash("You need a more secure password.")
+        #     return redirect("/signup")
+        # else:
+        secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
+        print "this is the secure hashed password %r" % secure_password
+        #put something in here about making good passwords with uppercase and flash suggestion
+        new_user = model.User(email = user_email, password = secure_password)
 
-    user_email = request.form['email']
-    #put something in here to flash that
-    user_password = request.form['password']
-    print "This is what user_password is stored as %r" % type(user_password)
-    secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
-    print "this is the secure hashed password %r" % secure_password
-    #put something in here about making good passwords with uppercase and flash suggestion
-    new_user = model.User(email = user_email, password = secure_password)
+        model.session.add(new_user)
+        model.session.commit() 
 
-    model.session.add(new_user)
-    model.session.commit() 
+        current_user = model.session.query(model.User).filter_by(email = user_email).first()
+        session['user_id'] = current_user.id
+        session['user_email'] = current_user.email
+            
+        print session
+        return redirect("/welcome")
 
-    current_user = model.session.query(model.User).filter_by(email = user_email).first()
-    session['user_id'] = current_user.id
-    session['user_email'] = current_user.email
-        
-    print session
-    return render_template("index.html")
+@app.route('/welcome', methods = ['GET', 'POST'])
+def new_user_welcome():
+    if request.method == "GET":
+        return render_template("welcome.html")
+    else:
+        return submit_user_details()
 
-@app.route('/slider', methods = ['GET'])
-def slider():
+def submit_user_details():
+    current_user_id = session['user_id']
+
+    print "Here's the current user id %r" % session['user_id']
+
+    new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
+
+    print "I don't know what's broken"
+    print "Here's what is stored in new_user_info ID %r" % new_user_info.id 
+    new_user_age = request.form['age']
+
+    print "I still don't know what's broken"
+    new_user_gender = request.form['gender']
+
+    print "I STILL don't know what's broken"
+    new_user_zip = request.form['zip']
+
+    print "I still STILL STILL don't know what's broken"
+
+    new_user_info = model.User(id = current_user_id, age = new_user_age, 
+        gender = new_user_gender, zip = new_user_zip)
+
+    model.session.merge(new_user_info)
+    model.session.commit()
+
+    print "Here's the current user age %r" % new_user_info.age 
+
+    print "This is where you'll show what the user says they prefer"    
+    return redirect("/")
+
+@app.route('/user_prefs', methods = ['GET'])
+def user_prefs():
+    print "This is where you'll show what the user says they prefer"    
     return render_template("slider.html")
 
 @app.route('/login', methods=['GET', 'POST'])

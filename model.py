@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 ENGINE = None
 Session = None
 
-engine = create_engine("sqlite:///foodme.db", echo=False)
+engine = create_engine("sqlite:///paprika.db", echo=False)
 session = scoped_session(sessionmaker(bind=engine,
                                       autocommit = False,
                                       autoflush = False))
@@ -141,14 +141,11 @@ class Restaurant_Neighborhood(Base):
     neighborhood = Column(String(128), nullable=True)
     
     
-
-
-class User_Preferences(Base):
+class User_Preference(Base):
     __tablename__="user_preferences"
 
     id = Column (Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id')) #because each should be unique
-    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     accessible_wheelchair= Column(String(64), nullable=True)
     alcohol_byob = Column(String(64), nullable=True)
     alcohol_bar = Column(String(64), nullable=True)
@@ -187,7 +184,20 @@ class User_Preferences(Base):
     timestamp = Column(Integer, nullable=True)
 
     user = relationship("User", backref=backref("user_preferences", order_by=user_id))
-    restaurant = relationship("Restaurant", backref=backref("user_preferences", order_by=restaurant_id))
+
+class User_Restaurant_Rating(Base):
+    __tablename__="user_restaurant_ratings"
+    # this table will basically say users like the first three restaurants they type in
+    #it will also store feedback on suggested restaurants for each user
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id')) 
+    restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
+    rating = Column(Float(Precision=64), nullable=True)
+
+    user = relationship("User", backref=backref("user_restaurant_ratings", order_by=user_id))
+    restaurant = relationship("Restaurant", backref=backref("user_restaurant_ratings", order_by=restaurant_id))
+    # user_preference = relationship("User_Preference", backref=backref("user_restaurant_ratings", order_by=user_id))
+
 
 #for Yelp reviews
 class Yelp_Review(Base):
@@ -197,9 +207,9 @@ class Yelp_Review(Base):
     business_id = Column(String(128), nullable = True)
     user_id = Column(String(128), nullable = True)
     date = Column(String(128), nullable = True)
-    votes_funny = Column(Integer, nullable=True)
-    votes_useful = Column(Integer, nullable=True)
-    votes_cool = Column(Integer, nullable=True)
+    votes_funny = Column(String(128), nullable=True)
+    votes_useful = Column(String(128), nullable=True)
+    votes_cool = Column(String(128), nullable=True)
     timestamp = Column(Integer, nullable=True)
     text = Column(String(3000), nullable = True)
 
@@ -258,7 +268,7 @@ def connect():
     global ENGINE
     global Session
 
-    ENGINE = create_engine("sqlite:///foodme.db", echo=True)
+    ENGINE = create_engine("sqlite:///paprika.db", echo=True)
     Session = sessionmaker(bind=ENGINE)
 
     return Session()

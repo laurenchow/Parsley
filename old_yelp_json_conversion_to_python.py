@@ -67,23 +67,29 @@ def add_reviews(session):
     votes_cool = votes_cool, user_id = user_id)
   
     model.session.add(new_review)
-    print "Here's what got added %r" % new_review
+    print "Here's what got added %r" % new_review.id
 
   model.session.commit()    
   json_data.close() 
 
 def add_users(session):
-  json_data=open("static/yelp_academic_dataset_users_small.json")
+  json_data=open("static/yelp_academic_dataset_user_small.json")
 
   for line in json_data:
     user_data = json.loads(line)
     user_id = user_data.get("user_id", None)
     name = user_data.get("name", None)
     review_count = user_data.get("review_count", None)
+    review_count = unicode(review_count)
     average_stars = user_data.get("average_stars", None)
-    votes_funny = user_data.get("votes_funny", None)
-    votes_useful = user_data.get("votes_useful", None)
-    votes_cool = user_data.get("votes_cool", None)
+    average_stars = unicode(average_stars)
+    votes = user_data.get("votes", 0)
+    votes_funny = votes.get("funny", 0)
+    votes_funny = unicode(votes_funny)
+    votes_useful = votes.get("useful", 0)
+    votes_useful = unicode(votes_useful)
+    votes_cool = votes.get("cool", 0)
+    votes_cool = unicode(votes_cool)
     friends = user_data.get("friends", None)
     elite = user_data.get("elite", None)
     yelping_since = user_data.get("yelping_since", None)
@@ -91,10 +97,13 @@ def add_users(session):
     compliment_type = user_data.get("compliment_type", None)
     fans = user_data.get("fans", None)
 
+     
+
     new_user= model.Yelp_User(user_id = user_id, name = name, 
       review_count = review_count, average_stars = average_stars, 
       votes_funny = votes_funny, votes_useful = votes_useful, 
-      votes_cool = votes_cool, friends = friends, elite = elite, 
+      votes_cool = votes_cool, 
+      friends = friends, elite = elite, 
       yelping_since = yelping_since, compliments = compliments, 
       compliment_type = compliment_type, fans = fans)
   
@@ -108,8 +117,8 @@ def add_users(session):
 
 def main(session):
   # add_restaurants(session)
-  add_reviews(session)
-  # add_users(session)
+  # add_reviews(session)
+  add_users(session)
 
 if __name__ == "__main__":
     s = model.connect()
