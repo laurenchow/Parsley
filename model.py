@@ -203,8 +203,8 @@ class User_Restaurant_Rating(Base):
 class Yelp_Review(Base):
     __tablename__="yelp_reviews"
     id = Column(Integer, primary_key=True)
-    stars = Column(Integer, nullable = True)
     business_id = Column(String(128), nullable = True)
+    stars = Column(Integer, nullable = True)
     user_id = Column(String(128), nullable = True)
     date = Column(String(128), nullable = True)
     votes_funny = Column(String(128), nullable=True)
@@ -241,6 +241,7 @@ class Yelp_Business(Base):
     business_id =  Column(String(128), nullable=True) 
     full_address = Column(String(128), nullable=True) 
     city =  Column(String(128), nullable=True) 
+    state = Column(String(128), nullable=True) 
     latitude =  Column(Float(Precision=64), nullable=True)
     longitude = Column(Float(Precision=64), nullable=True)
     stars = Column(Float(Precision=64), nullable=True)
@@ -254,9 +255,171 @@ class Yelp_Business_Category(Base):
     __tablename__="yelp_business_categories"
     id = Column(Integer, primary_key=True)
     yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
-    category = Column(String(128), nullable=True)
+    restaurant = Column(String(128), nullable=True)
+    food = Column(Boolean, unique=False, default=False)
+    restaurant = Column(Boolean, unique=False, default=False)
+    nightlife = Column(Boolean, unique=False, default=False)
+
+class Yelp_Restaurant_Category(Base):
+    __tablename__="yelp_restaurant_categories"
+    id = Column(Integer, primary_key=True)
+    yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
+    afghan = Column(Boolean, unique=False, default=False)
+    african = Column(Boolean, unique=False, default=False)
+    american_new = Column(Boolean, unique=False, default=False)
+    american_trad = Column(Boolean, unique=False, default=False)
+    arabian= Column(Boolean, unique=False, default=False)
+    argentine = Column(Boolean, unique=False, default=False)
+    armenian = Column(Boolean, unique=False, default=False)
+    asian_fusion= Column(Boolean, unique=False, default=False)
+    bangladeshi= Column(Boolean, unique=False, default=False)
+    barbeque= Column(Boolean, unique=False, default=False)
+    basque= Column(Boolean, unique=False, default=False)
+    belgian= Column(Boolean, unique=False, default=False)
+    brasseries= Column(Boolean, unique=False, default=False)
+    brazilian= Column(Boolean, unique=False, default=False)
+    breakfast_brunch= Column(Boolean, unique=False, default=False)
+    british= Column(Boolean, unique=False, default=False)
+    buffet= Column(Boolean, unique=False, default=False)
+    burgers= Column(Boolean, unique=False, default=False)
+    burmese= Column(Boolean, unique=False, default=False)
+    cafe= Column(Boolean, unique=False, default=False)
+    cafeteria= Column(Boolean, unique=False, default=False)
+    cajun_creole= Column(Boolean, unique=False, default=False)
+    cambodian= Column(Boolean, unique=False, default=False)
+    caribbean= Column(Boolean, unique=False, default=False)
+    catalan= Column(Boolean, unique=False, default=False)
+    cheesesteaks= Column(Boolean, unique=False, default=False)
+    chicken_wings= Column(Boolean, unique=False, default=False)
+    chinese= Column(Boolean, unique=False, default=False)
+    comfort_food= Column(Boolean, unique=False, default=False)
+    creperies= Column(Boolean, unique=False, default=False)
+    cuban= Column(Boolean, unique=False, default=False)
+    czech= Column(Boolean, unique=False, default=False)
+    delis = Column(Boolean, unique=False, default=False)
+    diners= Column(Boolean, unique=False, default=False)
+    ethiopian= Column(Boolean, unique=False, default=False)
+    fast_food= Column(Boolean, unique=False, default=False)
+    filipino= Column(Boolean, unique=False, default=False)
+    fish_chips= Column(Boolean, unique=False, default=False)
+    food_court= Column(Boolean, unique=False, default=False)
+    food_stands= Column(Boolean, unique=False, default=False)
+    french= Column(Boolean, unique=False, default=False)
+    gastropubs= Column(Boolean, unique=False, default=False)
+    german= Column(Boolean, unique=False, default=False)
+    gluten_free= Column(Boolean, unique=False, default=False)
+    greek= Column(Boolean, unique=False, default=False)
+    halal= Column(Boolean, unique=False, default=False)
+    hawaiian= Column(Boolean, unique=False, default=False)
+    himalayan_nepa= Column(Boolean, unique=False, default=False)
+    hot_dogs= Column(Boolean, unique=False, default=False)
+    hot_pot= Column(Boolean, unique=False, default=False)
+    hungarian= Column(Boolean, unique=False, default=False)
+    iberian= Column(Boolean, unique=False, default=False)
+    indian= Column(Boolean, unique=False, default=False)
+    indonesian= Column(Boolean, unique=False, default=False)
+    irish= Column(Boolean, unique=False, default=False)
+    italian= Column(Boolean, unique=False, default=False)
+    japanese= Column(Boolean, unique=False, default=False)
+    korean= Column(Boolean, unique=False, default=False)
+    kosher= Column(Boolean, unique=False, default=False)
+    laotian= Column(Boolean, unique=False, default=False)
+    lat_am= Column(Boolean, unique=False, default=False)
+    live_raw= Column(Boolean, unique=False, default=False)
+    malaysian= Column(Boolean, unique=False, default=False)
+    mediterranean= Column(Boolean, unique=False, default=False)
+    mexican= Column(Boolean, unique=False, default=False)
+    middle_eastern= Column(Boolean, unique=False, default=False)
+    modern_euro= Column(Boolean, unique=False, default=False)
+    mongolian= Column(Boolean, unique=False, default=False)
+    pakistani= Column(Boolean, unique=False, default=False)
+    persian= Column(Boolean, unique=False, default=False)
+    peruvian= Column(Boolean, unique=False, default=False)
+    pizza= Column(Boolean, unique=False, default=False)
+    polish= Column(Boolean, unique=False, default=False)
+    portuguese= Column(Boolean, unique=False, default=False)
+    russian= Column(Boolean, unique=False, default=False)
+    salad= Column(Boolean, unique=False, default=False)
+    sandwiches= Column(Boolean, unique=False, default=False)
+    scandinavian= Column(Boolean, unique=False, default=False)
+    scottish= Column(Boolean, unique=False, default=False)
+    seafood= Column(Boolean, unique=False, default=False)
+    singaporean= Column(Boolean, unique=False, default=False)
+    slovakian= Column(Boolean, unique=False, default=False)
+    soul_food= Column(Boolean, unique=False, default=False)
+    soup= Column(Boolean, unique=False, default=False)
+    southern= Column(Boolean, unique=False, default=False)
+    spanish= Column(Boolean, unique=False, default=False)
+    steakhouses= Column(Boolean, unique=False, default=False)
+    sushi_bars= Column(Boolean, unique=False, default=False)
+    taiwanese= Column(Boolean, unique=False, default=False)
+    tapas_bars= Column(Boolean, unique=False, default=False)
+    tapas_small= Column(Boolean, unique=False, default=False)
+    texmex= Column(Boolean, unique=False, default=False)
+    thai= Column(Boolean, unique=False, default=False)
+    turkish= Column(Boolean, unique=False, default=False)
+    ukranian= Column(Boolean, unique=False, default=False)
+    vegan = Column(Boolean, unique=False, default=False)
+    vegetarian = Column(Boolean, unique=False, default=False)
+    vietnamese = Column(Boolean, unique=False, default=False)
+
+
+class Yelp_Food_Category(Base):
+    __tablename__="yelp_food_categories"
+    id = Column(Integer, primary_key=True)
+
+        #FOODs
+      #Bagels
+      # Bakeries
+      # Beer, Wine & Spirits
+      # Breweries
+      # Bubble Tea
+      # Butcher
+      # CSA
+      # Coffee & Tea
+      # Convenience Stores
+      # Desserts
+      # Do-It-Yourself Food
+      # Donuts
+      # Farmers Market
+      # Food Delivery Services
+      # Food Trucks
+      # Gelato
+      # Grocery
+      # Ice Cream & Frozen Yogust
+      # Internet Cafes
+      # Juice Bars & Smoothies
+      # Pretzels
+      # Shaved Ice
+      # Specialty Food
+      # Street Vendors
+      # Tea Rooms
+      # Wineries
+
+class Yelp_Bar_Category(Base):
+    __tablename__="yelp_bar_categories"
+    id = Column(Integer, primary_key=True)
+      # Bars
+      # Comedy Clubs
+      # Country Dance Halls
+      # Dance Clubs
+      # Jazz& Blues
+      # Karaoke
+      # Music Venues
+      # Piano Bars
+      # Pool Halls
+      # tertiary: 
+        # Champagne Bars
+        # Cocktail Bars
+        # Dive Bars
+        # Gay Bars
+        # Hookah Bars
+        # Lounges
+        # Pubs
+        # Sports Bars
+        # Wine Bars
    
-class Yelp_Business_Neighborhoood(Base):
+class Yelp_Business_Neighborhood(Base):
     __tablename__="yelp_business_neighborhoods"
     id = Column(Integer, primary_key=True)
     yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
