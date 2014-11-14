@@ -367,57 +367,55 @@ class Yelp_Restaurant_Category(Base):
 class Yelp_Food_Category(Base):
     __tablename__="yelp_food_categories"
     id = Column(Integer, primary_key=True)
-
-        #FOODs
-      #Bagels
-      # Bakeries
-      # Beer, Wine & Spirits
-      # Breweries
-      # Bubble Tea
-      # Butcher
-      # CSA
-      # Coffee & Tea
-      # Convenience Stores
-      # Desserts
-      # Do-It-Yourself Food
-      # Donuts
-      # Farmers Market
-      # Food Delivery Services
-      # Food Trucks
-      # Gelato
-      # Grocery
-      # Ice Cream & Frozen Yogust
-      # Internet Cafes
-      # Juice Bars & Smoothies
-      # Pretzels
-      # Shaved Ice
-      # Specialty Food
-      # Street Vendors
-      # Tea Rooms
-      # Wineries
+    bagels = Column(Boolean, unique=False, default=False)
+    bakeries= Column(Boolean, unique=False, default=False)
+    beer_wine_spirit= Column(Boolean, unique=False, default=False)
+    breweries= Column(Boolean, unique=False, default=False)
+    bubble_tea= Column(Boolean, unique=False, default=False)
+    butcher= Column(Boolean, unique=False, default=False)
+    csa = Column(Boolean, unique=False, default=False)
+    coffee_tea= Column(Boolean, unique=False, default=False)
+    convenience= Column(Boolean, unique=False, default=False)
+    dessert= Column(Boolean, unique=False, default=False)
+    diy_food= Column(Boolean, unique=False, default=False)
+    donuts= Column(Boolean, unique=False, default=False)
+    farmers_market= Column(Boolean, unique=False, default=False)
+    food_delivery= Column(Boolean, unique=False, default=False)
+    food_truck= Column(Boolean, unique=False, default=False)
+    gelato= Column(Boolean, unique=False, default=False)
+    grocery= Column(Boolean, unique=False, default=False)
+    ice_cream= Column(Boolean, unique=False, default=False)
+    internet_cafe= Column(Boolean, unique=False, default=False)
+    juice_bar= Column(Boolean, unique=False, default=False)
+    pretzel= Column(Boolean, unique=False, default=False)
+    shaved_ice= Column(Boolean, unique=False, default=False)
+    specialty_food= Column(Boolean, unique=False, default=False)
+    street_vendors= Column(Boolean, unique=False, default=False)
+    tea_rooms= Column(Boolean, unique=False, default=False)
+    wineries = Column(Boolean, unique=False, default=False)
 
 class Yelp_Bar_Category(Base):
     __tablename__="yelp_bar_categories"
     id = Column(Integer, primary_key=True)
-      # Bars
-      # Comedy Clubs
-      # Country Dance Halls
-      # Dance Clubs
-      # Jazz& Blues
-      # Karaoke
-      # Music Venues
-      # Piano Bars
-      # Pool Halls
-      # tertiary: 
-        # Champagne Bars
-        # Cocktail Bars
-        # Dive Bars
-        # Gay Bars
-        # Hookah Bars
-        # Lounges
-        # Pubs
-        # Sports Bars
-        # Wine Bars
+    bars = Column(Boolean, unique=False, default=False)
+    comedy= Column(Boolean, unique=False, default=False)
+    country= Column(Boolean, unique=False, default=False)
+    dance= Column(Boolean, unique=False, default=False)
+    jazz= Column(Boolean, unique=False, default=False)
+    karaoke= Column(Boolean, unique=False, default=False)
+    music= Column(Boolean, unique=False, default=False)
+    piano= Column(Boolean, unique=False, default=False)
+    pool= Column(Boolean, unique=False, default=False)
+    champagne =  Column(Boolean, unique=False, default=False)
+    cocktail=  Column(Boolean, unique=False, default=False)
+    dive =  Column(Boolean, unique=False, default=False)
+    gay =  Column(Boolean, unique=False, default=False)
+    hookah=  Column(Boolean, unique=False, default=False)
+    lounges =  Column(Boolean, unique=False, default=False)
+    pubs=  Column(Boolean, unique=False, default=False)
+    sports=  Column(Boolean, unique=False, default=False)
+    wineries=  Column(Boolean, unique=False, default=False)
+
    
 class Yelp_Business_Neighborhood(Base):
     __tablename__="yelp_business_neighborhoods"
