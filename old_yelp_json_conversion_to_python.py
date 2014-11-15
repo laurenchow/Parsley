@@ -24,115 +24,117 @@ def add_restaurants(session):
     review_count = restaurant_data.get("review_count", None)
     is_still_open = restaurant_data.get("is_still_open", None)
     #these are likely to be lists and a problem unless unpacked -- will need to put in another table
-    categories = restaurant_data.get("categories", None)
-    if "Restaurants" in categories:
-      restaurant = 1
-      if "Afghan" in categories:
-        afghan = 1
-      if "African" in categories:
-        african = 1
-      if "American (New)" in categories:
-        american_new = 1 
-      if "American (Traditional)" in categories:
-        american_trad = 1
+    #make a map and loop
 
-        arabian = 1
-        argentine = 1
-        armenian = 1 
-        asian_fusion = 1
-        bangladeshi = 1
-        barbeque = 1
-        basque = 1
-        belgian = 1
-        brasseries = 1
-        brazilian = 1
-        breakfast_brunch = 1
-        british
-        buffet
-        burgers
-        burmese
-        cafe
-        cafeteria
-        cajun_creole
-        cambodian
-        caribbean
-        catalan
-        cheesesteaks
-        chicken_wings
-        chinese
-        comfort_food
-        creperies
-        cuban
-        czech
-        delis 
-        diners
-        ethiopian
-        fast_food
-        filipino
-        fish_chips
-        food_court
-        food_stands
-        french
-        gastropubs
-        german
-        gluten_free
-        greek
-        halal
-        hawaiian
-        himalayan_nepa
-        hot_dogs
-        hot_pot
-        hungarian
-        iberian
-        indian
-        indonesian
-        irish
-        italian
-        japanese
-        koraen
-        kosher
-        laotian
-        lat_am
-        live_raw
-        malaysian
-        mediterranean
-        mexican
-        middle_eastern
-        modern_euro
-        mongolian
-        pakistani
-        persian
-        peruvian
-        pizza
-        polish
-        portuguese
-        russian
-        salad
-        sandwiches
-        scandinavian
-        scottish
-        seafood
-        singaporean
-        slovakian
-        soul_food
-        soup
-        southern
-        spanish
-        steakhouses
-        sushi_bars
-        taiwanese
-        tapas_bars
-        tapas_small
-        texmex
-        thai
-        turkish
-        ukranian
-        vegan 
-        vegetarian 
-        vietnamese 
+    # #categories = restaurant_data.get("categories", None)
+    # if "Restaurants" in categories:
+    #   restaurant = 1
+    #   if "Afghan" in categories:
+    #     afghan = 1
+    #   if "African" in categories:
+    #     african = 1
+    #   if "American (New)" in categories:
+    #     american_new = 1 
+    #   if "American (Traditional)" in categories:
+    #     american_trad = 1
 
-    if "Food" in categories:
-      food = 1
+    #     arabian = 1
+    #     argentine = 1
+    #     armenian = 1 
+    #     asian_fusion = 1
+    #     bangladeshi = 1
+    #     barbeque = 1
+    #     basque = 1
+    #     belgian = 1
+    #     brasseries = 1
+    #     brazilian = 1
+    #     breakfast_brunch = 1
+    #     british
+    #     buffet
+    #     burgers
+    #     burmese
+    #     cafe
+    #     cafeteria
+    #     cajun_creole
+    #     cambodian
+    #     caribbean
+    #     catalan
+    #     cheesesteaks
+    #     chicken_wings
+    #     chinese
+    #     comfort_food
+    #     creperies
+    #     cuban
+    #     czech
+    #     delis 
+    #     diners
+    #     ethiopian
+    #     fast_food
+    #     filipino
+    #     fish_chips
+    #     food_court
+    #     food_stands
+    #     french
+    #     gastropubs
+    #     german
+    #     gluten_free
+    #     greek
+    #     halal
+    #     hawaiian
+    #     himalayan_nepa
+    #     hot_dogs
+    #     hot_pot
+    #     hungarian
+    #     iberian
+    #     indian
+    #     indonesian
+    #     irish
+    #     italian
+    #     japanese
+    #     koraen
+    #     kosher
+    #     laotian
+    #     lat_am
+    #     live_raw
+    #     malaysian
+    #     mediterranean
+    #     mexican
+    #     middle_eastern
+    #     modern_euro
+    #     mongolian
+    #     pakistani
+    #     persian
+    #     peruvian
+    #     pizza
+    #     polish
+    #     portuguese
+    #     russian
+    #     salad
+    #     sandwiches
+    #     scandinavian
+    #     scottish
+    #     seafood
+    #     singaporean
+    #     slovakian
+    #     soul_food
+    #     soup
+    #     southern
+    #     spanish
+    #     steakhouses
+    #     sushi_bars
+    #     taiwanese
+    #     tapas_bars
+    #     tapas_small
+    #     texmex
+    #     thai
+    #     turkish
+    #     ukranian
+    #     vegan 
+    #     vegetarian 
+    #     vietnamese 
+
+    # if "Food" in categories:
+    #   food = 1
         # bagels = Column(Boolean, unique=False, default=False)
         # bakeries= Column(Boolean, unique=False, default=False)
         # beer_wine_spirit= Column(Boolean, unique=False, default=False)
@@ -191,6 +193,11 @@ def add_restaurants(session):
     full_address = full_address, city = city, latitude = latitude, 
     longitude = longitude, stars = stars, review_count = review_count, 
     is_still_open = is_still_open, state = state)
+
+    # args = {
+    # 'name': name, 'business_id': business_id, #...
+    # }
+    # new_business = model.Yelp_Business(**args)
   
     model.session.add(new_business)
     print "Here's what got added %r" % new_business
