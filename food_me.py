@@ -267,7 +267,7 @@ def check_db_for_restos(restaurant_data):
                     model.session.add(new_restaurant_features)
                     model.session.commit()
 
-    return suggest_new_resto(restaurant_data)  
+    return redirect("/new_restaurant", restaurant_data = restaurant_data)
 #     return suggest_new_resto(restaurant_data)
 
 @app.route('/new_restaurant', methods = ['GET', 'POST'])
@@ -291,7 +291,7 @@ def suggest_new_resto(restaurant_data):
         #     # resto_details = same_resto_different_way.data()
         #     # print "Does this work? %r" % resto_details
             # new_resto_data.append(resto_details)
-        print "This is working and you need to move on"
+        print "This works"
         # else:
         #     print "*******You need to type in a different restaurant****"
 
@@ -361,9 +361,9 @@ def signup_user():
     current_user = model.session.query(model.User).filter_by(email = user_email).first()
 
 
-    new_user_prefs = model.User_Preference(user_id = current_user.id)
-    model.session.add(new_user_prefs)
-    model.session.commit()
+    # new_user_prefs = model.User_Preference(user_id = current_user.id)
+    # model.session.merge(new_user_prefs)
+    # model.session.commit()
 
     session['user_id'] = current_user.id
     session['user_email'] = current_user.email
@@ -374,7 +374,7 @@ def signup_user():
 
 @app.route('/welcome', methods = ['GET', 'POST'])
 def new_user_welcome():
-    print "You made it this far"
+    print "Here's what in the session in welcome %r" % session
     current_user_id = session['user_id']  
 
     if request.method == "GET":
@@ -382,11 +382,10 @@ def new_user_welcome():
     else:
         return submit_user_details(current_user_id)
 
-
 # # fix this so you don't see it unless logged in
 
 def submit_user_details(current_user_id):
-    
+      
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
 
     kwargs = {'age': request.form['age'], 'gender': request.form['gender'],
@@ -397,7 +396,6 @@ def submit_user_details(current_user_id):
     model.session.merge(new_user_info)
     model.session.commit()
 
-    print "This is making sense"
     return redirect("/user_preferences")
     
 
@@ -405,38 +403,38 @@ def submit_user_details(current_user_id):
 
 @app.route('/user_preferences', methods = ['GET', 'POST'])
 def user_preferences():
-    current_user_id = session['user_id']  
-    
     if request.method == "GET":
         return render_template("user_preferences.html")
     else:
-        return submit_user_preferences(current_user_id)
+        return submit_user_preferences()
 
-def submit_user_preferences(current_user_id): 
+def submit_user_preferences(): 
+    current_user_id = session['user_id']  
     print "This is where you'll show what the user says they prefer"  
     print "This is who is logged in right now %r" % current_user_id
     # new_user_prefs_info = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
+    # print "This exists!!! %r" % new_user_prefs_info
     # if new_user_prefs_info:
-    #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
-    #     'kids_goodfor': request.form['kids_goodfor'],
-    #     'options_healthy': request.form['options_healthy'], 
-    #     'options_organic': request.form['options_organic'], 
-    #     'parking': request.form['parking'], 
-    #     'wifi' : request.form['wifi']}
+    if current_user_id:
+        kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
+        'kids_goodfor': request.form['kids_goodfor'],
+        'options_healthy': request.form['options_healthy'], 
+        'options_organic': request.form['options_organic'], 
+        'parking': request.form['parking'], 
+        'wifi' : request.form['wifi'], 'user_id': current_user_id}
 
-    #     print "Here's what's inside kwargs %r" % kwargs
+        print "Here's what's inside kwargs %r" % kwargs
 
-    #     new_user_prefs = model.User_Preference(**kwargs)
-    #     model.session.merge(new_user_prefs)
-    #     model.session.commit()
+        new_user_prefs = model.User_Preference(**kwargs)
+        model.session.merge(new_user_prefs)
+        model.session.commit()
+        
+        return redirect("/")
 
-    #     print "This is working now w00t"
-    #     return redirect("/")
-
-    # else: 
-    #     print "What's going on?"
-    #     return redirect("/")
+    else: 
+        print "What's going on?"
+        return redirect("/")
     # if new_user_prefs_info:
     #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
     #     'alcohol_byob': request.form['alcohol_byob'], 'alcohol_bar':request.form['alcohol_bar'],
