@@ -19,6 +19,12 @@
 
   
       This should show up as a map. 
+      <br>
+      {% for item in new_resto_data %}
+         
+          Here's a place you said you like:
+           {{ new_resto_data}}<br>
+      {% endfor %}
     
 
         <div id="map-canvas"></div>

@@ -255,9 +255,8 @@ class Yelp_Business_Category(Base):
     __tablename__="yelp_business_categories"
     id = Column(Integer, primary_key=True)
     yelp_business_id = Column(Integer, ForeignKey('yelp_businesses.business_id'))
-    restaurant = Column(String(128), nullable=True)
+    restaurant =Column(Boolean, unique=False, default=False)
     food = Column(Boolean, unique=False, default=False)
-    restaurant = Column(Boolean, unique=False, default=False)
     nightlife = Column(Boolean, unique=False, default=False)
 
 class Yelp_Restaurant_Category(Base):

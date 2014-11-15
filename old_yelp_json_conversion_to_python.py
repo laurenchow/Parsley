@@ -5,7 +5,7 @@ import model
 #enough data to make some interesting stuff
 
 def add_restaurants(session):
-  json_data=open("static/yelp_academic_dataset_business.json")
+  json_data=open("static/yelp_academic_dataset_business_small.json")
 
   # with json_data as myfile:
   for line in json_data:
@@ -27,22 +27,26 @@ def add_restaurants(session):
     categories = restaurant_data.get("categories", None)
     if "Restaurants" in categories:
       restaurant = 1
-        
-        afghan = 
-        african = 
-        american_new
-        american_trad 
-        arabian
-        argentine 
-        armenian 
-        asian_fusion
-        bangladeshi
-        barbeque
-        basque
-        belgian
-        brasseries
-        brazilian
-        breakfast_brunch
+      if "Afghan" in categories:
+        afghan = 1
+      if "African" in categories:
+        african = 1
+      if "American (New)" in categories:
+        american_new = 1 
+      if "American (Traditional)" in categories:
+        american_trad = 1
+
+        arabian = 1
+        argentine = 1
+        armenian = 1 
+        asian_fusion = 1
+        bangladeshi = 1
+        barbeque = 1
+        basque = 1
+        belgian = 1
+        brasseries = 1
+        brazilian = 1
+        breakfast_brunch = 1
         british
         buffet
         burgers
@@ -129,33 +133,33 @@ def add_restaurants(session):
 
     if "Food" in categories:
       food = 1
-      # these are secondary categories for foods:
-      #Bagels
-      # Bakeries
-      # Beer, Wine & Spirits
-      # Breweries
-      # Bubble Tea
-      # Butcher
-      # CSA
-      # Coffee & Tea
-      # Convenience Stores
-      # Desserts
-      # Do-It-Yourself Food
-      # Donuts
-      # Farmers Market
-      # Food Delivery Services
-      # Food Trucks
-      # Gelato
-      # Grocery
-      # Ice Cream & Frozen Yogust
-      # Internet Cafes
-      # Juice Bars & Smoothies
-      # Pretzels
-      # Shaved Ice
-      # Specialty Food
-      # Street Vendors
-      # Tea Rooms
-      # Wineries
+        # bagels = Column(Boolean, unique=False, default=False)
+        # bakeries= Column(Boolean, unique=False, default=False)
+        # beer_wine_spirit= Column(Boolean, unique=False, default=False)
+        # breweries= Column(Boolean, unique=False, default=False)
+        # bubble_tea= Column(Boolean, unique=False, default=False)
+        # butcher= Column(Boolean, unique=False, default=False)
+        # csa = Column(Boolean, unique=False, default=False)
+        # coffee_tea= Column(Boolean, unique=False, default=False)
+        # convenience= Column(Boolean, unique=False, default=False)
+        # dessert= Column(Boolean, unique=False, default=False)
+        # diy_food= Column(Boolean, unique=False, default=False)
+        # donuts= Column(Boolean, unique=False, default=False)
+        # farmers_market= Column(Boolean, unique=False, default=False)
+        # food_delivery= Column(Boolean, unique=False, default=False)
+        # food_truck= Column(Boolean, unique=False, default=False)
+        # gelato= Column(Boolean, unique=False, default=False)
+        # grocery= Column(Boolean, unique=False, default=False)
+        # ice_cream= Column(Boolean, unique=False, default=False)
+        # internet_cafe= Column(Boolean, unique=False, default=False)
+        # juice_bar= Column(Boolean, unique=False, default=False)
+        # pretzel= Column(Boolean, unique=False, default=False)
+        # shaved_ice= Column(Boolean, unique=False, default=False)
+        # specialty_food= Column(Boolean, unique=False, default=False)
+        # street_vendors= Column(Boolean, unique=False, default=False)
+        # tea_rooms= Column(Boolean, unique=False, default=False)
+        # wineries = Column(Boolean, unique=False, default=False)
+        
     if "Nightlife" in categories:
       nightlife = 1
       # secondary categories:
@@ -193,25 +197,25 @@ def add_restaurants(session):
 
    
     
-    "categories": ["Restaurants"], 
-    "attributes": {"Take-out": true, "Good For": {"dessert": false, "latenight": false, "lunch": true, "dinner": false, "breakfast": false, "brunch": false}, 
-    "Caters": false, 
-    "Noise Level": "average", 
-    "Takes Reservations": false, 
-    "Delivery": false, 
-    "Ambience": {"romantic": false, "intimate": false, "touristy": false, "hipster": false, "divey": false, "classy": false, "trendy": false, "upscale": false, "casual": false}, 
-    "Parking": {"garage": false, "street": false, "validated": false, "lot": true, "valet": false}, 
-    "Has TV": true, 
-    "Outdoor Seating": false, 
-    "Attire": "casual", 
-    "Alcohol": "none", 
-    "Waiter Service": true, 
-    "Accepts Credit Cards": true, 
-    "Good for Kids": true, 
-    "Good For Groups": true, 
-    "Price Range": 1}, 
+    # "categories": ["Restaurants"], 
+    # "attributes": {"Take-out": true, "Good For": {"dessert": false, "latenight": false, "lunch": true, "dinner": false, "breakfast": false, "brunch": false}, 
+    # "Caters": false, 
+    # "Noise Level": "average", 
+    # "Takes Reservations": false, 
+    # "Delivery": false, 
+    # "Ambience": {"romantic": false, "intimate": false, "touristy": false, "hipster": false, "divey": false, "classy": false, "trendy": false, "upscale": false, "casual": false}, 
+    # "Parking": {"garage": false, "street": false, "validated": false, "lot": true, "valet": false}, 
+    # "Has TV": true, 
+    # "Outdoor Seating": false, 
+    # "Attire": "casual", 
+    # "Alcohol": "none", 
+    # "Waiter Service": true, 
+    # "Accepts Credit Cards": true, 
+    # "Good for Kids": true, 
+    # "Good For Groups": true, 
+    # "Price Range": 1}, 
 
-    "type": "business"}
+    # "type": "business"}
   model.session.commit()    
   json_data.close() 
 

@@ -4,7 +4,7 @@ from factual import Factual
 import model
 import os
 import jinja2
-import correlation
+# import correlation
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
@@ -28,8 +28,7 @@ def restos():
     if request.method == "GET":
         return render_template("restaurants.html")
     else:
-        submit_resto_list()
-        return render_template("new_restaurant.html")
+        return submit_resto_list()
         
 # use jquery AJAX here to add on same page
 # show some things only when logged in
@@ -268,32 +267,68 @@ def check_db_for_restos(restaurant_data):
                     model.session.add(new_restaurant_features)
                     model.session.commit()
 
-    return redirect("/")  
+    return suggest_new_resto(restaurant_data)  
 #     return suggest_new_resto(restaurant_data)
 
-# def suggest_new_resto(restaurant_data):
+@app.route('/new_restaurant', methods = ['GET', 'POST'])
+def suggest_new_resto(restaurant_data):
 
-#     # factual = Factual(KEY, SECRET)
-#     # table = factual.table('restaurants')
+    new_resto_data = []
 
-#     # if restaurant_data[0].data() != []:
-#     #     # new_q1 = table.search("'restaurant_data[0].name").limit(1)
-#     #     #figure out how many times each parameter is present in the three entries
-#     #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE"
-#     # else:
-#     #     print "*******You need to type in a different restaurant****"
+    # factual = Factual(KEY, SECRET)
+    # table = factual.table('restaurants')
+
+    for item in range(len(restaurant_data)-1):
+        print "*********Here's what is inside restaurant data %r *********"% restaurant_data
+        print restaurant_data[item]
+        # if restaurant_data[item] != []:
+        #     restaurant_details = restaurant_data[item].data()
+        #     print "This is what is showing up %r" % restaurant_details
+        #     restaurant_name = restaurant_details['name']
+        #     print "Does this work? %r" % restaurant_name
+        #     # same_resto_different_way =  table.filters({'name': restaurant_name}).limit(1)
+        #     # print "This is the result here %r" % same_resto_different_way.data()
+        #     # resto_details = same_resto_different_way.data()
+        #     # print "Does this work? %r" % resto_details
+            # new_resto_data.append(resto_details)
+        print "This is working and you need to move on"
+        # else:
+        #     print "*******You need to type in a different restaurant****"
+
+    # if restaurant_data[0].data() != []:
+    #     new_q1 = table.filters({'name': 'restaurant_data[0].name'}).limit(1)
+    #     new_resto_data[0] = new_q1
+    #     print new_q1
+    #     #figure out how many times each parameter is present in the three entries
+    #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE"
+    # elif restaurant_data[1].data() != []:
+    #     new_q2 = table.filters({'name': 'restaurant_data[1].name'}).limit(1)
+    #     new_resto_data[1] = new_q2
+    #     print new_q2
+    #     #figure out how many times each parameter is present in the three entries
+    #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE TOO"
+    # elif restaurant_data[2].data() != []:
+    #     new_q3 = table.filters({'name': 'restaurant_data[2].name'}).limit(1)
+    #     new_resto_data[2] = new_q3
+    #     print new_q3
+    #     #figure out how many times each parameter is present in the three entries
+    #     print "*** YOU GOT THE QUERY TO WORK AND SOMETHING EXISTS IN HERE AS WELL"
+       
          
-#     #you'll want to ask if they like this restaurant also
-#     return render_template("new_restaurant.html")
+    # you'll want to ask if they like this restaurant also
+
+
+
+    return render_template("new_restaurant.html", new_resto_data = new_resto_data)
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():
     if request.method == "GET":
         return render_template("signup.html")
-        if session:
-            print "User is already signed in"
-            flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
-            return render_template("login.html")
+        # if session: << this needs to make sure that the session is the user
+        #     print "User is already signed in"
+        #     flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
+        #     return render_template("login.html")
     else:
         return signup_user()
 
@@ -301,78 +336,150 @@ def user_signup():
 def signup_user():
     #make this offer to let you signup with Facebook
     #how to make this all popup with JS?
-    if session:
-        print "User is already signed in"
-        flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
-        return render_template("login.html")
-    else:
-        user_email = request.form['email']
-        user_password = request.form['password']
-        print "This is what user_password is stored as %r" % type(user_password)
+    # if session:
+    #     print "User is already signed in"
+    #     flash("Looks like you're already signed in! Did you want to sign in as someone else?", "error")
+    #     return render_template("login.html")
+    # else:
+    user_email = request.form['email']
+    user_password = request.form['password']
+    print "This is what user_password is stored as %r" % type(user_password)
 
-        already_registered = model.session.query(model.User).filter_by(email = user_email).first()
+    already_registered = model.session.query(model.User).filter_by(email = user_email).first()
 
-        if already_registered:
-            flash("Looks like you already have an account. Want to try signing in?")
+    if already_registered:
+        flash("Looks like you already have an account. Want to try signing in?")
+
+    secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
+    print "this is the secure hashed password %r" % secure_password
+    #put something in here about making good passwords with uppercase and flash suggestion
+    new_user = model.User(email = user_email, password = secure_password)
+
+    model.session.add(new_user)
+    model.session.commit() 
+    #need to add the user and commit it before you can create a new entry 
+    current_user = model.session.query(model.User).filter_by(email = user_email).first()
+
+
+    new_user_prefs = model.User_Preference(user_id = current_user.id)
+    model.session.add(new_user_prefs)
+    model.session.commit()
+
+    session['user_id'] = current_user.id
+    session['user_email'] = current_user.email
         
-        # if len(user_password) <= 4:
-        #     flash("You need a longer password.")
-        #     return redirect("/signup")
-        # elif user_password.isalpha() == True:
-        #     flash("You need a more secure password.")
-        #     return redirect("/signup")
-        # else:
-        secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
-        print "this is the secure hashed password %r" % secure_password
-        #put something in here about making good passwords with uppercase and flash suggestion
-        new_user = model.User(email = user_email, password = secure_password)
+    print "Here's what in the session at the end of signup %r" % session
 
-        model.session.add(new_user)
-        model.session.commit() 
-
-        current_user = model.session.query(model.User).filter_by(email = user_email).first()
-        session['user_id'] = current_user.id
-        session['user_email'] = current_user.email
-            
-        print session
-        return redirect("/welcome")
+    return redirect("/welcome")
 
 @app.route('/welcome', methods = ['GET', 'POST'])
 def new_user_welcome():
+    print "You made it this far"
+    current_user_id = session['user_id']  
+
     if request.method == "GET":
         return render_template("welcome.html")
     else:
-        return submit_user_details()
+        return submit_user_details(current_user_id)
 
-def submit_user_details():
-    current_user_id = session['user_id']
 
-    # print "Here's the current user id %r" % session['user_id']
+# # fix this so you don't see it unless logged in
 
+def submit_user_details(current_user_id):
+    
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
 
-    # print "Here's what is stored in new_user_info ID %r" % new_user_info.id 
-    new_user_age = request.form['age']
-    new_user_gender = request.form['gender']
-    new_user_zip = request.form['zip']
-    new_user_job = request.form['job']
+    kwargs = {'age': request.form['age'], 'gender': request.form['gender'],
+    'zip': request.form['zip'], 'occupation': request.form['job'], 'id': current_user_id}
 
-
-    new_user_info = model.User(id = current_user_id, age = new_user_age, 
-        gender = new_user_gender, zip = new_user_zip, occupation = new_user_job)
+    new_user_info = model.User(**kwargs)
 
     model.session.merge(new_user_info)
     model.session.commit()
 
-    print "Here's the current user age %r" % new_user_info.age 
+    print "This is making sense"
+    return redirect("/user_preferences")
+    
 
-    print "This is where you'll show what the user says they prefer"    
+
+
+@app.route('/user_preferences', methods = ['GET', 'POST'])
+def user_preferences():
+    current_user_id = session['user_id']  
+    
+    if request.method == "GET":
+        return render_template("user_preferences.html")
+    else:
+        return submit_user_preferences(current_user_id)
+
+def submit_user_preferences(current_user_id): 
+    print "This is where you'll show what the user says they prefer"  
+    print "This is who is logged in right now %r" % current_user_id
+    # new_user_prefs_info = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+
+    # if new_user_prefs_info:
+    #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
+    #     'kids_goodfor': request.form['kids_goodfor'],
+    #     'options_healthy': request.form['options_healthy'], 
+    #     'options_organic': request.form['options_organic'], 
+    #     'parking': request.form['parking'], 
+    #     'wifi' : request.form['wifi']}
+
+    #     print "Here's what's inside kwargs %r" % kwargs
+
+    #     new_user_prefs = model.User_Preference(**kwargs)
+    #     model.session.merge(new_user_prefs)
+    #     model.session.commit()
+
+    #     print "This is working now w00t"
+    #     return redirect("/")
+
+    # else: 
+    #     print "What's going on?"
+    #     return redirect("/")
+    # if new_user_prefs_info:
+    #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
+    #     'alcohol_byob': request.form['alcohol_byob'], 'alcohol_bar':request.form['alcohol_bar'],
+    #     'alcohol_beer_wine': request.form['alcohol_beer_wine'], 'alcohol': request.form['alcohol'],
+    #     'groups_goodfor':  request.form['groups_goodfor'], 'kids_goodfor': request.form['kids_goodfor'],
+    #     'kids_menu': request.form['kids_menu'], 'meal_breakfast':  request.form['meal_breakfast'],
+    #     'meal_dinner':  request.form['meal_dinner'], 'meal_deliver':  request.form['meal_deliver'],
+    #     'options_healthy': request.form['options_healthy'] , 
+    #     'options_glutenfree': request.form['options_glutenfree'], 
+    #     'options_lowfat': request.form['options_lowfat'], 
+    #     'options_vegan': request.form['options_vegan'], 
+    #     'options_vegetarian':  request.form['options_vegetarian'], 
+    #     'options_organic': request.form['options_organic'], 'parking': request.form['parking'], 
+    #     'reservations':  request.form['reservations'],
+    #     'wifi' : request.form['wifi']}
+
+        # new_user_prefs = model.User_Preference(**kwargs)
+        # model.session.merge(new_user_prefs)
+        # model.session.commit()
+
+    # else:
+    #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
+    #     'alcohol_byob': request.form['alcohol_byob'], 'alcohol_bar':request.form['alcohol_bar'],
+    #     'alcohol_beer_wine': request.form['alcohol_beer_wine'], 'alcohol': request.form['alcohol'],
+    #     'groups_goodfor':  request.form['groups_goodfor'], 'kids_goodfor': request.form['kids_goodfor'],
+    #     'kids_menu': request.form['kids_menu'], 'meal_breakfast':  request.form['meal_breakfast'],
+    #     'meal_dinner':  request.form['meal_dinner'], 'meal_deliver':  request.form['meal_deliver'],
+    #     'options_healthy': request.form['options_healthy'] , 
+    #     'options_glutenfree': request.form['options_glutenfree'], 
+    #     'options_lowfat': request.form['options_lowfat'], 
+    #     'options_vegan': request.form['options_vegan'], 
+    #     'options_vegetarian':  request.form['options_vegetarian'], 
+    #     'options_organic': request.form['options_organic'], 'parking': request.form['parking'], 
+    #     'reservations':  request.form['reservations'],
+    #     'wifi' : request.form['wifi']}
+        
+    #     new_user_prefs = model.User_Preference(**kwargs)
+    #     model.session.add(new_user_prefs)
+    #     model.session.commit()
+    
     return redirect("/")
 
-@app.route('/user_prefs', methods = ['GET'])
-def user_prefs():
-    print "This is where you'll show what the user says they prefer"    
-    return render_template("slider.html")
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():
@@ -403,7 +510,7 @@ def login_user():
     else:
         flash("Invalid username or password", "error")
         return redirect("/signup") 
- 
+    
 @app.route('/logout')
 def logout_user():
     session.clear()

@@ -1,0 +1,31 @@
+
+{% extends 'base.html' %}
+
+
+{% block body %}  
+
+
+ <form class="form-signin" method="POST">
+    <h4 class="form-signin-heading" width = "40px">A bit more about you:</h2>
+    <input type="number"  min="1" max="5"name="options_organic" id ="options_organic" class="form-control" placeholder="Organic" required autofocus width = "40px" />
+    <input type="number" min="1" max="5" name="options_healthy" id = "options_healthy" class="form-control" placeholder="Parking" required  width = "40px" />
+    <input type="number" min="1" max="5" name="wifi" id = "wifi" class="form-control" placeholder="Wifi" required  width = "40px" />
+    <input type="number"  min="1" max="5"name="kids_goodfor" class="form-control" placeholder="Kid-friendly" required  width = "40px" />
+    <input type="number" min="1" max="5" name="accessible_wheelchair" id = "accessible_wheelchair" class="form-control" placeholder="Accessible" required  width = "40px" />
+    <input type="number" min="1" max="5" name="parking" id = "parking" class="form-control" placeholder="Parking" required  width = "40px" />
+   
+    
+     <div class="checkbox">
+    <label>
+      <input type="checkbox"> I agree to give you my firstborn
+    </label>
+    <button type="submit" class="btn btn-default">Submit</button>
+  </div>
+    
+    
+
+
+ 
+</form>
+
+{%endblock%}
