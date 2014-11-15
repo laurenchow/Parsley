@@ -273,29 +273,50 @@ def check_db_for_restos(restaurant_data):
 @app.route('/new_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
 
-
     # factual = Factual(KEY, SECRET)
     # table = factual.table('restaurants')
-    print "*********Here's what is inside restaurant data %r *********"% restaurant_data
 
+    current_user_id = session['user_id']  
+    user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+
+    # look at user preferences
+    args = {'user_organic_rating':  user_preferences.options_organic,  
+    'user_health_rating':  user_preferences.options_healthy,
+    'user_access_rating' : user_preferences.accessible_wheelchair,
+    'user_wifi_rating' :  user_preferences.wifi,
+    'user_parking_rating' : user_preferences.parking}
+    print "Here's what is in args %r" % args
+
+
+    # compare user preferences to these three restaurants
     for item in range(len(restaurant_data)-1):
         print "Here's the restaurant you typed in %r" % restaurant_data[item]
         if restaurant_data[item] != []:
             # restaurant_details = restaurant_data[item].data()
-     
-            print "This works"
+            kwargs = {'organic_rating': item.get("options_organic", None),
+            'health_rating': item.get("options_healthy", None),
+            'access_rating':  item.get("accessible_wheelchair", None),
+            'wifi_rating': item.get("wifi", None),
+            'parking_rating': item.get("parking", None)}
 
-        else:
-            print "*******You need to type in a different restaurant****"
+        print "This works and here's what is inside kwargs %r" % kwargs
+
+
+#     # search factual for similar restaurants
+#     # suggest a new restaurant
+#     # you'll want to ask if they like this restaurant also
+
+
+#     print "*********Here's what is inside restaurant data %r *********"% restaurant_data
+
+#     
+
+
+        # else:
+        #     print "*******You need to type in a different restaurant****"
 
          
-    # look at user preferences
-    # compare user preferences to these three restaurants
-
-    # search factual for similar restaurants
-    # suggest a new restaurant
-    # you'll want to ask if they like this restaurant also
-
+   
 
     return render_template("new_restaurant.html")
 
@@ -396,8 +417,6 @@ def submit_user_preferences():
         'options_organic': request.form['options_organic'], 
         'parking': request.form['parking'], 
         'wifi' : request.form['wifi'], 'user_id': current_user_id}
-
-        print "Here's what's inside kwargs %r" % kwargs
 
         new_user_prefs = model.User_Preference(**kwargs)
         model.session.merge(new_user_prefs)
