@@ -53,7 +53,7 @@ def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
     restaurant_data = [] 
 
     #add in user_geo here
-    q1 = table.search("'restaurant1' 'user_geo'").limit(1)
+    q1 = table.search(restaurant1).limit(1)
     print "Here's what's stored in Factual for %r" %restaurant1
     print q1.data()
     print q1.get_url()
@@ -78,7 +78,8 @@ def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
     
 
 def check_db_for_restos(restaurant_data):
-    for entry in range(len(restaurant_data)):
+    for entry in range(len(restaurant_data)-1):
+        #take note that you changed this late on Friday to add the -1 in
         print "Here's what came in from Factual %r" % restaurant_data[entry]
       
         #searching the database seems to need to be case-sensitive for now, make it case insensitive
@@ -287,19 +288,30 @@ def suggest_new_resto(restaurant_data):
     'user_parking_rating' : user_preferences.parking}
     print "Here's what is in args %r" % args
 
-
+    # print "Here's the restaurant data %r" % restaurant_data
     # compare user preferences to these three restaurants
-    for item in range(len(restaurant_data)-1):
-        print "Here's the restaurant you typed in %r" % restaurant_data[item]
-        if restaurant_data[item] != []:
-            # restaurant_details = restaurant_data[item].data()
-            kwargs = {'organic_rating': item.get("options_organic", None),
-            'health_rating': item.get("options_healthy", None),
-            'access_rating':  item.get("accessible_wheelchair", None),
-            'wifi_rating': item.get("wifi", None),
-            'parking_rating': item.get("parking", None)}
+ 
+    #this isn't showing the first one, figure out why
+    #also convert these to booleans
+    for entry in range(len(restaurant_data)-1):
+        restaurant_details = restaurant_data[entry].data()
+        print "********Here's the restaurant you typed in******* %r" % restaurant_details
 
-        print "This works and here's what is inside kwargs %r" % kwargs
+        for item in restaurant_details:
+            kwargs = {'organic_rating': item.get("options_organic", False),
+            'health_rating': item.get("options_healthy", False),
+            'access_rating':  item.get("accessible_wheelchair", False ),
+            'wifi_rating': item.get("wifi", False),
+            'parking_rating': item.get("parking", False)}
+                
+            print "***For %r, THESE ARE WHAT THE KWARGS ARE****** %r" % (item.get("name",None), kwargs)
+
+
+        # if restaurant_data[item] != []:
+        #     # 
+        #     
+
+        # print "This works and here's what is inside kwargs %r" % kwargs
 
 
 #     # search factual for similar restaurants
@@ -329,6 +341,7 @@ def user_signup():
         return render_template("signup.html")
     else:
         return signup_user()
+        #but you also want to reload the page with their data if they do
 
 
 def signup_user():
