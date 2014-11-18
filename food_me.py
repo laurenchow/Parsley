@@ -4,10 +4,14 @@ from factual import Factual
 import model
 import os
 import jinja2
+from collections import OrderedDict
+from operator import itemgetter
 # import correlation
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
+
+
 
 app = Flask(__name__) 
 app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
@@ -36,9 +40,38 @@ def restos():
 def submit_resto_list():
 
     restaurant1 = request.form['restaurant_1']
+    
+    restaurant1_split = restaurant1.split(',')
+    print "** Here's the split ** %r" % restaurant1_split
+    restaurant1_name = restaurant1_split[0]
+    restaurant1_city =restaurant1_split[2]
+    restaurant1_state = restaurant1_split[3]
+    restaurant1_geo = restaurant1_city+restaurant1_state    
+
+    print "Here's the city and state %r" % restaurant1_geo
+    print "Here's it stored as the name %r" % restaurant1_name
+    # for character in char_restaurant1:
+    #     if character.isalpha==True:
+    #         restaurant_name.append(character)
+    #     else: 
+    #         print restaurant_name
+    #         print "Is that name the restaurant name?"
+    # what you want to do here is cut the string after the first comma and cut everything off
+
+
+    print "Here's what restaurant 1 says %r" % restaurant1
     restaurant2 = request.form['restaurant_2']
+    print ""
+    print "****Here's what restaurant 2 says %r" %restaurant2
+
+    print ""
     restaurant3 = request.form['restaurant_3']      
     user_geo = request.form['user_geo'] 
+    print ""
+    print "****Here's what restaurant 3 says %r" %restaurant3
+
+    print ""
+    #do something with user geo in suggest new restaurants
 
     return ping_factual(restaurant1, restaurant2, restaurant3, user_geo)
     #figure out how to remove everything after restaurant name
@@ -53,11 +86,16 @@ def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
     restaurant_data = [] 
 
     #add in user_geo here
+    #parse what's typed in so you're searching the right places
     q1 = table.search(restaurant1).limit(1)
     print "Here's what's stored in Factual for %r" %restaurant1
     print q1.data()
     print q1.get_url()
+ 
+
     restaurant_data.append(q1)
+
+
 
     q2 = table.search(restaurant2).limit(1)
     print "Here's what's stored in Factual for %r" %restaurant2
@@ -80,18 +118,24 @@ def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
 def check_db_for_restos(restaurant_data):
     for entry in range(len(restaurant_data)-1):
         #take note that you changed this late on Friday to add the -1 in
+        print "Here's the number getting printed %r" % entry
         print "Here's what came in from Factual %r" % restaurant_data[entry]
-      
+        print ""
+        print ""
+        print ""
         #searching the database seems to need to be case-sensitive for now, make it case insensitive
         restaurant_deets = restaurant_data[entry].data()
         print "Here are some deets %r" % restaurant_deets
+        print ""
+        print ""
+        print ""
+
         if restaurant_deets == []:
             print "****This is empty, you'll want a new restaurant here****"
             pass
         else:
         #check to see if restaurant details are in the DB for this restaurant
         #if not add it, if it is check to see that it's still the same
-        
             for item in restaurant_deets:
                 db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
 
@@ -274,25 +318,54 @@ def check_db_for_restos(restaurant_data):
 @app.route('/new_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
 
-    # factual = Factual(KEY, SECRET)
-    # table = factual.table('restaurants')
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
 
     current_user_id = session['user_id']  
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
     # look at user preferences
-    args = {'user_organic_rating':  user_preferences.options_organic,  
-    'user_health_rating':  user_preferences.options_healthy,
-    'user_access_rating' : user_preferences.accessible_wheelchair,
-    'user_wifi_rating' :  user_preferences.wifi,
-    'user_parking_rating' : user_preferences.parking}
-    print "Here's what is in args %r" % args
+    # is there a problem naming these things what you just changed name to
+    args = {'options_organic':  user_preferences.options_organic,  
+    'options_healthy':  user_preferences.options_healthy,
+    'accessible_wheelchair' : user_preferences.accessible_wheelchair,
+    'wifi' :  user_preferences.wifi,
+    'parking' : user_preferences.parking}
 
-    # print "Here's the restaurant data %r" % restaurant_data
+    sorted_args = sorted(args.items(), key = lambda (k,v): v)
+    sorted_args.reverse()
+
+
+    sorted_args_first_elements = [x[0] for x in sorted_args]
+
+    print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
+    # query for the most important things to user using requested geography
+    
+    # should also ask cuisine
+    # look at category as well  are these all dinner? lunch?
+    # should ask preference on region
+    # look at neighborhoods also if they're all in common 
+
+    new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
+     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "locality": "San Francisco", "meal_dinner": "1"}).limit(5)
+    
+    print "-----------IS this suggestion working?"
+    print ""
+    print ""
+    print new_restaurant_suggestion.data()
+    # {'category_ids':{'$includes':338}, 'region': "CA"})
+
+
+    # put in a bunch of if statements here in case none of those parameters are met
+    # assign binary values to each user preference because you have to for queries
     # compare user preferences to these three restaurants
+    # search factual for similar restaurants
+    # suggest a new restaurant
+    # you'll want to ask if they like this restaurant also
  
-    #this isn't showing the first one, figure out why
-    #also convert these to booleans
+
+
+    #this isn't showing the first restaurant, figure out why
     for entry in range(len(restaurant_data)-1):
         restaurant_details = restaurant_data[entry].data()
         print "********Here's the restaurant you typed in******* %r" % restaurant_details
@@ -307,26 +380,7 @@ def suggest_new_resto(restaurant_data):
             print "***For %r, THESE ARE WHAT THE KWARGS ARE****** %r" % (item.get("name",None), kwargs)
 
 
-        # if restaurant_data[item] != []:
-        #     # 
-        #     
-
         # print "This works and here's what is inside kwargs %r" % kwargs
-
-
-#     # search factual for similar restaurants
-#     # suggest a new restaurant
-#     # you'll want to ask if they like this restaurant also
-
-
-#     print "*********Here's what is inside restaurant data %r *********"% restaurant_data
-
-#     
-
-
-        # else:
-        #     print "*******You need to type in a different restaurant****"
-
          
    
 

@@ -1,21 +1,30 @@
 {% extends 'base.html' %}
 
+<style>
+#bg {
+  position: fixed; 
+  top: -50%; 
+  left: -50%; 
+  width: 200%; 
+  height: 200%;
+}
+#bg img {
+  position: absolute; 
+  top: 0; 
+  left: 0; 
+  right: 0; 
+  bottom: 0; 
+  margin: auto; 
+  min-width: 50%;
+  min-height: 50%;
+}
+
+</style>
+
+<div class="wrapper">
+       <img src="/static/unsplash_city.jpg" class="img-responsive" alt="Responsive image">
 
 {% block body %}  
-
-
-<style type="text/css">
-      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
-
-    </style>
-
-    
-    
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
-<link rel="stylesheet" type="text/css" href="/static/map_time.css">
-  
-  
-     <script src="/static/map_time.js"> </script>
 
 
  
@@ -28,28 +37,16 @@
 
 
     <!-- ORDER MATTERS-->
-        
-    <a href = "/restaurants"> Get started with restaurant recs here </a>
+    <div class="jumbotron">
+
+    <h1>Restaurant recommendations – just for you. </h1>
+    <p> </p><br> <br>
+    <p><a class="btn btn-primary btn-lg" href="/restaurants" role="button" align="right">Get started</a></p>
+    </div>
 
 
 
 
-    
-
-      <div id="map-canvas"></div>
-    	<input id="pac-input" class="controls" type="text" placeholder="Enter a location">
-		 <div id="type-selector" class="controls">
-      <input type="radio" name="type" id="changetype-all" checked="checked">
-      <label for="changetype-all">All</label>
-
-      <input type="radio" name="type" id="changetype-establishment">
-      <label for="changetype-establishment">Establishments</label>
-
-      <input type="radio" name="type" id="changetype-address">
-      <label for="changetype-address">Addresses</label>
-
-      <input type="radio" name="type" id="changetype-geocode">
-      <label for="changetype-geocode">Geocodes</label>
     </div>
 
 
