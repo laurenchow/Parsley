@@ -12,6 +12,8 @@ KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
 
 
+#instead of calling each function from a function, return data, call all functions in their orer
+
 
 app = Flask(__name__) 
 app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
@@ -317,6 +319,23 @@ def check_db_for_restos(restaurant_data):
 
 @app.route('/new_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
+    """ This processes the user's input regarding favorite restaurants as well 
+        as what their preferences are, then queries to determine suitable matches.
+    """ 
+
+    #this isn't showing the first restaurant, figure out why
+    for entry in range(len(restaurant_data)-1):
+        restaurant_details = restaurant_data[entry].data()
+        print "********Here's the restaurant you typed in******* %r" % restaurant_details
+
+        for item in restaurant_details:
+            kwargs = {'organic_rating': item.get("options_organic", False),
+            'health_rating': item.get("options_healthy", False),
+            'access_rating':  item.get("accessible_wheelchair", False ),
+            'wifi_rating': item.get("wifi", False),
+            'parking_rating': item.get("parking", False)}
+                
+            print "***For %r, THESE ARE WHAT THE KWARGS ARE****** %r" % (item.get("name",None), kwargs)
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -325,7 +344,6 @@ def suggest_new_resto(restaurant_data):
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
     # look at user preferences
-    # is there a problem naming these things what you just changed name to
     args = {'options_organic':  user_preferences.options_organic,  
     'options_healthy':  user_preferences.options_healthy,
     'accessible_wheelchair' : user_preferences.accessible_wheelchair,
@@ -334,7 +352,7 @@ def suggest_new_resto(restaurant_data):
 
     sorted_args = sorted(args.items(), key = lambda (k,v): v)
     sorted_args.reverse()
-
+    # you could do that on javascript side
 
     sorted_args_first_elements = [x[0] for x in sorted_args]
 
@@ -353,7 +371,15 @@ def suggest_new_resto(restaurant_data):
     print ""
     print ""
     print new_restaurant_suggestion.data()
-    # {'category_ids':{'$includes':338}, 'region': "CA"})
+
+    # new_restaurant_info = {}
+
+    # for entry in new_restaurant_suggestion.data():
+    #     new_restaurant_info['name']= entry['name']
+    #     new_restaurant_info['website'] = entry['website']
+    #     new_restaurant_info['tel'] = entry['tel']
+    #     print "Here's what is stored in new_restaurant_info %r" % new_restaurant_info
+    # # {'category_ids':{'$includes':338}, 'region': "CA"})
 
 
     # put in a bunch of if statements here in case none of those parameters are met
@@ -362,29 +388,8 @@ def suggest_new_resto(restaurant_data):
     # search factual for similar restaurants
     # suggest a new restaurant
     # you'll want to ask if they like this restaurant also
- 
 
-
-    #this isn't showing the first restaurant, figure out why
-    for entry in range(len(restaurant_data)-1):
-        restaurant_details = restaurant_data[entry].data()
-        print "********Here's the restaurant you typed in******* %r" % restaurant_details
-
-        for item in restaurant_details:
-            kwargs = {'organic_rating': item.get("options_organic", False),
-            'health_rating': item.get("options_healthy", False),
-            'access_rating':  item.get("accessible_wheelchair", False ),
-            'wifi_rating': item.get("wifi", False),
-            'parking_rating': item.get("parking", False)}
-                
-            print "***For %r, THESE ARE WHAT THE KWARGS ARE****** %r" % (item.get("name",None), kwargs)
-
-
-        # print "This works and here's what is inside kwargs %r" % kwargs
-         
-   
-
-    return render_template("new_restaurant.html")
+    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion)
 
 
 

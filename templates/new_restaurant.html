@@ -19,7 +19,16 @@
 
   
       We noticed you like restaurants that are XYZ.
-      Here's a restaurant we think you'll like
+      Here's a restaurant we think you'll like. 
+
+      {%for entry in new_restaurant_suggestion.data()%}
+        <div>
+            {{entry['name']}}
+            <br>
+
+        </div>
+      {%endfor%}
+
       <br>
       Does this sound interesting?
     
