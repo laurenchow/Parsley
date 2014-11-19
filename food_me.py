@@ -68,6 +68,8 @@ def submit_resto_list():
 
     print ""
     restaurant3 = request.form['restaurant_3']      
+    
+    #include a check to see if this is a zip or city
     user_geo = request.form['user_geo'] 
     print ""
     print "****Here's what restaurant 3 says %r" %restaurant3
@@ -322,7 +324,7 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
-
+    #have something in Javascript so you have to type in restaurants or else
     #this isn't showing the first restaurant, figure out why
     for entry in range(len(restaurant_data)-1):
         restaurant_details = restaurant_data[entry].data()
@@ -367,6 +369,7 @@ def suggest_new_resto(restaurant_data):
     new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
      sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "locality": "San Francisco", "meal_dinner": "1"}).limit(5)
     
+    # add something in here to actually evaluate the restaurants you're typing in 
     print "-----------IS this suggestion working?"
     print ""
     print ""

@@ -79,7 +79,15 @@ class Restaurant(Base):
     website = Column(String(64), nullable=True)  
     timestamp = Column(Integer, nullable=True)
     #look at notes for list of strings to deal with
- 
+
+    #super magical function that lets you pass in whatever is inside dictionary 
+    #from Factual and updates it as current instance in restaurant
+    def set_from_factual(self, data):
+        for key, value in data.iteritems():
+            if key not in ['hours', 'hours_display']:
+                setattr(self, key, value)
+
+
 class Restaurant_Features(Base):
     __tablename__="restaurant_features"   
     #name and factual_id to join 
@@ -124,9 +132,23 @@ class Restaurant_Features(Base):
     reservations = Column(Boolean, unique=False, default=False)
     timestamp = Column(Integer, nullable=True)
 
-    restaurant = relationship("Restaurant", backref=backref("restaurant_features", order_by=restaurant_id))
+  
+
+    restaurant = relationship("Restaurant", backref=backref("restaurant_features", order_by=restaurant_id, uselist=False))
     #the point of this table is to start storing values to figure out how often a user wants these 
 
+    def set_from_factual(self, data):
+        for key, value in data.iteritems():
+            setattr(self, key, value)
+
+    def get_data(self):
+        kwargs = {'organic_rating': self.options_organic,
+                'health_rating': self.options_healthy,
+                'access_rating':  self.accessible_wheelchair,
+                'wifi_rating': self.wifi,
+                'parking_rating': self.parking}
+
+        return kwargs
 
 class Restaurant_Category(Base):
     __tablename__="restaurant_categories"
