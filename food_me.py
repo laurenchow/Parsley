@@ -26,6 +26,7 @@ def load_user_id():
     g.user_id = session.get('user_id')
 
 @app.route('/', methods = ['GET', 'POST'])
+
 def index():
     return render_template("index.html")
     
@@ -40,6 +41,10 @@ def restos():
 # show some things only when logged in
 
 def submit_resto_list():
+    """
+    This requests three restaurants from the user and requests zip code where 
+    user would like to focus search.
+    """
 
     restaurant1 = request.form['restaurant_1']
     
@@ -71,6 +76,10 @@ def submit_resto_list():
     
     #include a check to see if this is a zip or city
     user_geo = request.form['user_geo'] 
+
+    if len(user_geo) != 5:
+        flash("Please enter a 5-digit zipcode.")
+
     print ""
     print "****Here's what restaurant 3 says %r" %restaurant3
 
@@ -83,7 +92,10 @@ def submit_resto_list():
 
 
 def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
-
+     """
+    This pings Factual for information on for three restaurants user selected
+    and zipcode, returns as list
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
 
@@ -114,12 +126,21 @@ def ping_factual(restaurant1, restaurant2, restaurant3, user_geo):
     restaurant_data.append(q3)
 
     print "Here's the restaurant inputs as a list %r" % restaurant_data
+
+    print user_geo
+    restaurant_data.append(user_geo)
     
     return check_db_for_restos(restaurant_data)
 
     
 
 def check_db_for_restos(restaurant_data):
+    
+    """
+    This searches DB for restaurants. If not stored, stores as restaurants 
+    that user prefers.
+    """
+
     for entry in range(len(restaurant_data)-1):
         #take note that you changed this late on Friday to add the -1 in
         print "Here's the number getting printed %r" % entry
@@ -324,6 +345,9 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
+    user_geo = restaurant_data[3]
+    print user_geo
+
     #have something in Javascript so you have to type in restaurants or else
     #this isn't showing the first restaurant, figure out why
     for entry in range(len(restaurant_data)-1):
@@ -367,7 +391,7 @@ def suggest_new_resto(restaurant_data):
     # look at neighborhoods also if they're all in common 
 
     new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
-     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "locality": "San Francisco", "meal_dinner": "1"}).limit(5)
+     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "postcode": user_geo, "meal_dinner": "1"}).limit(5)
     
     # add something in here to actually evaluate the restaurants you're typing in 
     print "-----------IS this suggestion working?"

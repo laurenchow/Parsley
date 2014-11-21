@@ -1,7 +1,16 @@
 {% extends 'base.html' %}
  
-
+	<link
 	 <link rel="stylesheet" type="text/css" href="/static/map_time.css">
+
+<script>
+
+if (user_geo.length !==5) {
+alert("Your zip code should be \n 5 digits long. Please enter a real US zip code");
+}
+
+</script>
+
 {% block body %}
 
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
@@ -11,7 +20,6 @@
      <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
 
     
-
         <br><br>
         Looking for a new spot to try?
 
@@ -21,12 +29,16 @@
         Restaurant: <input type = "restaurant_1" class="favorite-restaurants" name ="restaurant_1" id="searchTextField" > <br> 
         Restaurant: <input type = "restaurant_2" class="favorite-restaurants" name = "restaurant_2" id="searchTextField2" size="50"> <br>
         Restaurant: <input type = "restaurant_3" class="favorite-restaurants" name ="restaurant_3" id="searchTextField3" > <br><br>
+        
+
+         Where would you like to search? (Please use zipcode.) 
+         <input type = "user_geo" name = "user_geo" id ="user_geo"> <br> <br><br>
 
 
-
-         Where would you like to search? (Can be city, zipcode, etc.) <input type = "user_geo" name = "user_geo"> <br> <br><br>
+        <!--  What are your must-haves? <input type = "user_geo" name = "user_geo"> <br> <br><br>
+       -->
       
-		<div class="btn-group" data-toggle="buttons">
+		<!-- <div class="btn-group" data-toggle="buttons">
 		<label class="btn btn-primary active">
 		<input type="checkbox" autocomplete="off" checked> Wifi
 		</label>
@@ -50,7 +62,34 @@
 		</label>
 		</div>
 		<br><br><br>
-        
+
+
+        What types of cuisine are you looking for? <input type = "user_cuisine" name = "user_cuisine"> <br> <br><br>
+      
+		<div class="btn-group" data-toggle="buttons">
+		<label class="btn btn-primary active">
+		<input type="checkbox" autocomplete="off" checked> Asian
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> Mexican
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> Good for dates
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> Good for a group
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> I have dietary restrictions
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> Kid-friendly
+		</label>
+		<label class="btn btn-primary">
+		<input type="checkbox" autocomplete="off"> Budget bites
+		</label>
+		</div>
+		<br><br><br> -->
         <button type="btn btn-lg btn-primary btn-block" align = "center" type="submit">> Tell me where to go </button><br>
         </form>
 

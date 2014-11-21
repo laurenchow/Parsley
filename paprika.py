@@ -4,12 +4,18 @@ from factual import Factual
 import model
 import os
 import jinja2
+# from sklearn import datasets
+
+# from flask.ext.login import LoginManager
+# from flask.ext.openid import OpenID
+# from config import basedir
+
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
 
-
-#instead of calling each function from a function, return data, call all functions in their orer
+# FOURSQUARE_KEY = 
+# FOURSQUARE_SECRET = 
 
 
 app = Flask(__name__) 
@@ -44,12 +50,20 @@ def other_restos():
     restaurant2_data = parse_restaurant_input(restaurant2)
     restaurant3_data = parse_restaurant_input(restaurant3)
 
+    print "Here's some new data %r" % restaurant1_data
+
+    print "Here's some new data for restaurant 2 %r" % restaurant2_data
+
+
+    print "Here's some new data for 3 %r" % restaurant3_data
+
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
     restaurant_ids = check_db_for_restos(restaurant_data)
 
     session['user_restaurant_ids'] = restaurant_ids
-
-    return redirect("/suggest_restaurant")
+    session['user_geo'] = user_geo
+    return suggest_new_resto(restaurant_data)
+    # return redirect("/new_restaurant", restaurant_data = restaurant_data)
         
 # use jquery AJAX here to add on same page
 # show some things only when logged in
@@ -66,8 +80,6 @@ def parse_restaurant_input(restaurant_text):
     data['geo'] = data['city']+data['state']
 
     return data
-    #figure out how to remove everything after restaurant name
-    #look up clustering using categoriacl information
 
 
 def ping_factual(restaurants, user_geo):
@@ -86,7 +98,7 @@ def ping_factual(restaurants, user_geo):
 
         restaurant_data.append(q)
 
-    
+   
     return restaurant_data
 
     
@@ -94,10 +106,11 @@ def ping_factual(restaurants, user_geo):
 #passing it a list of retaurants dictionaries from factual
 #TODO: make it plural 
 def check_db_for_restos(restaurant_data):
+    """ Checks database for restaurants
+    """
     restaurant_ids = []
 
     for entry in range(len(restaurant_data)):
-        #take note that you changed this late on Friday to add the -1 in
         print "Here's the number getting printed %r" % entry
         print "Here's what came in from Factual %r" % restaurant_data[entry]
    
@@ -161,10 +174,11 @@ def check_db_for_restos(restaurant_data):
 
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
-def suggest_new_resto():
+def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
+    user_geo = session['user_geo']
 
     restaurant_data = []
     if session.get('user_restaurant_ids'):
@@ -182,9 +196,8 @@ def suggest_new_resto():
     #this isn't showing the first restaurant, figure out why
     for restaurant in restaurant_data:
 
-        print "********Here's the restaurant you typed in******* %r" % restaurant
-
         kwargs = restaurant.restaurant_features.get_data()
+        print "Here's what is in kwargs %r" % kwargs
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -192,7 +205,7 @@ def suggest_new_resto():
     current_user_id = session['user_id']  
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
-    # look at user preferences
+    # expand on these 
     args = {'options_organic':  user_preferences.options_organic,  
     'options_healthy':  user_preferences.options_healthy,
     'accessible_wheelchair' : user_preferences.accessible_wheelchair,
@@ -205,19 +218,29 @@ def suggest_new_resto():
 
     sorted_args_first_elements = [x[0] for x in sorted_args]
 
+     #TODO: CLEAR RESTAURANT ID SESSION
     print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
+   
     # query for the most important things to user using requested geography
-    
     # should also ask cuisine
     # look at category as well  are these all dinner? lunch?
     # should ask preference on region
     # look at neighborhoods also if they're all in common 
+    
+
+    # put in a bunch of if statements here in case none of those parameters are met
+    # assign binary values to each user preference because you have to for queries
+    # compare user preferences to these three restaurants
+    # search factual for similar restaurants
+    # suggest a new restaurant
+    # you'll want to ask if they like this restaurant also
 
     new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
-     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "locality": "San Francisco", "meal_lunch": "1", "options_healthy": "1", "meal_dinner": "1"}).limit(5)
+     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "postcode": user_geo, "meal_dinner": "1"}).limit(5)
     
+
     # add something in here to actually evaluate the restaurants you're typing in 
-    print "-----------IS this suggestion working?"
+    print "-----------IS this suggestion working?--------"
     print ""
     print ""
     print new_restaurant_suggestion.data()
@@ -232,17 +255,12 @@ def suggest_new_resto():
     # # {'category_ids':{'$includes':338}, 'region': "CA"})
 
 
-    # put in a bunch of if statements here in case none of those parameters are met
-    # assign binary values to each user preference because you have to for queries
-    # compare user preferences to these three restaurants
-    # search factual for similar restaurants
-    # suggest a new restaurant
-    # you'll want to ask if they like this restaurant also
-
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion)
 
 
-
+@app.route('/favorites', methods = ['GET'])
+def user_favorites():
+    return render_template("favorites.html")
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():
@@ -373,9 +391,6 @@ def submit_user_preferences():
     return redirect("/")
 
 
-
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():
     if request.method == "GET":
@@ -407,6 +422,11 @@ def login_user():
         return redirect("/signup") 
     
 
+# @app.route("/logout")
+# @login_required
+# def logout():
+#     logout_user()
+#     return redirect("/")
 
 
 @app.route('/logout')
