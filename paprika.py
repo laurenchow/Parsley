@@ -4,7 +4,6 @@ from factual import Factual
 import model
 import os
 import jinja2
-# from sklearn import datasets
 
 # from flask.ext.login import LoginManager
 # from flask.ext.openid import OpenID
@@ -13,10 +12,6 @@ import jinja2
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
-
-# FOURSQUARE_KEY = 
-# FOURSQUARE_SECRET = 
-
 
 app = Flask(__name__) 
 
@@ -56,6 +51,7 @@ def other_restos():
 
 
     print "Here's some new data for 3 %r" % restaurant3_data
+    #TODO: Make it so that if it isn't in factual, a box prompts up asking you for another one
 
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
     restaurant_ids = check_db_for_restos(restaurant_data)
@@ -72,6 +68,9 @@ def parse_restaurant_input(restaurant_text):
 
     # restaurant1 = request.form['restaurant_1']
     data = {}
+
+    #TODO: make sure everything is entered in here and that it adheres to GMaps
+    #TODO: figure out how to link away for something when giving feedback
 
     restaurant_split = restaurant_text.split(',')
     data['name'] = restaurant_split[0]
@@ -117,11 +116,9 @@ def check_db_for_restos(restaurant_data):
         #searching the database seems to need to be case-sensitive for now, make it case insensitive
         restaurant_deets = restaurant_data[entry].data()
         print "Here are some deets %r" % restaurant_deets
-    
-        if restaurant_deets == []:
-            print "****This is empty, you'll want a new restaurant here****"
-            pass
-        else:
+        
+        #TODO: Make sure three entries are valid
+        if restaurant_deets:
         #check to see if restaurant details are in the DB for this restaurant
         #if not add it, if it is check to see that it's still the same
             for item in restaurant_deets:
@@ -178,29 +175,22 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
+
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
     user_geo = session['user_geo']
 
     restaurant_data = []
     if session.get('user_restaurant_ids'):
         rest_ids = session.get('user_restaurant_ids')
-        # Get resturant data from database and append them to resturant_data
         for rest_id in rest_ids:
             resto_data = model.session.query(model.Restaurant).get(rest_id)
             restaurant_data.append(resto_data)
 
-    else:
-        # Pick some resturants
-        pass
-
-    #have something in Javascript so you have to type in restaurants or else
-    #this isn't showing the first restaurant, figure out why
+    #TODO: have something in Javascript so you have to type in restaurants or else
     for restaurant in restaurant_data:
-
-        kwargs = restaurant.restaurant_features.get_data()
+        kwargs = restaurant.restaurant_features.get_all_data()
         print "Here's what is in kwargs %r" % kwargs
-
-    factual = Factual(KEY, SECRET)
-    table = factual.table('restaurants')
 
     current_user_id = session['user_id']  
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
@@ -220,13 +210,50 @@ def suggest_new_resto(restaurant_data):
 
      #TODO: CLEAR RESTAURANT ID SESSION
     print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
+
+    # this just creates a counter for all three restaurants user liked 
+    #TODO: add category to this and cuisine
+    restaurant_similarity = {'accessible_wheelchair': 0,
+        'alcohol_byob': 0, 'alcohol_bar': 0,
+        'alcohol_beer_wine': 0, 'alcohol': 0,
+        'groups_goodfor':  0, 'kids_goodfor': 0,
+        'kids_menu': 0, 'meal_breakfast':  0,
+        'meal_dinner':  0, 'meal_deliver':  0,
+        'options_healthy': 0, 
+        'options_glutenfree': 0, 
+        'options_lowfat':0, 
+        'options_vegan': 0, 
+        'options_vegetarian': 0, 
+        'options_organic': 0, 'parking': 0, 
+        'reservations':  0,
+        'wifi' : 0}
+
+
+    for entry in range(len(restaurant_data)):
+        # import pdb; pdb.set_trace()
+        restaurant_model = restaurant_data[entry]
+        restaurant_features = restaurant_model.restaurant_features
+
+        for feature in restaurant_similarity.keys():
+            restaurant_feature_value = getattr(restaurant_features, feature)
+            if restaurant_feature_value:
+                restaurant_similarity[feature] += 1
+
+
+    print "Here's what's stored in restaurant_similarity"
+    print "A count of how often each variable happened in each restaurant %r"
+    print restaurant_similarity
+
+        #loop over three restaurants and increase counter in 
+    
+
    
     # query for the most important things to user using requested geography
     # should also ask cuisine
     # look at category as well  are these all dinner? lunch?
     # should ask preference on region
     # look at neighborhoods also if they're all in common 
-    
+
 
     # put in a bunch of if statements here in case none of those parameters are met
     # assign binary values to each user preference because you have to for queries
@@ -236,31 +263,40 @@ def suggest_new_resto(restaurant_data):
     # you'll want to ask if they like this restaurant also
 
     new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
-     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "postcode": user_geo, "meal_dinner": "1"}).limit(5)
-    
+     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "postcode": user_geo}).limit(5)
+    #TODO: if nothing returns expand search 
 
-    # add something in here to actually evaluate the restaurants you're typing in 
-    print "-----------IS this suggestion working?--------"
+
+
+    print ""
+    print ""
+    print ""
+    print "" "-----------IS this suggestion working?--------"
     print ""
     print ""
     print new_restaurant_suggestion.data()
+    
 
-    # new_restaurant_info = {}
-
-    # for entry in new_restaurant_suggestion.data():
-    #     new_restaurant_info['name']= entry['name']
-    #     new_restaurant_info['website'] = entry['website']
-    #     new_restaurant_info['tel'] = entry['tel']
-    #     print "Here's what is stored in new_restaurant_info %r" % new_restaurant_info
-    # # {'category_ids':{'$includes':338}, 'region': "CA"})
-
-
+    
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion)
+
+@app.route('/user', methods = ['GET'])
+def user_profile():
+    return render_template("user.html")
 
 
 @app.route('/favorites', methods = ['GET'])
 def user_favorites():
     return render_template("favorites.html")
+#TODO make map, make it so you can save map
+
+@app.route('/contact', methods = ['GET'])
+def contact_us():
+    return render_template("contact.html")
+
+@app.route('/about', methods = ['GET'])
+def about_us():
+    return render_template("about.html")
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():
@@ -332,9 +368,6 @@ def submit_user_details(current_user_id):
 
 
 
-
-
-
 @app.route('/user_preferences', methods = ['GET', 'POST'])
 def user_preferences():
     if request.method == "GET":
@@ -362,10 +395,6 @@ def submit_user_preferences():
         model.session.merge(new_user_prefs)
         model.session.commit()
         
-        return redirect("/")
-
-    else: 
-        print "What's going on? No one is logged in, this page shouldn't show"
         return redirect("/")
 
     #this is just the full list for kwargs when you want to use it

@@ -1,0 +1,12 @@
+
+ <style type="text/css">
+      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+    </style>
+  
+
+      <link rel="stylesheet" type="text/css" href="/static/map_time.css">
+     <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script>
+    
+    <script src="/static/map_time.js"> </script>

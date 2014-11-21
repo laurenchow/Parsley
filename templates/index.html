@@ -1,6 +1,37 @@
+<style>
+
+.wrapper {
+    width: 100%;
+    background-color: lightcyan;
+}
+
+img {
+    background-image: url('static/unsplash_city.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+}
+
+#text {
+    z-index:100;
+    position:absolute;    
+    color:white;
+    font-size:100px;
+    font-weight:bold;
+    left:150px;
+    top:350px;
+}
+
+</style>
+
 {% extends 'base.html' %}
 
 <style>
+
+/*
+
 #bg {
   position: fixed; 
   top: -50%; 
@@ -17,18 +48,16 @@
   margin: auto; 
   min-width: 50%;
   min-height: 50%;
-}
+}*/
 
-</style>
-
-<div class="wrapper">
-       <img src="/static/unsplash_city.jpg" class="img-responsive" alt="Responsive image">
 
 {% block body %}  
 
+<!-- 
+      <div class="wrapper">
+       <img src="/static/unsplash_city.jpg" class="img-responsive" alt="Responsive image">
+ -->
 
- 
-    
 
      <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
 

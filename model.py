@@ -196,6 +196,25 @@ class Restaurant_Features(Base):
 
         return kwargs
 
+    def get_all_data(self):
+        
+        kwargs = {'accessible_wheelchair': self.accessible_wheelchair,
+        'alcohol_byob': self.alcohol_byob, 'alcohol_bar': self.alcohol_bar,
+        'alcohol_beer_wine': self.alcohol_beer_wine, 'alcohol': self.alcohol,
+        'groups_goodfor':  self.groups_goodfor, 'kids_goodfor': self.kids_goodfor,
+        'kids_menu': self.kids_menu, 'meal_breakfast':  self.meal_breakfast,
+        'meal_dinner':  self.meal_dinner, 'meal_deliver':  self.meal_deliver,
+        'options_healthy': self.options_healthy, 
+        'options_glutenfree': self.options_glutenfree, 
+        'options_lowfat': self.options_lowfat, 
+        'options_vegan': self.options_vegan, 
+        'options_vegetarian': self.options_vegetarian, 
+        'options_organic': self.options_organic, 'parking': self.parking, 
+        'reservations':  self.reservations,
+        'wifi' : self.wifi}
+
+        return kwargs
+
 class Restaurant_Category(Base):
     __tablename__="restaurant_categories"
     id = Column(Integer, primary_key=True)
