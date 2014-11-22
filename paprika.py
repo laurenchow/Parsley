@@ -73,10 +73,15 @@ def parse_restaurant_input(restaurant_text):
     #TODO: figure out how to link away for something when giving feedback
 
     restaurant_split = restaurant_text.split(',')
-    data['name'] = restaurant_split[0]
-    data['city'] =restaurant_split[2]
-    data['state'] = restaurant_split[3]
-    data['geo'] = data['city']+data['state']
+    
+    if restaurant_split[0]:
+        data['name'] = restaurant_split[0]
+    if restaurant_split[2]:
+        data['city'] =restaurant_split[2]
+    if restaurant_split[3]:
+        data['state'] = restaurant_split[3]
+    if restaurant_split[2] and restaurant_split[3]:    
+        data['geo'] = data['city']+data['state']
 
     return data
 
@@ -114,14 +119,14 @@ def check_db_for_restos(restaurant_data):
         print "Here's what came in from Factual %r" % restaurant_data[entry]
    
         #searching the database seems to need to be case-sensitive for now, make it case insensitive
-        restaurant_deets = restaurant_data[entry].data()
-        print "Here are some deets %r" % restaurant_deets
+        factual_restaurant_details = restaurant_data[entry].data()
+        print "Here are some deets %r" % factual_restaurant_details
         
         #TODO: Make sure three entries are valid
-        if restaurant_deets:
+        if factual_restaurant_details:
         #check to see if restaurant details are in the DB for this restaurant
         #if not add it, if it is check to see that it's still the same
-            for item in restaurant_deets:
+            for item in factual_restaurant_details:
                 db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
 
                 if db_result:
@@ -131,43 +136,20 @@ def check_db_for_restos(restaurant_data):
 
                     model.session.add(db_result)
 
-                    # restaurant_update = model.Restaurant(name= name, 
-                    #     locality = locality, country = country, postcode = postcode, 
-                    #     region = region, address = address, tel = tel, longitude = longitude, 
-                    #     latitude = latitude, price = price, rating = rating, 
-                    #     address_extended = address_extended, attire_prohibited = attire_prohibited, 
-                    #     attire_required = attire_required, chain_id = chain_id, chain_name = chain_name,
-                    #     email = email, fax = fax, founded = founded, owner = owner, 
-                    #     po_box = po_box, website = website)
-                    
                     
                     db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first() 
-                    
                     db_result_features.set_from_factual(item)
                     
                     model.session.add(db_result_features)
                     model.session.commit()
 
                 else:
-                    print "***NOT IN DATABASE YET***"
-                    new_restaurant = model.Restaurant()
-                    new_restaurant.set_from_factual(item)
-                    #use get to check for keys, otherwise make it none
-                   
-                    model.session.add(new_restaurant)
+                    add_restos_to_db(restaurant_data)
+            
 
-                    new_restaurant_features = model.Restaurant_Features()
-                    new_restaurant_features.restaurant = new_restaurant
-                    new_restaurant_features.set_from_factual(item)
-
-                    model.session.add(new_restaurant_features)
-                    model.session.commit()
-
-                    restaurant_ids.append(new_restaurant.id)
 
     return restaurant_ids
-
-
+        
 
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
@@ -195,27 +177,40 @@ def suggest_new_resto(restaurant_data):
     current_user_id = session['user_id']  
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
-    # expand on these 
-    args = {'options_organic':  user_preferences.options_organic,  
-    'options_healthy':  user_preferences.options_healthy,
-    'accessible_wheelchair' : user_preferences.accessible_wheelchair,
-    'wifi' :  user_preferences.wifi,
-    'parking' : user_preferences.parking}
+    # # expand on these 
+    # args = {'options_organic':  user_preferences.options_organic,  
+    # 'options_healthy':  user_preferences.options_healthy,
+    # 'accessible_wheelchair' : user_preferences.accessible_wheelchair,
+    # 'wifi' :  user_preferences.wifi,
+    # 'parking' : user_preferences.parking}
 
-    sorted_args = sorted(args.items(), key = lambda (k,v): v)
-    sorted_args.reverse()
-    # you could do that on javascript side
+    # sorted_args = sorted(args.items(), key = lambda (k,v): v)
+    # sorted_args.reverse()
+    # # you could do that on javascript side
 
-    sorted_args_first_elements = [x[0] for x in sorted_args]
+    # sorted_args_first_elements = [x[0] for x in sorted_args]
 
-     #TODO: CLEAR RESTAURANT ID SESSION
-    print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
+    #  #TODO: CLEAR RESTAURANT ID SESSION
+    # print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
 
     # this just creates a counter for all three restaurants user liked 
     #TODO: add category to this and cuisine
-    restaurant_similarity = {'accessible_wheelchair': 0,
-        'alcohol_byob': 0, 'alcohol_bar': 0,
-        'alcohol_beer_wine': 0, 'alcohol': 0,
+    # restaurant_similarity = {'accessible_wheelchair': 0,
+    #     'alcohol_byob': 0, 'alcohol_bar': 0,
+    #     'alcohol_beer_wine': 0, 'alcohol': 0,
+    #     'groups_goodfor':  0, 'kids_goodfor': 0,
+    #     'kids_menu': 0, 'meal_breakfast':  0,
+    #     'meal_dinner':  0, 'meal_deliver':  0,
+    #     'options_healthy': 0, 
+    #     'options_glutenfree': 0, 
+    #     'options_lowfat':0, 
+    #     'options_vegan': 0, 
+    #     'options_vegetarian': 0, 
+    #     'options_organic': 0, 'parking': 0, 
+    #     'reservations':  0,
+    #     'wifi' : 0}
+
+    restaurant_similarity = {'alcohol': 0,
         'groups_goodfor':  0, 'kids_goodfor': 0,
         'kids_menu': 0, 'meal_breakfast':  0,
         'meal_dinner':  0, 'meal_deliver':  0,
@@ -227,7 +222,7 @@ def suggest_new_resto(restaurant_data):
         'options_organic': 0, 'parking': 0, 
         'reservations':  0,
         'wifi' : 0}
-
+    
 
     for entry in range(len(restaurant_data)):
         # import pdb; pdb.set_trace()
@@ -241,14 +236,32 @@ def suggest_new_resto(restaurant_data):
 
 
     print "Here's what's stored in restaurant_similarity"
-    print "A count of how often each variable happened in each restaurant %r"
-    print restaurant_similarity
+    print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
 
+    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
+    sorted_restaurant_similarity.reverse()
+    # you could do that on javascript side
+
+    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+
+    print "Here are the keys of three most important things %r" % sorted_restaurant_similarity_keys
         #loop over three restaurants and increase counter in 
     
+    #TODO: could you make it so it queries for all things that are 3 out of 3?
 
-   
-    # query for the most important things to user using requested geography
+    new_restaurant_suggestion = table.filters({sorted_restaurant_similarity_keys[0]: "1" ,
+    
+    sorted_restaurant_similarity_keys[1]: "1", sorted_restaurant_similarity_keys[2]:"1", "postcode": user_geo}).limit(5)
+    
+
+    print "" "----------How to fix this?-------"
+    print type(new_restaurant_suggestion)
+    print new_restaurant_suggestion
+    #TODO: is this the most sensible way to handle errors?    
+    if new_restaurant_suggestion == []:
+        return render_template("sorry.html")
+    #if it returns nothing, reload the page?
+
     # should also ask cuisine
     # look at category as well  are these all dinner? lunch?
     # should ask preference on region
@@ -262,23 +275,46 @@ def suggest_new_resto(restaurant_data):
     # suggest a new restaurant
     # you'll want to ask if they like this restaurant also
 
-    new_restaurant_suggestion = table.filters({sorted_args_first_elements[0]: "1" ,
-     sorted_args_first_elements[1]: "1", sorted_args_first_elements[2]:"1", "postcode": user_geo}).limit(5)
     #TODO: if nothing returns expand search 
 
 
-
-    print ""
-    print ""
-    print ""
     print "" "-----------IS this suggestion working?--------"
-    print ""
-    print ""
     print new_restaurant_suggestion.data()
     
-
+    add_restos_to_db(new_restaurant_suggestion)
     
-    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion)
+    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
+        sorted_restaurant_similarity_keys = sorted_restaurant_similarity_keys)
+
+def add_restos_to_db(restaurants):
+
+    print "" "-----------IS this part working?--------"
+    # print restaurants
+    # print type(restaurants)
+
+    # for entry in restaurants:
+    # #     import pdb; pdb.set_trace()
+    # #     print "Here's the number getting printed %r" % entry
+    #     factual_restaurant_details = restaurants[entry].data()
+    #     print "Here are some details %r" % factual_restaurant_details
+    # #     #TODO: Make sure three entries are valid
+
+    #     if factual_restaurant_details:
+    #     #check to see if restaurant details are in the DB for this restaurant
+    #     #if not add it, if it is check to see that it's still the same
+    #         for item in factual_restaurant_details:
+    #             new_restaurant = model.Restaurant()
+    #             new_restaurant.set_from_factual(item)
+    #             #use get to check for keys, otherwise make it none
+    #             model.session.add(new_restaurant)
+    #             new_restaurant_features = model.Restaurant_Features()
+    #             new_restaurant_features.restaurant = new_restaurant
+    #             new_restaurant_features.set_from_factual(item)
+    #             model.session.add(new_restaurant_features)
+        
+    #     model.session.commit()
+
+    # restaurant_ids.append(new_restaurant.id)
 
 @app.route('/user', methods = ['GET'])
 def user_profile():
@@ -297,6 +333,12 @@ def contact_us():
 @app.route('/about', methods = ['GET'])
 def about_us():
     return render_template("about.html")
+
+#TODO: make this evaluate whether it's retuning nthing because restaurant list is bad
+# or if you need to search different parameters
+@app.route('/sorry', methods = ['GET'])
+def more_restaurant_data_needed():
+    return render_template("sorry.html")
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():

@@ -1,71 +1,18 @@
-<style>
 
-.wrapper {
-    width: 100%;
-    background-color: lightcyan;
-}
+<head>
+  <style>
 
-img {
-    background-image: url('static/unsplash_city.jpg');
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
-    width: 100%;
-    height: 100%;
-}
-
-#text {
-    z-index:100;
-    position:absolute;    
-    color:white;
-    font-size:100px;
-    font-weight:bold;
-    left:150px;
-    top:350px;
-}
+  <link rel="stylesheet" href="/static/custom.css" />
 
 </style>
 
+
+
+</head>
+
 {% extends 'base.html' %}
+{% block body%}
 
-<style>
-
-/*
-
-#bg {
-  position: fixed; 
-  top: -50%; 
-  left: -50%; 
-  width: 200%; 
-  height: 200%;
-}
-#bg img {
-  position: absolute; 
-  top: 0; 
-  left: 0; 
-  right: 0; 
-  bottom: 0; 
-  margin: auto; 
-  min-width: 50%;
-  min-height: 50%;
-}*/
-
-
-{% block body %}  
-
-<!-- 
-      <div class="wrapper">
-       <img src="/static/unsplash_city.jpg" class="img-responsive" alt="Responsive image">
- -->
-
-
-     <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
-
-
-
-
-
-    <!-- ORDER MATTERS-->
     <div class="jumbotron">
 
     <h1>Restaurant recommendations – just for you. </h1>

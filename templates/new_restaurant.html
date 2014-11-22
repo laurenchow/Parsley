@@ -6,6 +6,9 @@
     
 {% block body %}
 
+      We noticed that you like {{sorted_restaurant_similarity_keys[0]}},
+      {{sorted_restaurant_similarity_keys[1]}} and
+      {{sorted_restaurant_similarity_keys[2]}} <br>
 
       Here's some restaurants we think you'll like. 
       <br><br>
@@ -17,15 +20,14 @@
             <a href = "{{entry.website}}" >{{entry['name']}} </a>
             <br>
             How does this sound?
-            <a href= "/">
-            <img src="/static/sad.png" alt="Love it" style="width:20xpx;height:20px"> 
-            <a>
+            <br> <br>
 
-            <a href="/">
-            <img src="/static/indifferent.png" alt="Love it" style="width:20xpx;height:20px"> 
-            <a>
-            <a href="/">
-            <img src="/static/likeit.png" alt="Love it" style="width:20xpx;height:20px">
+            <input type="image" name="identify" id="face_id_1" value="ID" img src="/static/sad.png" alt="Hate it" style="width:40xpx;height:40px" />
+            
+
+            <input type="image" name="identify" id="face_id_2" value="ID" img src="/static/indifferent.png" alt="Hate it" style="width:40xpx;height:40px" />
+    
+            <input type="image" name="identify" id="face_id_3" value="ID" img src="/static/likeit.png" alt="Love it" style="width:40xpx;height:40px" />
             <br> 
             </a>
             <br>
