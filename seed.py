@@ -20,12 +20,11 @@ import csv
 # 'name': 'Cliff House', 'country': 'us', 'region': 'CA', 'wifi': 0, 'accessible_wheelchair': 1, 'longitude': -122.513894, 
 # 'meal_deliver': 0, 'address': '1090 Point Lobos Ave', 'options_vegetarian': 1}
 
-example_data = {'category_labels': [['Social', 'Food and Dining', 'Restaurants', 'American'], 
-['Social', 'Food and Dining', 'Restaurants', 'Seafood'], ['Landmarks']], 
+example_data = {'category_labels': 'Restaurants', 
 'meal_lunch': True, 'alcohol_beer_wine': True, 'rating': 4, 'reservations': True, 
 'alcohol_bar': True, 'options_organic': True, 'postcode': '94121', 'parking': True, 
 'neighborhood': ['Richmond District', 'Outer Richmond', 'Lincoln Park - Lobos', 'Northwest', 'Richmond', 'Northwest San Francisco', 'san francisco', 'Sutro Heights', 'Point Bonita'], 
-'groups_goodfor': True, 'parking_free': True, 'cuisine': ['Bistro', 'Seafood', 'American', 'Californian', 'Mediterranean'], 
+'groups_goodfor': True, 'parking_free': True, 'cuisine': 'Bistro', 
 'meal_dinner': True, 'alcohol': True, 'locality': 'San Francisco', 'parking_valet': True, 
 'payment_cashonly': False, 'category_ids': [348, 364, 107], 'attire': 'casual', 'latitude': 37.778512, 
 'email': 'ralph@cliffhouse.com', 'tel': '(415) 386-3330', 'website': 'http://www.cliffhouse.com', 
@@ -126,13 +125,19 @@ def load_restaurant_features(session):
       session.add(new_restaurant_features)
 
   
-                  
+def load_restaurant_categories(session):
+    new_restaurant_categories = model.Restaurant_Category(cuisine = example_data['cuisine'],
+    category_labels = example_data['category_labels'])
+
+    session.add(new_restaurant_categories)
+
         
 def main(session):
     # You'll call each of the load_* functions with the session as an argument
     load_users(session)
     load_restaurants(session) 
     load_restaurant_features(session)
+    load_restaurant_categories(session)
     session.commit()
 
 if __name__ == "__main__":

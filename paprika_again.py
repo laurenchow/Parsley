@@ -114,12 +114,64 @@ def check_db_for_restos(restaurant_data):
     """
     restaurant_ids = []
 
-    for entry in range(len(restaurant_data)):
-        print "Here's the number getting printed %r" % entry
-        print "Here's what came in from Factual %r" % restaurant_data[entry]
-   
-        #searching the database seems to need to be case-sensitive for now, make it case insensitive
-        restaurant_deets = restaurant_data[entry].data()
+    if type(restaurant_data) == list:
+        for entry in range(len(restaurant_data)):
+            print "Here's the number getting printed %r" % entry
+            print "Here's what came in from Factual %r" % restaurant_data[entry]
+       
+            #searching the database seems to need to be case-sensitive for now, make it case insensitive
+            restaurant_deets = restaurant_data[entry].data()
+            print "Here are some deets %r" % restaurant_deets
+            
+            #TODO: Make sure three entries are valid
+            if restaurant_deets:
+            #check to see if restaurant details are in the DB for this restaurant
+            #if not add it, if it is check to see that it's still the same
+                for item in restaurant_deets:
+                    db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
+
+                    if db_result:
+                        print "Here's what is stored in DB right now for name ID and address %r %r %r" % (db_result.name, db_result.id, db_result.address)
+                        db_result.set_from_factual(item)
+                        restaurant_ids.append(db_result.id)
+
+                        model.session.add(db_result)
+
+                        # restaurant_update = model.Restaurant(name= name, 
+                        #     locality = locality, country = country, postcode = postcode, 
+                        #     region = region, address = address, tel = tel, longitude = longitude, 
+                        #     latitude = latitude, price = price, rating = rating, 
+                        #     address_extended = address_extended, attire_prohibited = attire_prohibited, 
+                        #     attire_required = attire_required, chain_id = chain_id, chain_name = chain_name,
+                        #     email = email, fax = fax, founded = founded, owner = owner, 
+                        #     po_box = po_box, website = website)
+                        
+                        
+                        db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first() 
+                        
+                        db_result_features.set_from_factual(item)
+                        
+                        model.session.add(db_result_features)
+                        model.session.commit()
+
+                    else:
+                        print "***NOT IN DATABASE YET***"
+                        new_restaurant = model.Restaurant()
+                        new_restaurant.set_from_factual(item)
+                        #use get to check for keys, otherwise make it none
+                       
+                        model.session.add(new_restaurant)
+
+                        new_restaurant_features = model.Restaurant_Features()
+                        new_restaurant_features.restaurant = new_restaurant
+                        new_restaurant_features.set_from_factual(item)
+
+                        model.session.add(new_restaurant_features)
+                        model.session.commit()
+
+                        restaurant_ids.append(new_restaurant.id)
+    else: 
+        restaurant_deets = restaurant_data.data()
         print "Here are some deets %r" % restaurant_deets
         
         #TODO: Make sure three entries are valid
@@ -200,40 +252,42 @@ def suggest_new_resto(restaurant_data):
     current_user_id = session['user_id']  
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
-    # # expand on these 
-    # args = {'options_organic':  user_preferences.options_organic,  
-    # 'options_healthy':  user_preferences.options_healthy,
-    # 'accessible_wheelchair' : user_preferences.accessible_wheelchair,
-    # 'wifi' :  user_preferences.wifi,
-    # 'parking' : user_preferences.parking}
 
-    # sorted_args = sorted(args.items(), key = lambda (k,v): v)
-    # sorted_args.reverse()
+    #TODO: CLEAR RESTAURANT ID SESSION
+    #TODO: add category to this and cuisine
+    #TODO: figure out if you can make evaluating similarities a function once it works
+    
+
+    # restaurant_similarity = {'cuisine': [], 'category_labels': [], 'category_ids': []}
+    # #you still need to get the rating and price but those are in restaurant not categories
+  
+
+    # for entry in range(len(restaurant_data)):
+    #     # import pdb; pdb.set_trace()
+    #     restaurant_model = restaurant_data[entry]
+    #     restaurant_categories = restaurant_model.restaurant_categories
+
+    #     for feature in restaurant_similarity.keys():
+    #         restaurant_value = getattr(restaurant_categories, feature)
+    #         if restaurant_value:
+    #             restaurant_similarity[feature].append(restaurant_value)
+
+
+    # print "Here's what's stored in restaurant_similarity"
+    # print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
+
+
+    # sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
+    # sorted_restaurant_similarity.reverse()
     # # you could do that on javascript side
 
-    # sorted_args_first_elements = [x[0] for x in sorted_args]
+    # sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
 
-    #  #TODO: CLEAR RESTAURANT ID SESSION
-    # print "~*~*These are the keys ordered by how important they are to user~*~*~ %r" % sorted_args_first_elements
+    # print "Here are the keys of three most important things outside of features %r" % sorted_restaurant_similarity_keys
 
-    # this just creates a counter for all three restaurants user liked 
-    #TODO: add category to this and cuisine
-    # restaurant_similarity = {'accessible_wheelchair': 0,
-    #     'alcohol_byob': 0, 'alcohol_bar': 0,
-    #     'alcohol_beer_wine': 0, 'alcohol': 0,
-    #     'groups_goodfor':  0, 'kids_goodfor': 0,
-    #     'kids_menu': 0, 'meal_breakfast':  0,
-    #     'meal_dinner':  0, 'meal_deliver':  0,
-    #     'options_healthy': 0, 
-    #     'options_glutenfree': 0, 
-    #     'options_lowfat':0, 
-    #     'options_vegan': 0, 
-    #     'options_vegetarian': 0, 
-    #     'options_organic': 0, 'parking': 0, 
-    #     'reservations':  0,
-    #     'wifi' : 0}
-
-    restaurant_similarity = {'alcohol': 0,
+    #these are all the boolean restaurant features, process differently than 
+    #cuisine and categories
+    restaurant_features_similarity = {'alcohol': 0,
         'groups_goodfor':  0, 'kids_goodfor': 0,
         'kids_menu': 0, 'meal_breakfast':  0,
         'meal_dinner':  0, 'meal_deliver':  0,
@@ -251,29 +305,30 @@ def suggest_new_resto(restaurant_data):
         # import pdb; pdb.set_trace()
         restaurant_model = restaurant_data[entry]
         restaurant_features = restaurant_model.restaurant_features
+        #are these two lines accomplisting anyhting?
 
-        for feature in restaurant_similarity.keys():
+        for feature in restaurant_features_similarity.keys():
             restaurant_feature_value = getattr(restaurant_features, feature)
             if restaurant_feature_value:
-                restaurant_similarity[feature] += 1
+                restaurant_features_similarity[feature] += 1
 
 
-    print "Here's what's stored in restaurant_similarity"
-    print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
+    print "Here's what's stored in restaurant_features_similarity"
+    print "A count of how often each variable happened in each restaurant %r" % restaurant_features_similarity
 
-    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
-    sorted_restaurant_similarity.reverse()
+    sorted_restaurant_features_similarity = sorted(restaurant_features_similarity.items(), key = lambda (k,v): v)
+    sorted_restaurant_features_similarity.reverse()
     # you could do that on javascript side
 
-    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+    sorted_restaurant_features_similarity_keys = [x[0] for x in sorted_restaurant_features_similarity]
 
-    print "Here are the keys of three most important things %r" % sorted_restaurant_similarity_keys
+    print "Here are the keys of three most important features %r" % sorted_restaurant_features_similarity_keys
         #loop over three restaurants and increase counter in 
     
     #TODO: could you make it so it queries for all things that are 3 out of 3?
 
-    new_restaurant_suggestion = table.filters({sorted_restaurant_similarity_keys[0]: "1" ,
-     sorted_restaurant_similarity_keys[1]: "1", sorted_restaurant_similarity_keys[2]:"1", "postcode": user_geo}).limit(5)
+    new_restaurant_suggestion = table.filters({sorted_restaurant_features_similarity_keys[0]: "1" ,
+     sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", "postcode": user_geo}).limit(5)
     
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion == []:
@@ -300,13 +355,14 @@ def suggest_new_resto(restaurant_data):
     # add all these suggestions to DB
 
     # TODO: figure out function to add to DB because this is rewriting everything
-    list_new_restaurant_suggestion = new_restaurant_suggestion.data()
+    list_new_restaurant_suggestion = new_restaurant_suggestion
 
     print "" "-----------IS this list working?-------- %r" % list_new_restaurant_suggestion
 
+    check_db_for_restos(list_new_restaurant_suggestion)
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
-        sorted_restaurant_similarity_keys = sorted_restaurant_similarity_keys)
+        sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
 
 
 

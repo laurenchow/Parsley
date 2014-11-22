@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 ENGINE = None
 Session = None
 
-engine = create_engine("sqlite:///paprika.db", echo=False)
+engine = create_engine("sqlite:///paprika_spice.db", echo=False)
 session = scoped_session(sessionmaker(bind=engine,
                                       autocommit = False,
                                       autoflush = False))
@@ -181,6 +181,7 @@ class Restaurant_Features(Base):
   
 
     restaurant = relationship("Restaurant", backref=backref("restaurant_features", order_by=restaurant_id, uselist=False))
+
     #the point of this table is to start storing values to figure out how often a user wants these 
 
     def set_from_factual(self, data):
@@ -219,7 +220,13 @@ class Restaurant_Category(Base):
     __tablename__="restaurant_categories"
     id = Column(Integer, primary_key=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
-    category = Column(String(128), nullable=True)
+    cuisine = Column(String(3000), nullable=True)
+    category_labels = Column(String(3000), nullable=True)
+    category_ids = Column(String(3000), nullable=True)
+
+    restaurant = relationship("Restaurant", backref=backref("restaurant_categories", order_by=restaurant_id, uselist=False))
+
+    #the point of this table is to start storing values 
     # afghan = Column(Boolean, unique=False, default=False)
     # african = Column(Boolean, unique=False, default=False)
     # american = Column(Boolean, unique=False, default=False)
@@ -628,7 +635,7 @@ def connect():
     global ENGINE
     global Session
 
-    ENGINE = create_engine("sqlite:///paprika.db", echo=True)
+    ENGINE = create_engine("sqlite:///paprika_spice.db", echo=True)
     Session = sessionmaker(bind=ENGINE)
 
     return Session()
