@@ -55,6 +55,7 @@ def other_restos():
 
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
     restaurant_ids = check_db_for_restos(restaurant_data)
+    add_restaurants_to_user_preferences(restaurant_ids)
 
     session['user_restaurant_ids'] = restaurant_ids
     session['user_geo'] = user_geo
@@ -186,15 +187,11 @@ def check_db_for_restos(restaurant_data):
                     print "Here's what is stored in DB right now for name ID and address %r %r %r" % (db_result.name, db_result.id, db_result.address)
                     db_result.set_from_factual(item)
                     restaurant_ids.append(db_result.id)
-
                     model.session.add(db_result)
 
         
-                    
                     db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first() 
-                    
                     db_result_features.set_from_factual(item)
-                    
                     model.session.add(db_result_features)
                     
                     #adds categories if resto exists in DB
@@ -229,9 +226,29 @@ def check_db_for_restos(restaurant_data):
 
                     restaurant_ids.append(new_restaurant.id)
 
+                
     return restaurant_ids
 
+@app.route('/user_restaurant_preferences', methods = ['GET', 'POST'])
+def add_restaurants_to_user_preferences(restaurant_ids):
+    user_restaurant_preference = model.User_Restaurant_Rating(user_id = session['user_id'])
+    model.session.add(user_restaurant_preference)
+    print "Here's what's happening here$$$$$ %r" % user_restaurant_preference
 
+    for entry in range(len(restaurant_ids)):
+        user_restaurant_preference.restaurant_id = restaurant_ids[entry]
+        user_restaurant_preference.rating = "1.0"
+        model.session.add(user_restaurant_preference)
+
+    
+    print "NOWWWW Here's what's happening here$$$$$ %r" % user_restaurant_preference
+    #     model.session.add(user_id = session['user_id'], restaurant_id = restaurant_ids[entry])
+        
+    model.session.commit()
+
+    # import pdb; pdb.set_trace()        
+
+    print user_preferences
 
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
@@ -284,6 +301,7 @@ def suggest_new_resto(restaurant_data):
             restaurant_value = getattr(restaurant_categories, feature)
             if restaurant_value:
                 restaurant_similarity[feature].append(restaurant_value)
+                #this doesn't work because it 
 
 
     print "Here's what's stored in restaurant_similarity"
@@ -375,7 +393,7 @@ def suggest_new_resto(restaurant_data):
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
-    
+
     #TODO: return to new page so users know they moved URLs when they get new restaurants
 
 
@@ -431,6 +449,10 @@ def signup_user():
     model.session.commit() 
     
     current_user = model.session.query(model.User).filter_by(email = user_email).first()
+    current_user_preferences = model.User_Preference(user_id=current_user.id)
+
+    model.session.add(current_user_preferences)
+    model.session.commit() 
 
     session['user_id'] = current_user.id
     session['user_email'] = current_user.email
@@ -473,22 +495,21 @@ def submit_user_details(current_user_id):
 
 
 
-@app.route('/user_preferences', methods = ['GET', 'POST'])
+@app.route('/user_preferences', methods = ['GET'])
 def user_preferences():
-    if request.method == "GET":
-        return render_template("user_preferences.html")
-    else:
-        return submit_user_preferences()
+    return render_template("user_preferences.html")
+    
 
+@app.route('/user_preferences', methods = ['POST'])
 def submit_user_preferences(): 
     current_user_id = session['user_id']  
     print "This is where you'll show what the user says they prefer"  
     print "This is who is logged in right now %r" % current_user_id
-    # new_user_prefs_info = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+    update_existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
     # print "This exists!!! %r" % new_user_prefs_info
-    # if new_user_prefs_info:
-    if current_user_id:
+    if update_existing_user_prefs:
+    # if current_user_id:
         kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
         'kids_goodfor': request.form['kids_goodfor'],
         'options_healthy': request.form['options_healthy'], 
@@ -496,32 +517,25 @@ def submit_user_preferences():
         'parking': request.form['parking'], 
         'wifi' : request.form['wifi'], 'user_id': current_user_id}
 
-        new_user_prefs = model.User_Preference(**kwargs)
-        model.session.merge(new_user_prefs)
+        update_existing_user_prefs = model.User_Preference(**kwargs)
+        model.session.merge(update_existing_user_prefs)
         model.session.commit()
-        
+    
         return redirect("/")
-
-    #this is just the full list for kwargs when you want to use it
-    # if new_user_prefs_info:
+    # else:
+    #     new_user_prefs = model.User_Preference()
     #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
-    #     'alcohol_byob': request.form['alcohol_byob'], 'alcohol_bar':request.form['alcohol_bar'],
-    #     'alcohol_beer_wine': request.form['alcohol_beer_wine'], 'alcohol': request.form['alcohol'],
-    #     'groups_goodfor':  request.form['groups_goodfor'], 'kids_goodfor': request.form['kids_goodfor'],
-    #     'kids_menu': request.form['kids_menu'], 'meal_breakfast':  request.form['meal_breakfast'],
-    #     'meal_dinner':  request.form['meal_dinner'], 'meal_deliver':  request.form['meal_deliver'],
-    #     'options_healthy': request.form['options_healthy'] , 
-    #     'options_glutenfree': request.form['options_glutenfree'], 
-    #     'options_lowfat': request.form['options_lowfat'], 
-    #     'options_vegan': request.form['options_vegan'], 
-    #     'options_vegetarian':  request.form['options_vegetarian'], 
-    #     'options_organic': request.form['options_organic'], 'parking': request.form['parking'], 
-    #     'reservations':  request.form['reservations'],
-    #     'wifi' : request.form['wifi']}
+    #     'kids_goodfor': request.form['kids_goodfor'],
+    #     'options_healthy': request.form['options_healthy'], 
+    #     'options_organic': request.form['options_organic'], 
+    #     'parking': request.form['parking'], 
+    #     'wifi' : request.form['wifi'], 'user_id': current_user_id}
 
-      
-        
-  
+    #     new_user_prefs = model.User_Preference(**kwargs)
+    #     model.session.merge(new_user_prefs)
+    #     model.session.commit()
+
+
     return redirect("/")
 
 

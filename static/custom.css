@@ -11,7 +11,7 @@ h1 {
 	display: inline-block;
 }
 
-@font-family-base
+font-family-base
 {
 	font-family: 'Roboto', sans-serif;
 	font-size: 40pt;
