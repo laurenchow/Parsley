@@ -105,7 +105,6 @@ def ping_factual(restaurants, user_geo):
 
    
     return restaurant_data
-
     
 
 #passing it a list of retaurants dictionaries from factual
@@ -126,8 +125,6 @@ def check_db_for_restos(restaurant_data):
             
             #TODO: Make sure three entries are valid
             if restaurant_deets:
-            #check to see if restaurant details are in the DB for this restaurant
-            #if not add it, if it is check to see that it's still the same
                 for item in restaurant_deets:
                     db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
 
@@ -138,18 +135,8 @@ def check_db_for_restos(restaurant_data):
 
                         model.session.add(db_result)
 
-                        # restaurant_update = model.Restaurant(name= name, 
-                        #     locality = locality, country = country, postcode = postcode, 
-                        #     region = region, address = address, tel = tel, longitude = longitude, 
-                        #     latitude = latitude, price = price, rating = rating, 
-                        #     address_extended = address_extended, attire_prohibited = attire_prohibited, 
-                        #     attire_required = attire_required, chain_id = chain_id, chain_name = chain_name,
-                        #     email = email, fax = fax, founded = founded, owner = owner, 
-                        #     po_box = po_box, website = website)
                         
-                        
-                        db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first() 
-                        
+                        db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first()     
                         db_result_features.set_from_factual(item)
                         
                         model.session.add(db_result_features)
@@ -168,9 +155,15 @@ def check_db_for_restos(restaurant_data):
                         new_restaurant_features.set_from_factual(item)
 
                         model.session.add(new_restaurant_features)
+
+                        new_restaurant_categories = model.Restaurant_Category()  
+                        new_restaurant_categories.restaurant_id = new_restaurant.id                  
+                        new_restaurant_categories.set_from_factual(item)
+                        model.session.add(new_restaurant_categories)
                         model.session.commit()
 
                         restaurant_ids.append(new_restaurant.id)
+    #TODO: figure out how to handle this when not a list
     else: 
         restaurant_deets = restaurant_data.data()
         print "Here are some deets %r" % restaurant_deets
@@ -227,9 +220,9 @@ def check_db_for_restos(restaurant_data):
 
                     model.session.add(new_restaurant_features)
                     
-
+                    
                     new_restaurant_categories = model.Restaurant_Category()  
-                    new_restaurant_categories.restaurant_id = new_restaurant                  
+                    new_restaurant_categories.restaurant_id = new_restaurant.id                 
                     new_restaurant_categories.set_from_factual(item)
                     model.session.add(new_restaurant_categories)
                     model.session.commit()
@@ -351,12 +344,12 @@ def suggest_new_resto(restaurant_data):
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion == []:
         return render_template("sorry.html")
-    #if it returns nothing, reload the page?
+    #TODO: if it returns nothing, reload the page? 
+
+    #TODO: redo search if no results, figure out how to deal with
 
     # should also ask cuisine
     # look at category as well  are these all dinner? lunch?
-    # should ask preference on region
-    # look at neighborhoods also if they're all in common 
 
 
     # put in a bunch of if statements here in case none of those parameters are met
@@ -365,7 +358,6 @@ def suggest_new_resto(restaurant_data):
     # search factual for similar restaurants
     # suggest a new restaurant
     # you'll want to ask if they like this restaurant also
-    #TODO: redo search if no results, figure out how to deal with
 
 
     print "" "-----------IS this new_restaurant_suggestion working?--------"
