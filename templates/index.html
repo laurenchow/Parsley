@@ -1,29 +1,26 @@
 
-<head>
-  <style>
+{% extends 'base.html' %}
 
-  <link rel="stylesheet" href="/static/custom.css" />
+<style>
 
+<link href='http://fonts.googleapis.com/css?family=Noto+Sans|Bitter|Roboto:400,300' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="/static/custom.css" />
 </style>
 
-
-
-</head>
-
-{% extends 'base.html' %}
 {% block body%}
 
+   
     <div class="jumbotron">
 
     <h1>Restaurant recommendations – just for you. </h1>
     <p> </p><br> <br>
-    <p><a class="btn btn-primary btn-lg" href="/restaurants" role="button" align="right">Get started</a></p>
+    <p><a class="btn btn-primary btn-lg" href="/restaurants" role="button" align="right">Get started</a>
+       <a class="btn btn-primary btn-lg" href="/about" role="button">How it works</a></p>
     </div>
 
 
 
 
-    </div>
 
 
 {%endblock%}

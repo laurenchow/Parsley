@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
  
-	<link
 	 <link rel="stylesheet" type="text/css" href="/static/map_time.css">
+
 
 <script>
 
@@ -20,19 +20,44 @@ alert("Your zip code should be \n 5 digits long. Please enter a real US zip code
      <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
 
     
+    <div class="jumbotron">
         <br><br>
+
+    <p class="help-block">
         Looking for a new spot to try?
 
-        Tell me three restaurants that you like. <br><br>
-
+        Tell me three restaurants that you like. <br><br></p>
         <form class="favorite-restaurants" method="POST">
+        <form role="form">
+  <div class="form-group">
+    <label for="restaurant_1"></label>
+    <input type="text" class="form-control" name ="restaurant_1" id="searchTextField" size="50">
+  </div>
+  <div class="form-group">
+    <label for="restaurant_2"></label>
+    <input type="text" class="form-control" name = "restaurant_2" id="searchTextField2">
+  </div>
+ <div class="form-group">
+    <label for="restaurant_3"></label>
+    <input type="text" class="form-control" name = "restaurant_3" id="searchTextField3" >
+  </div>
+    <p class="help-block">
+    	<br>
+    	<br>
+         Where would you like to search? (Please use zipcode.) </p>
+ 
+         <input type = "user_geo" name = "user_geo" id ="user_geo"> <br> <br><br>	
+         <button type="btn btn-lg btn-primary btn-block" class="btn btn-default" align = "right" type="submit"> Tell me where to go </button><br>
+   </form>
+  </div>
+  <!--       <form class="favorite-restaurants" method="POST">
         Restaurant: <input type = "restaurant_1" class="favorite-restaurants" name ="restaurant_1" id="searchTextField" > <br> 
         Restaurant: <input type = "restaurant_2" class="favorite-restaurants" name = "restaurant_2" id="searchTextField2" size="50"> <br>
         Restaurant: <input type = "restaurant_3" class="favorite-restaurants" name ="restaurant_3" id="searchTextField3" > <br><br>
         
 
          Where would you like to search? (Please use zipcode.) 
-         <input type = "user_geo" name = "user_geo" id ="user_geo"> <br> <br><br>
+         <input type = "user_geo" name = "user_geo" id ="user_geo"> <br> <br><br> -->
 
 
         <!--  What are your must-haves? <input type = "user_geo" name = "user_geo"> <br> <br><br>
@@ -90,9 +115,8 @@ alert("Your zip code should be \n 5 digits long. Please enter a real US zip code
 		</label>
 		</div>
 		<br><br><br> -->
-        <button type="btn btn-lg btn-primary btn-block" align = "center" type="submit">> Tell me where to go </button><br>
-        </form>
 
+        
 
 
 

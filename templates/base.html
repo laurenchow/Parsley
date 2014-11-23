@@ -2,8 +2,7 @@
     <head>
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
 
-        <link rel="stylesheet" href="/static/custom.css" />
-
+        <link rel="stylesheet" type="text/css" href="/static/custom.css">
     <script src ="static/autocomplete.js"></script>
     </head>
     <body>
@@ -11,16 +10,17 @@
         <div class="navbar navbar-inverse navbar-static-top">
             <div class="container">
                 <div class="navbar-header">
-                  <a class="navbar-brand" href="/"> parsley </a>
+                  <a class="navbar-brand" href="/"> <img src="/static/parsley_text_logo.png" width="75" height="30"> <img src="/static/parsley_logo.png" width="20" height="20"> </a>
                 </div>
                 <div class="navbar-collapse collapse">
                     <ul class="nav navbar-nav navbar-right">
-                            <li><a href="/user/">My profile</a></li>
-                            <li><a href="/favorites/">My favorites</a></li>
-                            <li><a href="/restaurants"> Get suggestions </a></li>
-                            <li><a href="/about">About</a></li>
-                            <li><a href="/help">Contact us</a></li>
-                          
+                            <li><a href="/user">PROFILE</a></li>
+                            <li><a href="/favorites">FAVORITES</a></li>
+                            <li><a href="/restaurants">SUGGESTIONS</a></li>
+                            <li><a href="/about">SEARCH</a></li>
+                            <li><a href="/help">CONTACT</a></li>
+                         
+
                          
                         {% if session %}
                         <li><a href="/logout">Logout</a></li>

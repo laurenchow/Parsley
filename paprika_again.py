@@ -93,6 +93,7 @@ def ping_factual(restaurants, user_geo):
 
     restaurant_data = [] 
 
+    #TODO: validate user enters three restaurants
     for restaurant in restaurants:
         #TODO: when you ping factual check DB there
         q = table.search(restaurant).limit(1)
@@ -203,7 +204,14 @@ def check_db_for_restos(restaurant_data):
                     db_result_features.set_from_factual(item)
                     
                     model.session.add(db_result_features)
+                    
+                    #adds categories if resto exists in DB
+                    db_result_categories = model.session.query(model.Restaurant_Category).filter_by(factual_id = item['factual_id']).first()
+                    db_result_categories.set_from_factual(item)
+                    model.session.add(db_result_categories)
                     model.session.commit()
+
+
 
                 else:
                     print "***NOT IN DATABASE YET***"
@@ -218,6 +226,12 @@ def check_db_for_restos(restaurant_data):
                     new_restaurant_features.set_from_factual(item)
 
                     model.session.add(new_restaurant_features)
+                    
+
+                    new_restaurant_categories = model.Restaurant_Category()  
+                    new_restaurant_categories.restaurant_id = new_restaurant                  
+                    new_restaurant_categories.set_from_factual(item)
+                    model.session.add(new_restaurant_categories)
                     model.session.commit()
 
                     restaurant_ids.append(new_restaurant.id)
@@ -258,32 +272,36 @@ def suggest_new_resto(restaurant_data):
     #TODO: figure out if you can make evaluating similarities a function once it works
     
 
-    # restaurant_similarity = {'cuisine': [], 'category_labels': [], 'category_ids': []}
-    # #you still need to get the rating and price but those are in restaurant not categories
+    restaurant_similarity = {'rating': [], 'price': []}
+    #you still need to get the rating and price but those are in restaurant not categories
   
 
-    # for entry in range(len(restaurant_data)):
-    #     # import pdb; pdb.set_trace()
-    #     restaurant_model = restaurant_data[entry]
-    #     restaurant_categories = restaurant_model.restaurant_categories
+    for entry in range(len(restaurant_data)):
+       
+        restaurant_model = restaurant_data[entry]
+        print "****CHECK THIS OUT*** %r" % restaurant_data[entry]
+        restaurant_categories = restaurant_model
+        # restaurant_categories = restaurant_model.restaurant_categories
 
-    #     for feature in restaurant_similarity.keys():
-    #         restaurant_value = getattr(restaurant_categories, feature)
-    #         if restaurant_value:
-    #             restaurant_similarity[feature].append(restaurant_value)
+        for feature in restaurant_similarity.keys():
+            # import pdb; pdb.set_trace()
+            #does this work if you change to set?
+            restaurant_value = getattr(restaurant_categories, feature)
+            if restaurant_value:
+                restaurant_similarity[feature].append(restaurant_value)
 
 
-    # print "Here's what's stored in restaurant_similarity"
-    # print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
+    print "Here's what's stored in restaurant_similarity"
+    print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
 
 
-    # sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
-    # sorted_restaurant_similarity.reverse()
-    # # you could do that on javascript side
+    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
+    sorted_restaurant_similarity.reverse()
+    # you could do that on javascript side
 
-    # sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
 
-    # print "Here are the keys of three most important things outside of features %r" % sorted_restaurant_similarity_keys
+    print "Here are the keys of three most important things outside of features %r" % sorted_restaurant_similarity_keys
 
     #these are all the boolean restaurant features, process differently than 
     #cuisine and categories

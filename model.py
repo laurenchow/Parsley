@@ -220,11 +220,16 @@ class Restaurant_Category(Base):
     __tablename__="restaurant_categories"
     id = Column(Integer, primary_key=True)
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
-    cuisine = Column(String(3000), nullable=True)
-    category_labels = Column(String(3000), nullable=True)
-    category_ids = Column(String(3000), nullable=True)
+    cuisine = Column(String(3000), nullable=True, default=None)
+    category_labels = Column(String(3000), default=None)
+    category_ids = Column(String(3000), default=None)
 
     restaurant = relationship("Restaurant", backref=backref("restaurant_categories", order_by=restaurant_id, uselist=False))
+
+    def set_from_factual(self, data):
+        for key, value in data.iteritems():
+            # if key not in ['hours', 'hours_display']:
+            setattr(self, key, value)
 
     #the point of this table is to start storing values 
     # afghan = Column(Boolean, unique=False, default=False)

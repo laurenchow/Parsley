@@ -1,10 +1,22 @@
 {% extends 'base.html' %}
-  
 
-    
+
+
+<link rel="stylesheet" href="magnific-popup/magnific-popup.css"> 
+
      
     
 {% block body %}
+<!-- jQuery 1.7.2+ or Zepto.js 1.0+ -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+
+
+<script>
+$('.test-popup-link').magnificPopup({ 
+  type: 'image'
+  // other options
+});
+</script>
 
       We noticed that you like {{sorted_restaurant_features_similarity_keys[0]}},
       {{sorted_restaurant_features_similarity_keys[1]}} and
@@ -19,6 +31,10 @@
 
        <div id = "{{entry.name}}"> 
             <a href = "{{entry.website}}" >{{entry['name']}} </a>
+            <br>
+
+            <a class="test-popup-link" href="{{entry.website}}"> Popup test: {{entry['name']}} </a>
+
             <br>
             How does this sound?
             <br> <br>

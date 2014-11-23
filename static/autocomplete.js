@@ -13,3 +13,4 @@ var autocomplete3 = new google.maps.places.Autocomplete(input3);
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
+
