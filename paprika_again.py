@@ -140,6 +140,13 @@ def check_db_for_restos(restaurant_data):
                         db_result_features.set_from_factual(item)
                         
                         model.session.add(db_result_features)
+
+                        db_result_categories = model.session.query(model.Restaurant_Category).filter_by(factual_id = item['factual_id']).first()  
+                        db_result_categories.restaurant_id = db_result_categories.id                  
+                        db_result_categories.set_from_factual(item)
+
+                        model.session.add(db_result_categories)
+
                         model.session.commit()
 
                     else:
@@ -182,15 +189,7 @@ def check_db_for_restos(restaurant_data):
 
                     model.session.add(db_result)
 
-                    # restaurant_update = model.Restaurant(name= name, 
-                    #     locality = locality, country = country, postcode = postcode, 
-                    #     region = region, address = address, tel = tel, longitude = longitude, 
-                    #     latitude = latitude, price = price, rating = rating, 
-                    #     address_extended = address_extended, attire_prohibited = attire_prohibited, 
-                    #     attire_required = attire_required, chain_id = chain_id, chain_name = chain_name,
-                    #     email = email, fax = fax, founded = founded, owner = owner, 
-                    #     po_box = po_box, website = website)
-                    
+        
                     
                     db_result_features = model.session.query(model.Restaurant_Features).filter_by(factual_id = item['factual_id']).first() 
                     
@@ -220,9 +219,10 @@ def check_db_for_restos(restaurant_data):
 
                     model.session.add(new_restaurant_features)
                     
-                    
+
                     new_restaurant_categories = model.Restaurant_Category()  
-                    new_restaurant_categories.restaurant_id = new_restaurant.id                 
+                    # new_restaurant_categories.restaurant_id = new_restaurant.id
+                    new_restaurant_categories.restaurant = new_restaurant                  
                     new_restaurant_categories.set_from_factual(item)
                     model.session.add(new_restaurant_categories)
                     model.session.commit()
@@ -239,6 +239,8 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
+    #TODO: determine if user likes chains
+    #TODO: do not suggest restaurants that have already been typed in, check for that
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -373,7 +375,8 @@ def suggest_new_resto(restaurant_data):
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
-
+    
+    #TODO: return to new page so users know they moved URLs when they get new restaurants
 
 
 @app.route('/user', methods = ['GET'])

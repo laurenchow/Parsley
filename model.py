@@ -229,9 +229,6 @@ class Restaurant_Category(Base):
 
     def set_from_factual(self, data):
 
-        for key, value in data.iteritems():
-            print "Here's what is inside %r" % key
-            print "Here's the value %r" % value 
 
         for key, value in data.iteritems():
             if key == 'factual_id':
