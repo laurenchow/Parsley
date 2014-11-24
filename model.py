@@ -240,7 +240,6 @@ class Restaurant_Category(Base):
                 cuisine_as_string = ""
                 for item in range(len(value)):
                     cuisine_as_string+=str(value[item])+","
-                cuisine_as_string=cuisine_as_string[:-1]
                 setattr(self, key, cuisine_as_string)
 
             elif key == 'category_labels':
@@ -249,17 +248,15 @@ class Restaurant_Category(Base):
                     categories = value[item]
                     for entry in categories:
                         cat_label_as_string+=str(entry)+","
-                    cat_label_as_string=cat_label_as_string[:-1]
                 setattr(self, key, cat_label_as_string)
 
             elif key == 'category_ids':
                 cat_id_as_string = ""
                 for item in range(len(value)):
                     cat_id_as_string+=str(value[item])+","
-                cat_id_as_string=cat_id_as_string[:-1]
                 setattr(self, key, cat_id_as_string)
                 #TODO: figure out how to get the comma to get cut off of last entry
-
+                #cat_id_as_string=cat_id_as_string[:-1]
 
 
     #the point of this table is to start storing values 

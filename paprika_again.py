@@ -244,7 +244,7 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
-    
+
     #TODO: determine if user likes chains
     #TODO: do not suggest restaurants that have already been typed in, check for that
     #TODO: make it so this page only shows if you're logged in 
@@ -302,14 +302,13 @@ def suggest_new_resto(restaurant_data):
                 #for price, you need to average it
                
 
-                #for cuisine, you need to unpack it
-                #same for category_labels
 
-    import pdb; pdb.set_trace()   
+    # import pdb; pdb.set_trace()   
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()
     sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
 
+    print "!@*(!@#!*@#)!@#----- %r" % sorted_restaurant_similarity_keys
     #these are all the boolean restaurant features, process differently than 
     #cuisine and categories
     restaurant_features_similarity = {'alcohol': 0,
