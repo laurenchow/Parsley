@@ -412,19 +412,40 @@ def suggest_new_resto(restaurant_data):
     #search for the most-common cuisines and most-common categories from Factual
     #dot product that with the restaurants you return    
     #TODO: could you make it so it queries for all things that are 3 out of 3?
-    new_restaurant_suggestion = table.filters({sorted_restaurant_features_similarity_keys[0]: "1" ,
+    new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_similarity_keys[0]: "1" ,
      sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", 
      "postcode": user_geo}).limit(5)
+
+    # #what if the length is less than 3? it'll throw error
+    # new_restaurant_suggestion_from_categories = table.filters({sorted_distinct_restaurant_categories_keys[0]: "1" ,
+    #  sorted_distinct_restaurant_categories_keys[1]: "1", sorted_distinct_restaurant_categories_keys[2]:"1", 
+    #  "postcode": user_geo}).limit(5)
     
+    print sorted_distinct_restaurant_cuisines_keys[0]
+    print sorted_distinct_restaurant_cuisines_keys[1]
+    print sorted_distinct_restaurant_cuisines_keys[2]
+
+    import pdb; pdb.set_trace() 
+    new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
+        sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
+
+# {"region":{"$in":["MA","VT","NH","RI","CT"]}}
+    print "Here are the new restaurants from features %r" % new_restaurant_suggestion_from_features
+
+    # print "Here are the new restaurants from categories %r" % new_restaurant_suggestion_from_categories
+
+
+    print "Here are the new restaurants from cuisines %r" % new_restaurant_suggestion_from_cuisines
+   
     #TODO: is this the most sensible way to handle errors?    
-    if new_restaurant_suggestion == []:
+    if new_restaurant_suggestion_from_features == []:
         return render_template("sorry.html")
     #TODO: if it returns nothing, reload the page to ask for new restaurants? 
     #TODO: return to new page so users know they moved URLs when they get new restaurants
-    list_new_restaurant_suggestion = new_restaurant_suggestion
+    list_new_restaurant_suggestion = new_restaurant_suggestion_from_features
     check_db_for_restos(list_new_restaurant_suggestion)
 
-    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
+    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_features, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
 
     
