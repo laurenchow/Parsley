@@ -244,6 +244,7 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
+    
     #TODO: determine if user likes chains
     #TODO: do not suggest restaurants that have already been typed in, check for that
     #TODO: make it so this page only shows if you're logged in 
@@ -268,7 +269,6 @@ def suggest_new_resto(restaurant_data):
 
 
     #TODO: CLEAR RESTAURANT ID SESSION
-    #TODO: add category to this and cuisine
     #TODO: figure out if you can make evaluating similarities a function once it works
     
 
@@ -291,11 +291,10 @@ def suggest_new_resto(restaurant_data):
 
             if restaurant_model_value:
                 restaurant_similarity[feature].append(restaurant_model_value)
-        
-        import pdb; pdb.set_trace()    
+         
         for feature in restaurant_categories_similarity.keys():  
-            restaurant_categories_value = getattr(restaurant_categories, feature)
-            if restaurant_categories_value:
+            restaurant_categories_value = getattr(restaurant_categories, feature, None)
+            if restaurant_categories_value is not None:
                 restaurant_categories_similarity[feature].append(restaurant_categories_value)
 
                 #this doesn't work because it just adds to key and doesn't do a counter
@@ -306,6 +305,7 @@ def suggest_new_resto(restaurant_data):
                 #for cuisine, you need to unpack it
                 #same for category_labels
 
+    import pdb; pdb.set_trace()   
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()
     sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
@@ -362,19 +362,17 @@ def suggest_new_resto(restaurant_data):
 
     for key, value in restaurant_cuisines_split_but_not_unpacked.iteritems():
         for entry in value:
-            print entry
             cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
             distinct_restaurant_cuisines[entry]=cuisine_count
-        print "Here's the key %r" % key
-        print "Here's the value %r" % value 
+       
 
+    remove_this_value = ""
     #remove the whitespace that's happening and getting stored (or fix this in DB)
-    # import pdb; pdb.set_trace()
     for key, value in distinct_restaurant_cuisines.iteritems():
         if key == '':
             remove_this_value = key
 
-    if remove_this_value:
+    if remove_this_value != "":
        distinct_restaurant_cuisines.pop(remove_this_value)
 
     
@@ -385,11 +383,9 @@ def suggest_new_resto(restaurant_data):
 
     for key, value in restaurant_categories_split_but_not_unpacked.iteritems():
         for entry in value:
-            print entry
             category_count= distinct_restaurant_categories.get(entry, 0)+1
             distinct_restaurant_categories[entry]=category_count
-        print "Here's the key %r" % key
-        print "Here's the value %r" % value 
+  
 
     #how to make it so this doesn't happen?
     for key, value in distinct_restaurant_categories.iteritems():
