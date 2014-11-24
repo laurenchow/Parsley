@@ -228,16 +228,21 @@ def check_db_for_restos(restaurant_data):
 @app.route('/user_restaurant_preferences', methods = ['GET', 'POST'])
 def add_restaurants_to_user_preferences(restaurant_ids):
     user_restaurant_preference = model.User_Restaurant_Rating(user_id = session['user_id'])
-    model.session.add(user_restaurant_preference) 
-
+   
+    #TODO: Fix this so it doesn't add multiple entries of same restaurant
+    #this only works when a user initially types in restaurants, you need to figure out a way to handle upvote/downvote
     for entry in range(len(restaurant_ids)):
-        user_restaurant_preference.restaurant_id = restaurant_ids[entry]
-        user_restaurant_preference.rating = "1.0"
-        model.session.add(user_restaurant_preference)
+  
+        db_result = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = restaurant_ids[entry], user_id = session['user_id']).first()
+           
+        if not db_result:
+            user_restaurant_preference.restaurant_id = restaurant_ids[entry]
+            user_restaurant_preference.rating = "1.0"
+            model.session.merge(user_restaurant_preference)
 
     model.session.commit()
 
-    # import pdb; pdb.set_trace()        
+   
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
@@ -297,13 +302,13 @@ def suggest_new_resto(restaurant_data):
             if restaurant_categories_value is not None:
                 restaurant_categories_similarity[feature].append(restaurant_categories_value)
 
-                #this doesn't work because it just adds to key and doesn't do a counter
+         
+                 #this doesn't work because it just adds to key and doesn't do a counter
                 #for rating, you need to average it
                 #for price, you need to average it
                
 
 
-    # import pdb; pdb.set_trace()   
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()
     sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
@@ -361,18 +366,18 @@ def suggest_new_resto(restaurant_data):
 
     for key, value in restaurant_cuisines_split_but_not_unpacked.iteritems():
         for entry in value:
-            cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
-            distinct_restaurant_cuisines[entry]=cuisine_count
+            if entry != '':
+                cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
+                distinct_restaurant_cuisines[entry]=cuisine_count
        
 
-    remove_this_value = ""
     #remove the whitespace that's happening and getting stored (or fix this in DB)
-    for key, value in distinct_restaurant_cuisines.iteritems():
-        if key == '':
-            remove_this_value = key
+    # for key, value in distinct_restaurant_cuisines.iteritems():
+    #     if key == '':
+    #         remove_this_value = key
 
-    if remove_this_value != "":
-       distinct_restaurant_cuisines.pop(remove_this_value)
+    # if remove_this_value:
+    #    distinct_restaurant_cuisines.pop(remove_this_value)
 
     
     sorted_distinct_restaurant_cuisines=sorted(distinct_restaurant_cuisines.items(), key = lambda (k,v): v)
@@ -382,17 +387,18 @@ def suggest_new_resto(restaurant_data):
 
     for key, value in restaurant_categories_split_but_not_unpacked.iteritems():
         for entry in value:
-            category_count= distinct_restaurant_categories.get(entry, 0)+1
-            distinct_restaurant_categories[entry]=category_count
+            if entry != '':
+                category_count= distinct_restaurant_categories.get(entry, 0)+1
+                distinct_restaurant_categories[entry]=category_count
   
 
-    #how to make it so this doesn't happen?
-    for key, value in distinct_restaurant_categories.iteritems():
-        if key == '':
-            remove_this_value = key
+    # #how to make it so this doesn't happen?
+    # for key, value in distinct_restaurant_categories.iteritems():
+    #     if key == '':
+    #         remove_this_value = key
 
-    if remove_this_value:
-       distinct_restaurant_categories.pop(remove_this_value)
+    # if remove_this_value:
+    #    distinct_restaurant_categories.pop(remove_this_value)
 
     
     sorted_distinct_restaurant_categories=sorted(distinct_restaurant_categories.items(), key = lambda (k,v): v)
@@ -416,27 +422,30 @@ def suggest_new_resto(restaurant_data):
      sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", 
      "postcode": user_geo}).limit(5)
 
-    # #what if the length is less than 3? it'll throw error
-    # new_restaurant_suggestion_from_categories = table.filters({sorted_distinct_restaurant_categories_keys[0]: "1" ,
-    #  sorted_distinct_restaurant_categories_keys[1]: "1", sorted_distinct_restaurant_categories_keys[2]:"1", 
-    #  "postcode": user_geo}).limit(5)
+   
     
-    print sorted_distinct_restaurant_cuisines_keys[0]
-    print sorted_distinct_restaurant_cuisines_keys[1]
-    print sorted_distinct_restaurant_cuisines_keys[2]
+    # print sorted_distinct_restaurant_categories_keys[0]
+    # print sorted_distinct_restaurant_cuisines_keys[1]
+    # print sorted_distinct_restaurant_cuisines_keys[2]
 
-    import pdb; pdb.set_trace() 
     new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
         sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
 
-# {"region":{"$in":["MA","VT","NH","RI","CT"]}}
+
+    # #TODO: what if this returns nothing? how to subtract a key?
+    new_restaurant_suggestion_from_categories = table.filters({'category_labels': {"$includes_any": [sorted_distinct_restaurant_categories_keys[0],
+        sorted_distinct_restaurant_categories_keys[1], sorted_distinct_restaurant_categories_keys[2]]}, "postcode": user_geo}).limit(5)
+
+    # new_restaurant_suggestion_from_categories = table.filters({'category_labels': {"$includes": sorted_distinct_restaurant_categories_keys[0]}, "postcode": user_geo}).limit(5)
+
     print "Here are the new restaurants from features %r" % new_restaurant_suggestion_from_features
 
-    # print "Here are the new restaurants from categories %r" % new_restaurant_suggestion_from_categories
-
+    print "Here are the new restaurants from categories %r" % new_restaurant_suggestion_from_categories
+    #these are kind of useless as it turns out
 
     print "Here are the new restaurants from cuisines %r" % new_restaurant_suggestion_from_cuisines
    
+    # import pdb; pdb.set_trace() 
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion_from_features == []:
         return render_template("sorry.html")
@@ -444,6 +453,8 @@ def suggest_new_resto(restaurant_data):
     #TODO: return to new page so users know they moved URLs when they get new restaurants
     list_new_restaurant_suggestion = new_restaurant_suggestion_from_features
     check_db_for_restos(list_new_restaurant_suggestion)
+    check_db_for_restos(new_restaurant_suggestion_from_cuisines)
+    check_db_for_restos(new_restaurant_suggestion_from_categories)
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_features, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
@@ -455,7 +466,6 @@ def user_favorites():
     current_user_id = session['user_id']
     single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
     # default_user = model.session.query(model.User_Restaurant_Rating)
-    print "!!!!!!!!!!!!! %r" % single_user
     # import pdb; pdb.set_trace() 
     # ValueError: View function did not return a response happened when no favorites
     # TODO: figure out why user is undefined
