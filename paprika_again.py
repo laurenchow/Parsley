@@ -278,7 +278,7 @@ def suggest_new_resto(restaurant_data):
     
 
     restaurant_similarity = {'rating': [], 'price': []}
-    # import pdb; pdb.set_trace()
+   
     restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
     #you still need to get the rating and price but those are in restaurant not categories
     #TODO: make this work
@@ -428,6 +428,8 @@ def suggest_new_resto(restaurant_data):
     # print sorted_distinct_restaurant_cuisines_keys[1]
     # print sorted_distinct_restaurant_cuisines_keys[2]
 
+
+    # import pdb; pdb.set_trace() 
     new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
         sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
 
@@ -445,7 +447,6 @@ def suggest_new_resto(restaurant_data):
 
     print "Here are the new restaurants from cuisines %r" % new_restaurant_suggestion_from_cuisines
    
-    # import pdb; pdb.set_trace() 
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion_from_features == []:
         return render_template("sorry.html")
@@ -456,8 +457,10 @@ def suggest_new_resto(restaurant_data):
     check_db_for_restos(new_restaurant_suggestion_from_cuisines)
     check_db_for_restos(new_restaurant_suggestion_from_categories)
 
-    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_features, 
+
+    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_cuisines, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
+
 
     
 
