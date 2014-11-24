@@ -45,12 +45,8 @@ def other_restos():
     restaurant2_data = parse_restaurant_input(restaurant2)
     restaurant3_data = parse_restaurant_input(restaurant3)
 
-    print "Here's some new data %r" % restaurant1_data
+    print "This could be useful %r %r %r" % (restaurant1_data, restaurant2_data, restaurant3_data) 
 
-    print "Here's some new data for restaurant 2 %r" % restaurant2_data
-
-
-    print "Here's some new data for 3 %r" % restaurant3_data
     #TODO: Make it so that if it isn't in factual, a box prompts up asking you for another one
 
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
@@ -147,7 +143,7 @@ def check_db_for_restos(restaurant_data):
                         db_result_categories.set_from_factual(item)
 
                         model.session.add(db_result_categories)
-
+                        #TODO: figure out if this is fragile because it breaks if it doesn't happen the first time (like if you delete your table)
                         model.session.commit()
 
                     else:
@@ -232,24 +228,16 @@ def check_db_for_restos(restaurant_data):
 @app.route('/user_restaurant_preferences', methods = ['GET', 'POST'])
 def add_restaurants_to_user_preferences(restaurant_ids):
     user_restaurant_preference = model.User_Restaurant_Rating(user_id = session['user_id'])
-    model.session.add(user_restaurant_preference)
-    print "Here's what's happening here$$$$$ %r" % user_restaurant_preference
+    model.session.add(user_restaurant_preference) 
 
     for entry in range(len(restaurant_ids)):
         user_restaurant_preference.restaurant_id = restaurant_ids[entry]
         user_restaurant_preference.rating = "1.0"
         model.session.add(user_restaurant_preference)
 
-    
-    print "NOWWWW Here's what's happening here$$$$$ %r" % user_restaurant_preference
-    #     model.session.add(user_id = session['user_id'], restaurant_id = restaurant_ids[entry])
-        
     model.session.commit()
 
     # import pdb; pdb.set_trace()        
-
-    print user_preferences
-
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
@@ -258,7 +246,7 @@ def suggest_new_resto(restaurant_data):
     """ 
     #TODO: determine if user likes chains
     #TODO: do not suggest restaurants that have already been typed in, check for that
-
+    #TODO: make it so this page only shows if you're logged in 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo = session['user_geo']
@@ -285,36 +273,42 @@ def suggest_new_resto(restaurant_data):
     
 
     restaurant_similarity = {'rating': [], 'price': []}
+    # import pdb; pdb.set_trace()
+    restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
     #you still need to get the rating and price but those are in restaurant not categories
-  
+    #TODO: make this work
+    #A count of how often each variable happened in each restaurant {'rating': [4.5, 3.5, 3.5], 'price': [2, 1, 2]}
 
     for entry in range(len(restaurant_data)):
        
         restaurant_model = restaurant_data[entry]
-        print "****CHECK THIS OUT*** %r" % restaurant_data[entry]
-        restaurant_categories = restaurant_model
-        # restaurant_categories = restaurant_model.restaurant_categories
+        restaurant_categories = restaurant_model.restaurant_categories
 
         for feature in restaurant_similarity.keys():
-            # import pdb; pdb.set_trace()
+          
             #does this work if you change to set?
-            restaurant_value = getattr(restaurant_categories, feature)
-            if restaurant_value:
-                restaurant_similarity[feature].append(restaurant_value)
-                #this doesn't work because it 
+            restaurant_model_value = getattr(restaurant_model, feature)
 
+            if restaurant_model_value:
+                restaurant_similarity[feature].append(restaurant_model_value)
+        
+        import pdb; pdb.set_trace()    
+        for feature in restaurant_categories_similarity.keys():  
+            restaurant_categories_value = getattr(restaurant_categories, feature)
+            if restaurant_categories_value:
+                restaurant_categories_similarity[feature].append(restaurant_categories_value)
 
-    print "Here's what's stored in restaurant_similarity"
-    print "A count of how often each variable happened in each restaurant %r" % restaurant_similarity
+                #this doesn't work because it just adds to key and doesn't do a counter
+                #for rating, you need to average it
+                #for price, you need to average it
+               
 
+                #for cuisine, you need to unpack it
+                #same for category_labels
 
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()
-    # you could do that on javascript side
-
     sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
-
-    print "Here are the keys of three most important things outside of features %r" % sorted_restaurant_similarity_keys
 
     #these are all the boolean restaurant features, process differently than 
     #cuisine and categories
@@ -333,10 +327,8 @@ def suggest_new_resto(restaurant_data):
     
 
     for entry in range(len(restaurant_data)):
-        # import pdb; pdb.set_trace()
         restaurant_model = restaurant_data[entry]
         restaurant_features = restaurant_model.restaurant_features
-        #are these two lines accomplisting anyhting?
 
         for feature in restaurant_features_similarity.keys():
             restaurant_feature_value = getattr(restaurant_features, feature)
@@ -344,68 +336,133 @@ def suggest_new_resto(restaurant_data):
                 restaurant_features_similarity[feature] += 1
 
 
-    print "Here's what's stored in restaurant_features_similarity"
-    print "A count of how often each variable happened in each restaurant %r" % restaurant_features_similarity
-
     sorted_restaurant_features_similarity = sorted(restaurant_features_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_features_similarity.reverse()
-    # you could do that on javascript side
-
     sorted_restaurant_features_similarity_keys = [x[0] for x in sorted_restaurant_features_similarity]
 
-    print "Here are the keys of three most important features %r" % sorted_restaurant_features_similarity_keys
         #loop over three restaurants and increase counter in 
-    
-    #TODO: could you make it so it queries for all things that are 3 out of 3?
+    #TODO: figure out why this error is happening when you type in certain restaurants
+    # AttributeError: 'NoneType' object has no attribute 'cuisine'
+    #take the categories list and cuisine list, split them by each type of cuisine
+    restaurant_cuisines_split_but_not_unpacked={}
+    restaurant_categories_split_but_not_unpacked={}
+    distinct_restaurant_cuisines={} 
+    distinct_restaurant_categories={} 
 
+    for key, value in restaurant_categories_similarity.iteritems():
+        for entry in value:
+            if key == 'cuisine':
+                distinct_cuisines_list = entry.split(',')
+                restaurant_cuisines_split_but_not_unpacked[entry]=distinct_cuisines_list
+
+            if key == 'category_labels': 
+                distinct_categories_list = entry.split(',')
+                restaurant_categories_split_but_not_unpacked[entry]=distinct_categories_list
+                
+
+    for key, value in restaurant_cuisines_split_but_not_unpacked.iteritems():
+        for entry in value:
+            print entry
+            cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
+            distinct_restaurant_cuisines[entry]=cuisine_count
+        print "Here's the key %r" % key
+        print "Here's the value %r" % value 
+
+    #remove the whitespace that's happening and getting stored (or fix this in DB)
+    # import pdb; pdb.set_trace()
+    for key, value in distinct_restaurant_cuisines.iteritems():
+        if key == '':
+            remove_this_value = key
+
+    if remove_this_value:
+       distinct_restaurant_cuisines.pop(remove_this_value)
+
+    
+    sorted_distinct_restaurant_cuisines=sorted(distinct_restaurant_cuisines.items(), key = lambda (k,v): v)
+    sorted_distinct_restaurant_cuisines.reverse()
+    sorted_distinct_restaurant_cuisines_keys = [x[0] for x in sorted_distinct_restaurant_cuisines]
+
+
+    for key, value in restaurant_categories_split_but_not_unpacked.iteritems():
+        for entry in value:
+            print entry
+            category_count= distinct_restaurant_categories.get(entry, 0)+1
+            distinct_restaurant_categories[entry]=category_count
+        print "Here's the key %r" % key
+        print "Here's the value %r" % value 
+
+    #how to make it so this doesn't happen?
+    for key, value in distinct_restaurant_categories.iteritems():
+        if key == '':
+            remove_this_value = key
+
+    if remove_this_value:
+       distinct_restaurant_categories.pop(remove_this_value)
+
+    
+    sorted_distinct_restaurant_categories=sorted(distinct_restaurant_categories.items(), key = lambda (k,v): v)
+    sorted_distinct_restaurant_categories.reverse()
+    sorted_distinct_restaurant_categories_keys = [x[0] for x in sorted_distinct_restaurant_categories]
+
+
+    print "------- %r" % sorted_distinct_restaurant_categories_keys
+    print "------- %r" %  sorted_distinct_restaurant_cuisines_keys
+    
+
+
+
+        
+   
+    #turn it into dictionaries where each item in list is counted and stored as value
+    #search for the most-common cuisines and most-common categories from Factual
+    #dot product that with the restaurants you return    
+    #TODO: could you make it so it queries for all things that are 3 out of 3?
     new_restaurant_suggestion = table.filters({sorted_restaurant_features_similarity_keys[0]: "1" ,
-     sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", "postcode": user_geo}).limit(5)
+     sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", 
+     "postcode": user_geo}).limit(5)
     
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion == []:
         return render_template("sorry.html")
-    #TODO: if it returns nothing, reload the page? 
-
-    #TODO: redo search if no results, figure out how to deal with
-
-    # should also ask cuisine
-    # look at category as well  are these all dinner? lunch?
-
-
-    # put in a bunch of if statements here in case none of those parameters are met
-    # assign binary values to each user preference because you have to for queries
-    # compare user preferences to these three restaurants
-    # search factual for similar restaurants
-    # suggest a new restaurant
-    # you'll want to ask if they like this restaurant also
-
-
-    print "" "-----------IS this new_restaurant_suggestion working?--------"
-    print new_restaurant_suggestion.data()
-    # add all these suggestions to DB
-
-    # TODO: figure out function to add to DB because this is rewriting everything
+    #TODO: if it returns nothing, reload the page to ask for new restaurants? 
+    #TODO: return to new page so users know they moved URLs when they get new restaurants
     list_new_restaurant_suggestion = new_restaurant_suggestion
-
-    print "" "-----------IS this list working?-------- %r" % list_new_restaurant_suggestion
-
     check_db_for_restos(list_new_restaurant_suggestion)
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
 
-    #TODO: return to new page so users know they moved URLs when they get new restaurants
-
-
-@app.route('/user', methods = ['GET'])
-def user_profile():
-    return render_template("user.html")
-
+    
 
 @app.route('/favorites', methods = ['GET'])
 def user_favorites():
-    return render_template("favorites.html")
-#TODO make map, make it so you can save map
+    current_user_id = session['user_id']
+    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
+    # default_user = model.session.query(model.User_Restaurant_Rating)
+    print "!!!!!!!!!!!!! %r" % single_user
+    # import pdb; pdb.set_trace() 
+    # ValueError: View function did not return a response happened when no favorites
+    # TODO: figure out why user is undefined
+
+    if single_user:
+        return render_template("favorites.html", user = single_user)
+    else:
+         return render_template("favorites.html")
+    #TODO: FIX THIS SO IT STORES USER ALWAYS
+@app.route('/user', methods = ['GET'])
+def user_profile():
+    current_user_id = session['user_id']
+    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
+
+    print "!!!!!!!!!!!!! %r" % single_user
+    # import pdb; pdb.set_trace() 
+    if single_user:
+        return render_template("favorites.html", user = single_user)
+    else:
+        print "------this isn't wrking------"
+
+    return render_template("user.html")
+    #TODO make map, make it so you can save map
 
 @app.route('/contact', methods = ['GET'])
 def contact_us():
@@ -433,6 +490,8 @@ def user_signup():
 def signup_user():
     user_email = request.form['email']
     user_password = request.form['password']
+    user_first_name = request.form['first_name']
+    user_last_name = request.form['last_name']
     print "This is what user_password is stored as %r" % type(user_password)
 
     already_registered = model.session.query(model.User).filter_by(email = user_email).first()
@@ -443,7 +502,8 @@ def signup_user():
     secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
     print "this is the secure hashed password %r" % secure_password
     #put something in here about making good passwords with uppercase and flash suggestion
-    new_user = model.User(email = user_email, password = secure_password)
+    new_user = model.User(email = user_email, password = secure_password, 
+        first_name = user_first_name, last_name = user_last_name)
 
     model.session.add(new_user)
     model.session.commit() 

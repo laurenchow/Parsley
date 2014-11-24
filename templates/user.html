@@ -3,7 +3,26 @@
 
 
     
-    These are your favorite restaurants
     
+ <tr><td> This is what is stored in user_restaurant_rating for user {{ user[0].user_id }}
+
+    </td></tr><br>
+    <br>
+
+    {%for entry in user%}
+    {%if entry.rating == 1.0%}
+
+
+    {%if entry.restaurant.website != None%}
+    <tr><td>  <a href = " {{ entry.restaurant.website }}"> {{entry.restaurant.name}}  </a></td></tr><br>
+    {%else%}
+     <tr><td> {{entry.restaurant.name}} </td></tr><br>
+    {%endif%}
+
+    {%endif%}
+    {%endfor%}
+    </tr></td>
+    <br>
+
 
 {%endblock%}

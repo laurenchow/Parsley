@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+
 {% extends 'base.html' %}
 
 
@@ -17,6 +20,10 @@ $('.test-popup-link').magnificPopup({
   // other options
 });
 </script>
+
+    
+ <div class="panel panel-default">
+<div class="panel-body">
 
       We noticed that you like {{sorted_restaurant_features_similarity_keys[0]}},
       {{sorted_restaurant_features_similarity_keys[1]}} and
@@ -56,12 +63,10 @@ $('.test-popup-link').magnificPopup({
         <button type="btn btn-lg btn-primary btn-block" align = "center" type="get">
        Show me some new restaurants</button><br>
         </form>
-
+</div>
+</div>
       <br>
     
-
-
-
-   
-
 {%endblock%}
+
+</html>

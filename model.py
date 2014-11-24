@@ -26,6 +26,8 @@ class User(Base):
     __tablename__="users"
 
     id = Column(Integer, primary_key=True)
+    first_name = Column(String(64), nullable=True)
+    last_name = Column(String(64), nullable=True)
     age = Column(String(64), nullable=True)
     gender = Column(String(64), nullable=True)
     occupation =  Column(String(64), nullable=True)
@@ -237,7 +239,8 @@ class Restaurant_Category(Base):
             elif key == 'cuisine':
                 cuisine_as_string = ""
                 for item in range(len(value)):
-                    cuisine_as_string+=str(value[item])+" "
+                    cuisine_as_string+=str(value[item])+","
+                cuisine_as_string=cuisine_as_string[:-1]
                 setattr(self, key, cuisine_as_string)
 
             elif key == 'category_labels':
@@ -245,14 +248,17 @@ class Restaurant_Category(Base):
                 for item in range(len(value)):
                     categories = value[item]
                     for entry in categories:
-                        cat_label_as_string+=str(entry)+" "
+                        cat_label_as_string+=str(entry)+","
+                    cat_label_as_string=cat_label_as_string[:-1]
                 setattr(self, key, cat_label_as_string)
 
             elif key == 'category_ids':
                 cat_id_as_string = ""
                 for item in range(len(value)):
-                    cat_id_as_string+=str(value[item])+" "
+                    cat_id_as_string+=str(value[item])+","
+                cat_id_as_string=cat_id_as_string[:-1]
                 setattr(self, key, cat_id_as_string)
+                #TODO: figure out how to get the comma to get cut off of last entry
 
 
 
