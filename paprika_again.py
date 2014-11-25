@@ -33,6 +33,7 @@ def index():
     
 @app.route('/restaurants', methods = ['GET'])
 def restos():
+
     return render_template("restaurants.html")
 
 @app.route('/restaurants', methods = ['POST'])
@@ -170,8 +171,7 @@ def check_db_for_restos(restaurant_data):
                         restaurant_ids.append(new_restaurant.id)
     #TODO: figure out how to handle this when not a list
     else: 
-        restaurant_deets = restaurant_data.data()
-        print "Here are some deets %r" % restaurant_deets
+        restaurant_deets = restaurant_data.data() 
         
         #TODO: Make sure three entries are valid
         if restaurant_deets:
@@ -181,7 +181,6 @@ def check_db_for_restos(restaurant_data):
                 db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
 
                 if db_result:
-                    print "Here's what is stored in DB right now for name ID and address %r %r %r" % (db_result.name, db_result.id, db_result.address)
                     db_result.set_from_factual(item)
                     restaurant_ids.append(db_result.id)
                     model.session.add(db_result)
@@ -255,8 +254,27 @@ def suggest_new_resto(restaurant_data):
 
     user_input_rest_data = get_user_inputs(rest_ids)
     print user_input_rest_data
-    parsed_restaurants = get_factual_results()
-    return "hello"
+    restaurant_rating_price_similarities = get_restaurant_model_similarities(user_input_rest_data)
+    print restaurant_rating_price_similarities
+
+    sorted_restaurant_features_similarity_keys = get_rest_features_similarities(user_input_rest_data)
+    db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_similarity_keys)
+
+    distinct_restaurant_categories = get_rest_cat_label_similarities(user_input_rest_data)
+    db_result_new_restaurants_from_category_labels = get_new_restaurants_for_categories(distinct_restaurant_categories)
+
+    distinct_restaurant_cuisines = get_rest_cuisine_similarities(user_input_rest_data)
+    db_result_new_restaurants_from_cuisines = get_new_restaurants_for_cuisines(distinct_restaurant_cuisines)
+    # db_result_new_restaurants_from_features = get_rest_features_similarities(user_input_rest_data)
+    
+
+    new_restaurant_suggestion_from_all = get_combined_feature_cat_cuisine_results(
+        db_result_new_restaurants_from_features, db_result_new_restaurants_from_category_labels,
+        db_result_new_restaurants_from_cuisines, distinct_restaurant_cuisines, distinct_restaurant_categories)
+
+    #TODO: this returns a set of lists
+    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_all, 
+        sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
     
     # restaurants_to_suggest = process_factual_results(new_restaurants)
     # suggest_new_restaurant()
@@ -286,29 +304,43 @@ def get_user_inputs(rest_ids):
 
     return user_input_rest_data
 
-def get_restaurant_model_similarities():
-def get_rest_cat_similarities():
-    
-    # import pdb; pdb.set_trace()
-    #TODO: CLEAR RESTAURANT ID SESSION
-    #TODO: figure out if you can make evaluating similarities a function once it works
+# def get_factual_results():
+def get_restaurant_model_similarities(user_input_rest_data):
     restaurant_similarity = {'rating': [], 'price': []}
-    restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
-    #TODO: make this work
 
-
-    for entry in range(len(restaurant_data)):
+    for entry in range(len(user_input_rest_data)):
        
-        restaurant_model = restaurant_data[entry]
-        restaurant_categories = restaurant_model.restaurant_categories
+        restaurant_model = user_input_rest_data[entry]
 
         for feature in restaurant_similarity.keys():
-          
             #does this work if you change to set?
+            #TODO: figure out what to do if it doesn't have this attribute
             restaurant_model_value = getattr(restaurant_model, feature)
 
             if restaurant_model_value:
                 restaurant_similarity[feature].append(restaurant_model_value)
+
+
+    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
+    sorted_restaurant_similarity.reverse()
+    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+
+def get_rest_cat_label_similarities(user_input_rest_data):
+
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
+    user_geo =  session['user_geo'] 
+
+    for entry in range(len(user_input_rest_data)):
+        restaurant_model = user_input_rest_data[entry]
+        restaurant_categories = restaurant_model.restaurant_categories
+
+        # for feature in restaurant_similarity.keys():
+        #     restaurant_model_value = getattr(restaurant_model, feature)
+
+        #     if restaurant_model_value:
+        #         restaurant_similarity[feature].append(restaurant_model_value)
          
         for feature in restaurant_categories_similarity.keys():  
             restaurant_categories_value = getattr(restaurant_categories, feature, None)
@@ -319,20 +351,118 @@ def get_rest_cat_similarities():
                 #this doesn't work because it just adds to key and doesn't do a counter
                 #for rating, you need to average it
                 #for price, you need to average it
-      
+         #take the categories list and cuisine list, split them by each type of cuisine
+    restaurant_categories_split_but_not_unpacked={}
+    distinct_restaurant_categories={} 
 
-# def get_factual_results():
-#     pass
-# def process_factual_results(new_restaurants):
-#     pass
-# def suggest_new_restaurant():
-#     pass
+    for key, value in restaurant_categories_similarity.iteritems():
+        for entry in value:
+            if key == 'category_labels': 
+                distinct_categories_list = entry.split(',')
+                restaurant_categories_split_but_not_unpacked[entry]=distinct_categories_list
+                
 
-    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
-    sorted_restaurant_similarity.reverse()
-    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+    for key, value in restaurant_categories_split_but_not_unpacked.iteritems():
+        for entry in value:
+            if entry != '':
+                category_count= distinct_restaurant_categories.get(entry, 0)+1
+                distinct_restaurant_categories[entry]=category_count
+  
+    
+    return distinct_restaurant_categories
 
-    # print "!@*(!@#!*@#)!@#----- %r" % sorted_restaurant_similarity_keys
+
+    # distinct_restaurant_categories = get_rest_cat_label_similarities(user_input_rest_data)
+    # db_result_new_restaurants_from_category_labels = get_new_restaurants_for_categories(distinct_restaurant_categories)
+def get_new_restaurants_for_categories(distinct_restaurant_categories):
+
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo'] 
+
+    sorted_distinct_restaurant_categories=sorted(distinct_restaurant_categories.items(), key = lambda (k,v): v)
+    sorted_distinct_restaurant_categories.reverse()
+    sorted_distinct_restaurant_categories_keys = [x[0] for x in sorted_distinct_restaurant_categories]
+
+    # #TODO: what if this returns nothing? how to subtract a key?
+    new_restaurant_suggestion_from_categories = table.filters({'category_labels': {"$includes_any": [sorted_distinct_restaurant_categories_keys[0],
+        sorted_distinct_restaurant_categories_keys[1], sorted_distinct_restaurant_categories_keys[2]]}, "postcode": user_geo}).limit(5)
+
+
+    db_result_new_restaurants_from_category_labels = check_db_for_restos(new_restaurant_suggestion_from_categories)
+
+    return db_result_new_restaurants_from_category_labels
+
+def get_rest_cuisine_similarities(user_input_rest_data):    
+    #TODO: CLEAR RESTAURANT ID SESSION
+
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo'] 
+    restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
+    
+
+    for entry in range(len(user_input_rest_data)):
+        restaurant_model = user_input_rest_data[entry]
+        restaurant_categories = restaurant_model.restaurant_categories
+
+        # for feature in restaurant_similarity.keys():
+        #     restaurant_model_value = getattr(restaurant_model, feature)
+
+        #     if restaurant_model_value:
+        #         restaurant_similarity[feature].append(restaurant_model_value)
+         
+        for feature in restaurant_categories_similarity.keys():  
+            restaurant_categories_value = getattr(restaurant_categories, feature, None)
+            if restaurant_categories_value is not None:
+                restaurant_categories_similarity[feature].append(restaurant_categories_value)
+
+                #A count of how often each variable happened in each restaurant {'rating': [4.5, 3.5, 3.5], 'price': [2, 1, 2]}
+                #this doesn't work because it just adds to key and doesn't do a counter
+                #for rating, you need to average it
+                #for price, you need to average it
+         #take the categories list and cuisine list, split them by each type of cuisine
+    restaurant_cuisines_split_but_not_unpacked={} 
+    distinct_restaurant_cuisines={}  
+
+
+    for key, value in restaurant_categories_similarity.iteritems():
+        for entry in value:
+            if key == 'cuisine':
+                distinct_cuisines_list = entry.split(',')
+                restaurant_cuisines_split_but_not_unpacked[entry]=distinct_cuisines_list
+                
+    for key, value in restaurant_cuisines_split_but_not_unpacked.iteritems():
+        for entry in value:
+            if entry != '':
+                cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
+                distinct_restaurant_cuisines[entry]=cuisine_count
+       
+    return distinct_restaurant_cuisines
+
+def get_new_restaurants_for_cuisines(distinct_restaurant_cuisines):
+
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo'] 
+
+    sorted_distinct_restaurant_cuisines=sorted(distinct_restaurant_cuisines.items(), key = lambda (k,v): v)
+    sorted_distinct_restaurant_cuisines.reverse()
+    sorted_distinct_restaurant_cuisines_keys = [x[0] for x in sorted_distinct_restaurant_cuisines]
+
+
+     # this sometimes throws a weird error due to throttle limits? so make something that makes this ok otherwise
+    new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
+    sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
+
+    db_result_new_restaurants_from_cuisines = check_db_for_restos(new_restaurant_suggestion_from_cuisines)
+    
+    return db_result_new_restaurants_from_cuisines
+
+def get_rest_features_similarities(user_input_rest_data): 
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo']    
     #these are all the boolean restaurant features, process differently than 
     #cuisine and categories
     restaurant_features_similarity = {'alcohol': 0,
@@ -349,8 +479,8 @@ def get_rest_cat_similarities():
         'wifi' : 0}
     
 
-    for entry in range(len(restaurant_data)):
-        restaurant_model = restaurant_data[entry]
+    for entry in range(len(user_input_rest_data)):
+        restaurant_model = user_input_rest_data[entry]
         restaurant_features = restaurant_model.restaurant_features
 
         for feature in restaurant_features_similarity.keys():
@@ -363,52 +493,16 @@ def get_rest_cat_similarities():
     sorted_restaurant_features_similarity.reverse()
     sorted_restaurant_features_similarity_keys = [x[0] for x in sorted_restaurant_features_similarity]
 
+    return sorted_restaurant_features_similarity_keys
+
+def get_rest_features_results(sorted_restaurant_features_similarity_keys):
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo']  
+
     #TODO: figure out why this error is happening when you type in certain restaurants
     # AttributeError: 'NoneType' object has no attribute 'cuisine'
 
-    #take the categories list and cuisine list, split them by each type of cuisine
-    restaurant_cuisines_split_but_not_unpacked={}
-    restaurant_categories_split_but_not_unpacked={}
-    distinct_restaurant_cuisines={} 
-    distinct_restaurant_categories={} 
-
-    for key, value in restaurant_categories_similarity.iteritems():
-        for entry in value:
-            if key == 'cuisine':
-                distinct_cuisines_list = entry.split(',')
-                restaurant_cuisines_split_but_not_unpacked[entry]=distinct_cuisines_list
-
-            if key == 'category_labels': 
-                distinct_categories_list = entry.split(',')
-                restaurant_categories_split_but_not_unpacked[entry]=distinct_categories_list
-                
-
-    for key, value in restaurant_cuisines_split_but_not_unpacked.iteritems():
-        for entry in value:
-            if entry != '':
-                cuisine_count= distinct_restaurant_cuisines.get(entry, 0)+1
-                distinct_restaurant_cuisines[entry]=cuisine_count
-       
-
-    
-    sorted_distinct_restaurant_cuisines=sorted(distinct_restaurant_cuisines.items(), key = lambda (k,v): v)
-    sorted_distinct_restaurant_cuisines.reverse()
-    sorted_distinct_restaurant_cuisines_keys = [x[0] for x in sorted_distinct_restaurant_cuisines]
-
-
-    for key, value in restaurant_categories_split_but_not_unpacked.iteritems():
-        for entry in value:
-            if entry != '':
-                category_count= distinct_restaurant_categories.get(entry, 0)+1
-                distinct_restaurant_categories[entry]=category_count
-  
-    
-    sorted_distinct_restaurant_categories=sorted(distinct_restaurant_categories.items(), key = lambda (k,v): v)
-    sorted_distinct_restaurant_categories.reverse()
-    sorted_distinct_restaurant_categories_keys = [x[0] for x in sorted_distinct_restaurant_categories]
-
-
-    
     #turn it into dictionaries where each item in list is counted and stored as value
     #search for the most-common cuisines and most-common categories from Factual
     #dot product that with the restaurants you return    
@@ -417,17 +511,6 @@ def get_rest_cat_similarities():
      sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", 
      "postcode": user_geo}).limit(5)
 
-
-    # this sometimes throws a weird error due to throttle limits? so make something that makes this ok otherwise
-    new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
-    sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
-
-    # #TODO: what if this returns nothing? how to subtract a key?
-    new_restaurant_suggestion_from_categories = table.filters({'category_labels': {"$includes_any": [sorted_distinct_restaurant_categories_keys[0],
-        sorted_distinct_restaurant_categories_keys[1], sorted_distinct_restaurant_categories_keys[2]]}, "postcode": user_geo}).limit(5)
-
-    # print "Here are the new restaurants from features %r" % new_restaurant_suggestion_from_features
-    # print "Here are the new restaurants from cuisines %r" % new_restaurant_suggestion_from_cuisines
    
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion_from_features == []:
@@ -436,13 +519,19 @@ def get_rest_cat_similarities():
     #TODO: return to new page so users know they moved URLs when they get new restaurants
     # list_new_restaurant_suggestion = new_restaurant_suggestion_from_features
     db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features)
-    db_result_new_restaurants_from_cuisines = check_db_for_restos(new_restaurant_suggestion_from_cuisines)
-    db_result_new_restaurants_from_categories = check_db_for_restos(new_restaurant_suggestion_from_categories)
-    db_results_for_cuisines_and_features_combined = set(db_result_new_restaurants_from_features).union(set(db_result_new_restaurants_from_cuisines))
-    all_db_results_for_new_restaurants = set(db_results_for_cuisines_and_features_combined).union(set(db_result_new_restaurants_from_categories))
-    
 
-    #turn the Factual objects into lists, then go over each list
+    return db_result_new_restaurants_from_features
+
+def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_features, db_result_new_restaurants_from_category_labels,
+        db_result_new_restaurants_from_cuisines, distinct_restaurant_cuisines, distinct_restaurant_categories):
+    
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo'] 
+
+    db_results_for_cuisines_and_features_combined = set(db_result_new_restaurants_from_features).union(set(db_result_new_restaurants_from_cuisines))
+    all_db_results_for_new_restaurants = set(db_results_for_cuisines_and_features_combined).union(set(db_result_new_restaurants_from_category_labels))
+     #turn the Factual objects into lists, then go over each list
     
 
     #TODO: create user_ideal_restaurant from three restaurant inputs along with user input
@@ -493,13 +582,14 @@ def get_rest_cat_similarities():
         #add this cosine similarity with the features one to determine best restaurants
         #this may not work because these contain different items)
         #use all_distinct_restaurant_cuisines here because it's also a dict
-
+        #NOTE: you changed this to cats
         for entry in range(len(db_entry_data_for_restaurant_category_list)):
-            db_entry_data_for_restaurants_cuisine_list.strip(" ")
+            db_entry_data_for_restaurant_category_list.strip(" ")
             split_cat_list = db_entry_data_for_restaurant_category_list.split(',')
             for entry in split_cat_list:
                 if entry != '':
-                    cat_count = distinct_restaurant_cuisines.get(entry, 0)+1
+                    # import pdb; pdb.set_trace()
+                    cat_count = distinct_restaurant_categories.get(entry, 0)+1
                     all_distinct_restaurant_category_labels[entry]=cat_count
 
 
@@ -564,12 +654,16 @@ def get_rest_cat_similarities():
     sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
     sorted_cosine_similarity_results_keys[4], sorted_cosine_similarity_results_keys[5]]}, "postcode": user_geo}).limit(5)
     
-    print new_restaurant_suggestion_from_all
+   
+    print "-------*!*!*!*!*!**!*!*!*!*!-- %r" % new_restaurant_suggestion_from_all
+
+    # import pdb; pdb.set_trace()
 
     # compare each restaurant in list to ideal restaurant for a user
+    return new_restaurant_suggestion_from_all
 
-    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_cuisines, 
-        sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
+    # return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_all, 
+    #     sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
 
 
 
