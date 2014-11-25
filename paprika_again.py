@@ -255,8 +255,9 @@ def suggest_new_resto(restaurant_data):
 
     user_input_rest_data = get_user_inputs(rest_ids)
     print user_input_rest_data
+    parsed_restaurants = get_factual_results()
     return "hello"
-    # new_restaurants = get_factual_results()
+    
     # restaurants_to_suggest = process_factual_results(new_restaurants)
     # suggest_new_restaurant()
     # return restaurants_to_suggest
@@ -285,7 +286,9 @@ def get_user_inputs(rest_ids):
 
     return user_input_rest_data
 
-
+def get_restaurant_model_similarities():
+def get_rest_cat_similarities():
+    
     # import pdb; pdb.set_trace()
     #TODO: CLEAR RESTAURANT ID SESSION
     #TODO: figure out if you can make evaluating similarities a function once it works
@@ -318,12 +321,12 @@ def get_user_inputs(rest_ids):
                 #for price, you need to average it
       
 
-def get_factual_results():
-    pass
-def process_factual_results(new_restaurants):
-    pass
-def suggest_new_restaurant():
-    pass
+# def get_factual_results():
+#     pass
+# def process_factual_results(new_restaurants):
+#     pass
+# def suggest_new_restaurant():
+#     pass
 
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()

@@ -544,6 +544,7 @@ def suggest_new_resto(restaurant_data):
     sorted_final_recommendation_all_cosines = sorted(final_recommendation_all_cosines.items(), key = lambda (k,v): v)
     sorted_final_recommendation_all_cosines.reverse()
     sorted_final_recommendation_all_cosines_keys =  [x[0] for x in final_recommendation_all_cosines]
+    #TODO: check and make sure that the final recs are not the same as the initial inputs!
 
     # import pdb; pdb.set_trace()
     #this gives you what the user input prioritizes in terms of cuisine
@@ -662,7 +663,9 @@ def signup_user():
 
 
 
-
+@app.route('/mapbox', methods = ['GET', 'POST'])
+def mapbox_test():
+    return render_template("/mapbox_example.html")
 
 
 @app.route('/welcome', methods = ['GET', 'POST'])
