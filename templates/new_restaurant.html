@@ -3,26 +3,17 @@
 
 {% extends 'base.html' %}
 
-
-
 <link rel="stylesheet" href="magnific-popup/magnific-popup.css"> 
-
-     
+  
     
 {% block body %}
 <!-- jQuery 1.7.2+ or Zepto.js 1.0+ -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
 
 
-<script>
-$('.test-popup-link').magnificPopup({ 
-  type: 'image'
-  // other options
-});
-</script>
-
-    
- <div class="panel panel-default">
+ 
+<div class="panel panel-default">
 <div class="panel-body">
 
       We noticed that you like {{sorted_restaurant_features_similarity_keys[0]}},
@@ -33,32 +24,48 @@ $('.test-popup-link').magnificPopup({
       Here's some restaurants we think you'll like. 
       <br><br>
      
-      <!-- make this so it only prints the first one, then user rates it -->
+      {% set entry_counter = 0 %}
       {%for entry in new_restaurant_suggestion.data()%}
-
-       <div id = "{{entry.name}}"> 
+        
+       <div id = "{{entry_counter}}" > 
             <a href = "{{entry.website}}" >{{entry['name']}} </a>
-            <br>
-<!-- 
-            <a class="test-popup-link" href="{{entry.website}}"> Popup test: {{entry['name']}} </a> -->
+            <br>How does this sound?<br><br>
 
-            How does this sound?
-            <br> <br>
-
-            <input type="image" name="identify" id="face_id_1" value="ID" img src="/static/sad.png" alt="Hate it" style="width:40xpx;height:40px" />
+            <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
             
-
-            <input type="image" name="identify" id="face_id_2" value="ID" img src="/static/indifferent.png" alt="Hate it" style="width:40xpx;height:40px" />
-    
-            <input type="image" name="identify" id="face_id_3" value="ID" img src="/static/likeit.png" alt="Love it" style="width:40xpx;height:40px" />
+            <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" style="width:40xpx;height:40px"  />
             <br> 
             </a>
-            <br>
-            </div>
-          
+           
+            </div> 
+      {% set entry_counter = entry_counter + 1 %}
       {%endfor%}
 
+<script>
 
+$(document).ready(function(){
+
+  console.log("This also might actually work")
+  $("[id^=happy_face_]").click(function(){
+    console.log("This might actually work");
+    var factual_id = $(this).attr("data-restaurant-id");
+    var user_feedback = $(this).attr("data-restaurant-rating-id");
+
+    $.ajax({
+      type: "POST",
+      url: "/user_feedback",
+      data: { factual_id: factual_id, user_feedback: user_feedback}
+    })
+      .done(function( msg ) {
+        alert( "Data Saved: " + msg );
+      });
+        });
+
+});
+</script>
+
+
+        <form>
         <button type="btn btn-lg btn-primary btn-block" align = "center" type="get">
        Show me some new restaurants</button><br>
         </form>

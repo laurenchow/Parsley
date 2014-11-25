@@ -242,7 +242,52 @@ def add_restaurants_to_user_preferences(restaurant_ids):
 
     model.session.commit()
 
-   
+@app.route('/user_feedback', methods = ['POST'])
+def user_feedback_on_restaurants():
+    """
+    This function stores user restaurant preferences from new restaurants
+    """
+
+    feedback_factual_id = request.form['factual_id']
+    feedback_restaurant_rating = request.form['user_feedback']
+    print feedback_factual_id
+    print feedback_restaurant_rating
+    print "Here's the user id%r" % session['user_id']
+
+
+    feedback_restaurant_rating = float(feedback_restaurant_rating)
+
+    restaurant = model.session.query(model.Restaurant).filter_by(factual_id = feedback_factual_id).first()
+
+
+    user_preference = model.User_Restaurant_Rating()
+    user_preference.restaurant_id = restaurant.id
+    # factual_id = feedback_factual_id).first()
+    user_preference.rating = feedback_restaurant_rating
+    user_preference.user_id = session['user_id']
+
+
+    model.session.merge(user_preference)
+
+    model.session.commit()
+
+
+    # import pdb; pdb.set_trace()
+    
+    # filter_by(user_id = session['user_id'], restaurant_id = restaurant, rating = feedback_restaurant_rating).first()
+
+    # if user_preference:
+    #     model.session.merge(user_preference) 
+    # else:
+    #     user_preference = model(model.User_Restaurant_Rating)
+    #     user_preference.restaurant_id = model.session.query(model.Restaurant).filter_by(factual_id = feedback_factual_id).first()
+    #     user_preference.rating = feedback_restaurant_rating
+    #     model.session.add(user_preference)
+    
+    #query DB for id
+    #dnoe function after ajax call - can call another function etc from within
+    print "Working heyyyy"
+    return "works!"
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
@@ -285,7 +330,10 @@ def suggest_new_resto(restaurant_data):
     #TODO: make it so this page only shows if you're logged in 
    
 def get_user_inputs(rest_ids):
-
+    """
+    This function takes the restaurant ids from the three restaurants that the user inputs and creates a list 
+    containing all DB data for restaurants.
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo = session['user_geo']
@@ -304,8 +352,12 @@ def get_user_inputs(rest_ids):
 
     return user_input_rest_data
 
-# def get_factual_results():
+#TODO: MAKE THIS FUNCTIONAL
 def get_restaurant_model_similarities(user_input_rest_data):
+    """
+    This function looks at the restaurant model to determine average price 
+    and average rating from the three restaurants the user input.
+    """
     restaurant_similarity = {'rating': [], 'price': []}
 
     for entry in range(len(user_input_rest_data)):
@@ -326,7 +378,10 @@ def get_restaurant_model_similarities(user_input_rest_data):
     sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
 
 def get_rest_cat_label_similarities(user_input_rest_data):
-
+    """
+    This function ranks the types of categories for each restaurant that the user input
+    and returns a list of distinct categories.
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     restaurant_categories_similarity = {'cuisine': [], 'category_labels': []}
@@ -372,9 +427,13 @@ def get_rest_cat_label_similarities(user_input_rest_data):
     return distinct_restaurant_categories
 
 
-    # distinct_restaurant_categories = get_rest_cat_label_similarities(user_input_rest_data)
-    # db_result_new_restaurants_from_category_labels = get_new_restaurants_for_categories(distinct_restaurant_categories)
+#TODO: incorporate user preferences
 def get_new_restaurants_for_categories(distinct_restaurant_categories):
+    """
+    This function takes the list of distinct restaurant categories, sorts them
+    to figure out which categories matter most to user based on user input, and 
+    returns a suggestion based on inputs.
+    """
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -393,7 +452,12 @@ def get_new_restaurants_for_categories(distinct_restaurant_categories):
 
     return db_result_new_restaurants_from_category_labels
 
+
 def get_rest_cuisine_similarities(user_input_rest_data):    
+    """
+    This function takes the list of distinct restaurant and returns list of distinct
+    cuisines. 
+    """
     #TODO: CLEAR RESTAURANT ID SESSION
 
     factual = Factual(KEY, SECRET)
@@ -460,11 +524,15 @@ def get_new_restaurants_for_cuisines(distinct_restaurant_cuisines):
     return db_result_new_restaurants_from_cuisines
 
 def get_rest_features_similarities(user_input_rest_data): 
+    """
+    This creates dictionary counting instances of each restaurant feature in the data
+    that the user input, returns most relevant (highest frequency) restaurant features.
+    """
+
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
-    user_geo =  session['user_geo']    
-    #these are all the boolean restaurant features, process differently than 
-    #cuisine and categories
+    user_geo =  session['user_geo']     
+
     restaurant_features_similarity = {'alcohol': 0,
         'groups_goodfor':  0, 'kids_goodfor': 0,
         'kids_menu': 0, 'meal_breakfast':  0,
@@ -496,6 +564,11 @@ def get_rest_features_similarities(user_input_rest_data):
     return sorted_restaurant_features_similarity_keys
 
 def get_rest_features_results(sorted_restaurant_features_similarity_keys):
+    """
+    This function takes the ranked restaurant features, searches 
+    Factual for matching restaurants and returns restaurants from Factual that 
+    match these features.
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo =  session['user_geo']  
@@ -503,9 +576,6 @@ def get_rest_features_results(sorted_restaurant_features_similarity_keys):
     #TODO: figure out why this error is happening when you type in certain restaurants
     # AttributeError: 'NoneType' object has no attribute 'cuisine'
 
-    #turn it into dictionaries where each item in list is counted and stored as value
-    #search for the most-common cuisines and most-common categories from Factual
-    #dot product that with the restaurants you return    
     #TODO: could you make it so it queries for all things that are 3 out of 3?
     new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_similarity_keys[0]: "1" ,
      sorted_restaurant_features_similarity_keys[1]: "1", sorted_restaurant_features_similarity_keys[2]:"1", 
@@ -522,9 +592,18 @@ def get_rest_features_results(sorted_restaurant_features_similarity_keys):
 
     return db_result_new_restaurants_from_features
 
-def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_features, db_result_new_restaurants_from_category_labels,
-        db_result_new_restaurants_from_cuisines, distinct_restaurant_cuisines, distinct_restaurant_categories):
-    
+#TODO: weight cuisines differently and rank more important if user selects 
+def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_features, 
+        db_result_new_restaurants_from_category_labels,
+        db_result_new_restaurants_from_cuisines, distinct_restaurant_cuisines, 
+        distinct_restaurant_categories):
+
+    """
+    This function incorporates user preferences and determines the cosine similarity 
+    between restaurants returned from Factual (adding together results from categories, 
+    features and cuisines) then suggest those restaurantsand a user's ideal restaurant, 
+    then determines best restaurants. 
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo =  session['user_geo'] 
@@ -567,32 +646,21 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
         db_entry_data_for_restaurants_cuisine_list = db_entry_for_restaurant.restaurant_categories.cuisine
         db_entry_data_for_restaurant_category_list = db_entry_for_restaurant.restaurant_categories.category_labels
         
-
-        #this only covers features
+ 
         total_cos_sim_value = 0 
         for item in db_entry_data_for_restaurant_features:
             cos_sim_result = cosine_similarity(db_entry_data_for_restaurant_features[item], user_ideal_restaurant_features[item])
             if cos_sim_result > 0:
                 total_cos_sim_value = total_cos_sim_value + cos_sim_result
-            cosine_similarity_results[db_entry_for_restaurant.name] = total_cos_sim_value
+            cosine_similarity_results[db_entry_for_restaurant.name] = total_cos_sim_value 
 
-        #need to cover cuisine as well 
-
-        #cosine similarity between restaurants returned and user ideal restaurants
-        #add this cosine similarity with the features one to determine best restaurants
-        #this may not work because these contain different items)
-        #use all_distinct_restaurant_cuisines here because it's also a dict
-        #NOTE: you changed this to cats
         for entry in range(len(db_entry_data_for_restaurant_category_list)):
             db_entry_data_for_restaurant_category_list.strip(" ")
             split_cat_list = db_entry_data_for_restaurant_category_list.split(',')
             for entry in split_cat_list:
                 if entry != '':
-                    # import pdb; pdb.set_trace()
                     cat_count = distinct_restaurant_categories.get(entry, 0)+1
                     all_distinct_restaurant_category_labels[entry]=cat_count
-
-
 
         for entry in range(len(db_entry_data_for_restaurants_cuisine_list)):
             db_entry_data_for_restaurants_cuisine_list.strip(" ")
@@ -631,8 +699,6 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
     sorted_cuisine_cosine_similarity_results_keys =  [x[0] for x in sorted_all_distinct_restaurant_cuisines]
 
 
-    #TODO: add results from category, features and cuisine cosine similarities
-    #TODO: then suggest those restaurants
     """
         {u'Boogaloos': 1.0, u'Beretta': 1.0, u'Taqueria Cancun': 1.0, u'La Taqueria': 1.0, u'El Farolito': 1.0, u'Foreign Cinema': 1.0, u'Luna Park': 0, u'Flour + Water': 2.0, u'Limon': 1.0, u'Humphry Slocombe': 2.0, u'Slow Club': 0, u'Philz Coffee': 2.0, u'Bi-Rite Creamery': 2.0, u'Tartine Bakery': 1.0}
     (Pdb) category_cosine_similarity_results
@@ -654,17 +720,8 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
     sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
     sorted_cosine_similarity_results_keys[4], sorted_cosine_similarity_results_keys[5]]}, "postcode": user_geo}).limit(5)
     
-   
-    print "-------*!*!*!*!*!**!*!*!*!*!-- %r" % new_restaurant_suggestion_from_all
 
-    # import pdb; pdb.set_trace()
-
-    # compare each restaurant in list to ideal restaurant for a user
     return new_restaurant_suggestion_from_all
-
-    # return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_all, 
-    #     sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
-
 
 
 def cosine_similarity(v1, v2):
@@ -821,19 +878,6 @@ def submit_user_preferences():
         model.session.commit()
     
         return redirect("/")
-    # else:
-    #     new_user_prefs = model.User_Preference()
-    #     kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
-    #     'kids_goodfor': request.form['kids_goodfor'],
-    #     'options_healthy': request.form['options_healthy'], 
-    #     'options_organic': request.form['options_organic'], 
-    #     'parking': request.form['parking'], 
-    #     'wifi' : request.form['wifi'], 'user_id': current_user_id}
-
-    #     new_user_prefs = model.User_Preference(**kwargs)
-    #     model.session.merge(new_user_prefs)
-    #     model.session.commit()
-
 
     return redirect("/")
 
