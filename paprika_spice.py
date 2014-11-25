@@ -85,7 +85,7 @@ def parse_restaurant_input(restaurant_text):
 
 
 def ping_factual(restaurants, user_geo):
-
+    #TODO: talk about how you made this faster once you make it faster
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
 
@@ -250,43 +250,30 @@ def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
     """ 
-    if session.get('user_restaurant_ids'):
-        rest_ids = session.get('user_restaurant_ids')
 
-    user_input_rest_data = get_user_inputs(rest_ids)
-    print user_input_rest_data
-    return "hello"
-    # new_restaurants = get_factual_results()
-    # restaurants_to_suggest = process_factual_results(new_restaurants)
-    # suggest_new_restaurant()
-    # return restaurants_to_suggest
-
-
+    #TODO: determine if user likes chains
     #TODO: do not suggest restaurants that have already been typed in, check for that
     #TODO: make it so this page only shows if you're logged in 
-   
-def get_user_inputs(rest_ids):
-
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo = session['user_geo']
 
-    user_input_rest_data = []
-  
-    for rest_id in rest_ids:
-        resto_data = model.session.query(model.Restaurant).get(rest_id)
-        user_input_rest_data.append(resto_data)
+    restaurant_data = []
+    if session.get('user_restaurant_ids'):
+        rest_ids = session.get('user_restaurant_ids')
+        for rest_id in rest_ids:
+            resto_data = model.session.query(model.Restaurant).get(rest_id)
+            restaurant_data.append(resto_data)
+
+    #TODO: have something in Javascript so you have to type in restaurants or else
+    for restaurant in restaurant_data:
+        kwargs = restaurant.restaurant_features.get_all_data()
+        print "Here's what is in kwargs %r" % kwargs
+
+    current_user_id = session['user_id']  
+    user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
 
-    # #TODO: have something in Javascript so you have to type in restaurants or else
-
-    # current_user_id = session['user_id']  
-    # user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
-
-    return user_input_rest_data
-
-
-    # import pdb; pdb.set_trace()
     #TODO: CLEAR RESTAURANT ID SESSION
     #TODO: figure out if you can make evaluating similarities a function once it works
     restaurant_similarity = {'rating': [], 'price': []}
@@ -312,18 +299,12 @@ def get_user_inputs(rest_ids):
             if restaurant_categories_value is not None:
                 restaurant_categories_similarity[feature].append(restaurant_categories_value)
 
+
                 #A count of how often each variable happened in each restaurant {'rating': [4.5, 3.5, 3.5], 'price': [2, 1, 2]}
                 #this doesn't work because it just adds to key and doesn't do a counter
                 #for rating, you need to average it
                 #for price, you need to average it
-      
-
-def get_factual_results():
-    pass
-def process_factual_results(new_restaurants):
-    pass
-def suggest_new_restaurant():
-    pass
+            
 
     sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
     sorted_restaurant_similarity.reverse()
@@ -403,7 +384,10 @@ def suggest_new_restaurant():
     sorted_distinct_restaurant_categories=sorted(distinct_restaurant_categories.items(), key = lambda (k,v): v)
     sorted_distinct_restaurant_categories.reverse()
     sorted_distinct_restaurant_categories_keys = [x[0] for x in sorted_distinct_restaurant_categories]
+    #[(u'Social', 4), (u'Restaurants', 3), (u'Food and Dining', 3), (u'Mexican', 2), (u'International', 1), (u'Bars', 1)]"
+    
 
+    #function that you give the sorted lists to and then 
 
     
     #turn it into dictionaries where each item in list is counted and stored as value
@@ -419,12 +403,10 @@ def suggest_new_restaurant():
     new_restaurant_suggestion_from_cuisines = table.filters({'cuisine': {"$in": [sorted_distinct_restaurant_cuisines_keys[0],
     sorted_distinct_restaurant_cuisines_keys[1], sorted_distinct_restaurant_cuisines_keys[2]]}, "postcode": user_geo}).limit(5)
 
-    # #TODO: what if this returns nothing? how to subtract a key?
+    # #TODO: what if this returns nothing? how to subtract a key? put it in a function
     new_restaurant_suggestion_from_categories = table.filters({'category_labels': {"$includes_any": [sorted_distinct_restaurant_categories_keys[0],
         sorted_distinct_restaurant_categories_keys[1], sorted_distinct_restaurant_categories_keys[2]]}, "postcode": user_geo}).limit(5)
 
-    # print "Here are the new restaurants from features %r" % new_restaurant_suggestion_from_features
-    # print "Here are the new restaurants from cuisines %r" % new_restaurant_suggestion_from_cuisines
    
     #TODO: is this the most sensible way to handle errors?    
     if new_restaurant_suggestion_from_features == []:
@@ -548,7 +530,22 @@ def suggest_new_restaurant():
     {u'Boogaloos': 7.0, u'Beretta': 8.0, u'Taqueria Cancun': 7.0, u'La Taqueria': 7.0, u'El Farolito': 6.0, u'Foreign Cinema': 7.0, u'Luna Park': 8.0, u'Flour + Water': 0, u'Limon': 8.0, u'Humphry Slocombe': 3.0, u'Slow Club': 7.0, u'Philz Coffee': 1.0, u'Bi-Rite Creamery': 8.0, u'Tartine Bakery': 7.0}
     (Pdb)  * Detected change in 'paprika_again.py', reloading
     """
+    print "---------Here's the three lists %r %r %r" % (category_cosine_similarity_results, 
+        cosine_similarity_results, cuisine_cosine_similarity_results)
 
+    final_recommendation_all_cosines = {}
+    for key, value in cosine_similarity_results.iteritems():
+        feature_cos_sim = cosine_similarity_results[key] 
+        cuisine_cos_sim = cuisine_cosine_similarity_results[key]
+        category_cos_sim = category_cosine_similarity_results[key]
+        final_recommendation_all_cosines[key] = feature_cos_sim + cuisine_cos_sim +category_cos_sim 
+
+
+    sorted_final_recommendation_all_cosines = sorted(final_recommendation_all_cosines.items(), key = lambda (k,v): v)
+    sorted_final_recommendation_all_cosines.reverse()
+    sorted_final_recommendation_all_cosines_keys =  [x[0] for x in final_recommendation_all_cosines]
+
+    # import pdb; pdb.set_trace()
     #this gives you what the user input prioritizes in terms of cuisine
     #compares restaurants from factual results with this
 
@@ -557,9 +554,9 @@ def suggest_new_restaurant():
     sorted_cosine_similarity_results.reverse()
     sorted_cosine_similarity_results_keys = [x[0] for x in sorted_cosine_similarity_results]
 
-    new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_cosine_similarity_results_keys[0],
-    sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
-    sorted_cosine_similarity_results_keys[4], sorted_cosine_similarity_results_keys[5]]}, "postcode": user_geo}).limit(5)
+    new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_final_recommendation_all_cosines_keys[0],
+    sorted_final_recommendation_all_cosines_keys[1], sorted_final_recommendation_all_cosines_keys[2], sorted_final_recommendation_all_cosines_keys[3], 
+    sorted_final_recommendation_all_cosines_keys[4], sorted_final_recommendation_all_cosines_keys[5]]}, "postcode": user_geo}).limit(5)
     
     print new_restaurant_suggestion_from_all
 
