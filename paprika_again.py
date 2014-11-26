@@ -38,6 +38,18 @@ def restos():
 
 @app.route('/restaurants', methods = ['POST'])
 def other_restos():
+    """This is the main function for suggesting a new restaurant. It contains
+    functions that 
+    (1) take in user input for restaurants using Google Maps JS autocomplete
+    (2) parse restaurant inputs to determine name, city
+    (3) make API call to Factual to find information on those restaurants
+    (4) determine the most common categories, features and cuisines of those restaurants
+    (5) make API call to Factual to find similar restaurants using parameters defined in (4)
+    (6) ranks results from (5) using cosine similarity, which measures how each restaurant
+    in (5) compares to a user's established preferences
+    (7) returns the highest-ranked restaurants to surface to user for user feedback
+
+    """
     restaurant1 = request.form.get('restaurant_1')
     restaurant2 = request.form.get('restaurant_2')
     restaurant3 = request.form.get('restaurant_3')      
@@ -46,9 +58,6 @@ def other_restos():
     restaurant1_data = parse_restaurant_input(restaurant1)
     restaurant2_data = parse_restaurant_input(restaurant2)
     restaurant3_data = parse_restaurant_input(restaurant3)
-
-    print "This could be useful %r %r %r" % (restaurant1_data, restaurant2_data, restaurant3_data) 
-
     #TODO: Make it so that if it isn't in factual, a box prompts up asking you for another one
 
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
@@ -58,28 +67,27 @@ def other_restos():
     session['user_restaurant_ids'] = restaurant_ids
     session['user_geo'] = user_geo
     return suggest_new_resto(restaurant_data)
-    # return redirect("/new_restaurant", restaurant_data = restaurant_data)
         
 # use jquery AJAX here to add on same page
 # show some things only when logged in
 
 def parse_restaurant_input(restaurant_text):
-
-    # restaurant1 = request.form['restaurant_1']
+ 
     data = {}
 
     #TODO: make sure everything is entered in here and that it adheres to GMaps
     #TODO: figure out how to link away for something when giving feedback
 
     restaurant_split = restaurant_text.split(',')
-    
+    #check to make sure that there are commas
+    #check that the length is greater than r eq 4 if not use the full string
     if restaurant_split[0]:
         data['name'] = restaurant_split[0]
-    if restaurant_split[2]:
+    if restaurant_split[-3]:
         data['city'] =restaurant_split[2]
-    if restaurant_split[3]:
+    if restaurant_split[-2]:
         data['state'] = restaurant_split[3]
-    if restaurant_split[2] and restaurant_split[3]:    
+    if restaurant_split[-3] and restaurant_split[-2]:    
         data['geo'] = data['city']+data['state']
 
     return data
@@ -284,30 +292,30 @@ def user_feedback_on_restaurants():
     
     #query DB for id
     #dnoe function after ajax call - can call another function etc from within
-    print "Working heyyyy"
     return jsonify( { 'feedback_button_id': feedback_button_id} )
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
+
+        It returns a list of restaurants from Factual along with a list of the 
+        user's top-ranked features (if cuisine is selected, weights cuisine as well.)
     """ 
     if session.get('user_restaurant_ids'):
         rest_ids = session.get('user_restaurant_ids')
 
     user_input_rest_data = get_user_inputs(rest_ids)
-    restaurant_rating_price_similarities = get_restaurant_model_similarities(user_input_rest_data)
+    restaurant_rating_price_similarities = get_average_rating_and_price_for_user_inputs(user_input_rest_data)
     print restaurant_rating_price_similarities
 
     sorted_restaurant_features_similarity_keys = get_rest_features_similarities(user_input_rest_data)
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_similarity_keys)
-
     distinct_restaurant_categories = get_rest_cat_label_similarities(user_input_rest_data)
     db_result_new_restaurants_from_category_labels = get_new_restaurants_for_categories(distinct_restaurant_categories)
-
     distinct_restaurant_cuisines = get_rest_cuisine_similarities(user_input_rest_data)
     db_result_new_restaurants_from_cuisines = get_new_restaurants_for_cuisines(distinct_restaurant_cuisines)
-    # db_result_new_restaurants_from_features = get_rest_features_similarities(user_input_rest_data)
+    translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_similarity_keys)
     
 
     new_restaurant_suggestion_from_all = get_combined_feature_cat_cuisine_results(
@@ -316,13 +324,8 @@ def suggest_new_resto(restaurant_data):
 
     #TODO: this returns a set of lists
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion_from_all, 
-        sorted_restaurant_features_similarity_keys = sorted_restaurant_features_similarity_keys)
+        translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
     
-    # restaurants_to_suggest = process_factual_results(new_restaurants)
-    # suggest_new_restaurant()
-    # return restaurants_to_suggest
-
-
     #TODO: do not suggest restaurants that have already been typed in, check for that
     #TODO: make it so this page only shows if you're logged in 
    
@@ -349,30 +352,37 @@ def get_user_inputs(rest_ids):
 
     return user_input_rest_data
 
-#TODO: MAKE THIS FUNCTIONAL
-def get_restaurant_model_similarities(user_input_rest_data):
+# #TODO: MAKE THIS FUNCTIONAL
+# def get_restaurant_model_similarities(user_input_rest_data):
+def get_average_rating_and_price_for_user_inputs(user_input_rest_data):
     """
     This function looks at the restaurant model to determine average price 
     and average rating from the three restaurants the user input.
     """
-    restaurant_similarity = {'rating': [], 'price': []}
-
+    restaurant_ratings_prices = {'rating': [], 'price': []}
+    average_rating_price = {'rating': [], 'price': []}
+    numerator = 0
+    
     for entry in range(len(user_input_rest_data)):
        
         restaurant_model = user_input_rest_data[entry]
 
-        for feature in restaurant_similarity.keys():
+        for feature in restaurant_ratings_prices.keys():
             #does this work if you change to set?
             #TODO: figure out what to do if it doesn't have this attribute
             restaurant_model_value = getattr(restaurant_model, feature)
 
             if restaurant_model_value:
-                restaurant_similarity[feature].append(restaurant_model_value)
+                restaurant_ratings_prices[feature].append(restaurant_model_value)
 
+    for key, value in restaurant_ratings_prices.iteritems():
+        denominator = len(value)
+        for entry in value:
+            numerator = numerator + entry
+        average = numerator/denominator 
+        average_rating_price[key] = average
 
-    sorted_restaurant_similarity = sorted(restaurant_similarity.items(), key = lambda (k,v): v)
-    sorted_restaurant_similarity.reverse()
-    sorted_restaurant_similarity_keys = [x[0] for x in sorted_restaurant_similarity]
+    print average_rating_price
 
 def get_rest_cat_label_similarities(user_input_rest_data):
     """
@@ -559,6 +569,39 @@ def get_rest_features_similarities(user_input_rest_data):
     sorted_restaurant_features_similarity_keys = [x[0] for x in sorted_restaurant_features_similarity]
 
     return sorted_restaurant_features_similarity_keys
+
+def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_keys):
+    """
+    This function takes the list of most common features from the DB and translates
+    to English (e.g., alcohol_bar becomes bars, groups_goodfor becomes good for groups, etc.)
+    so that sentence reads 'You like places that: ...'
+    """ 
+
+    translated_restaurant_features = { 'accessible_wheelchair': "are accessible",
+    'alcohol_byob': "let you bring your own booze", 'alcohol_bar': "have a full bar", 
+    'alcohol_beer_wine': "have beer and wine", 'alcohol': "serve alcohol",
+    'groups_goodfor': "are good for groups", 'kids_goodfor': "are good for kids",
+    'kids_menu': "have a kids menu", 'meal_breakfast': "serve breakfast",  
+    'meal_cater': "have catering available", 'meal_deliver': "have delivery options",
+    'meal_dinner': "serve dinner", 'meal_lunch': "serve lunch", 'meal_takeout': "have takeout options available",
+    'open_24hrs': "are open 24 hours", 'options_glutenfree': "have gluten-free options",
+    'options_lowfat': "have low-fat options", 'options_organic': "have organic options",
+    'options_healthy': "have healthy options", 'options_vegan': "have vegan options",
+    'options_vegetarian': "have vegetarian options", 'parking': "have parking",
+    'parking_free': "have free parking", 'parking_garage': "have garages for parking",
+    'parking_lot': "have parking lots", 'parking_street': "have street parking",
+    'parking_valet': "have valet", 'parking_validated': "have validated parking",
+    'payment_cashonly': "are cash only", 'reservations': "allow reservations", 
+    'room_private': "have private rooms", 'seating_outdoor': "have outdoor seating",
+    'smoking': "allow sm'oking", 'wifi': "have wifi"}
+
+    for entry in range(len(translated_sorted_rest_feat_sim_keys)):
+        phrase_to_change =  translated_sorted_rest_feat_sim_keys[entry]
+        if phrase_to_change in translated_restaurant_features.keys():
+             translated_sorted_rest_feat_sim_keys[entry] = translated_restaurant_features[phrase_to_change]
+
+    # import pdb; pdb.set_trace()
+    return translated_sorted_rest_feat_sim_keys
 
 def get_rest_features_results(sorted_restaurant_features_similarity_keys):
     """

@@ -16,17 +16,17 @@
 <div class="panel panel-default">
 <div class="panel-body">
 
-      We noticed that you like {{sorted_restaurant_features_similarity_keys[0]}},
-      {{sorted_restaurant_features_similarity_keys[1]}} and
-      {{sorted_restaurant_features_similarity_keys[2]}} <br>
+      
+      <h3><p class="help-block">We noticed that you like places that {{translated_sorted_rest_feat_sim_keys[0]}},
+      {{translated_sorted_rest_feat_sim_keys [1]}} and
+      {{translated_sorted_rest_feat_sim_keys [2]}}.<br>
 
-      <br> <br> 
-      Here's some restaurants we think you'll like. 
+      <br> 
+      Here's some restaurants we think you'll like.</p></h3>
       <br><br>
      
       {% set entry_counter = 0 %}
-      {%for entry in new_restaurant_suggestion.data()%}
-       
+      {%for entry in new_restaurant_suggestion.data()%} 
             <div id = "{{entry_counter}}" > 
               <a href = "{{entry.website}}" >{{entry['name']}} </a>
          
@@ -40,23 +40,25 @@
               <br>
            
       {% set entry_counter = entry_counter + 1 %}
-     
+            
       {%endfor%}
     </div> 
 <script>
 
 $(document).ready(function(){
 
-  $("[id^=happy_face_{{ entry_counter }}]").click(function(){
-    var factual_id = $(this).attr("data-restaurant-id");
+  $("[id^=happy_face_]").click(function(){
+    var factual_id = $(this).data("restaurant-id");
     var user_feedback = $(this).attr("data-restaurant-rating-id");
+    var button_id = $(this).attr("id");
 
     $.ajax({
       type: "POST",
       url: "/user_feedback",
-      data: { factual_id: factual_id, user_feedback: user_feedback}
+      data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
     })
-       .done(function(msg){$("[id^=happy_face_{{ entry_counter }}]").attr('src',"static/clicked-happy.png");
+      .done(function( msg){
+        $('#' + msg['feedback_button_id']).attr('src',"static/clicked-happy.png");
       });
         });
 
@@ -79,12 +81,14 @@ $(document).ready(function(){
       });
 });;
       });
+
+
         
 </script>
 
 
         <form>
-        <button type="btn btn-lg btn-primary btn-block" align = "center" type="get"><br>
+        <button type="btn btn-lg btn-primary btn-block" align = "center" type="get"> 
        Show me some new restaurants</button><br>
         </form>
 </div>

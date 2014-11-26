@@ -7,7 +7,7 @@
 <script src='https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js'></script>
 <link href='https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css' rel='stylesheet' />
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" /> 
+
 <style>
   body { margin:0; padding:0; }
 
@@ -15,14 +15,13 @@
   #map {
 width: 100%;
 position: inherited;
-height: 400px;
-width: 75%;
+height: 450px;
+width: 100%;
 margin:0;
 padding:0; 
 border: 1px solid black;
 border-radius: 8px;
 }
-
 </style>
 </head>
 
@@ -35,7 +34,7 @@ border-radius: 8px;
 	<div class="panel-body">
 		<div class="container">  
     		<div class="row">
-        		<div class="col-md-4">  
+        		<div class="col-md-3">  
            			{{user[0].user.first_name}}, here are the restaurants you've favorited:
 				  	<br>
 				    <br>
@@ -55,7 +54,7 @@ border-radius: 8px;
 				    <br>
        			 </div>
 		            
-        			<div class="col-md-4">
+        			<div class="col-md-8">
 					<div id="map"></div>
 		            
 			            <script>
@@ -69,7 +68,7 @@ border-radius: 8px;
 				    	L.marker([ {{entry.restaurant.latitude}}, {{entry.restaurant.longitude}} ], {
 					    icon: L.mapbox.marker.icon({
 					        'marker-size': 'large',
-					        'marker-symbol': 'bus',
+					        'marker-symbol': 'marker',
 					        'marker-color': '#fa0'
 					    })
 
