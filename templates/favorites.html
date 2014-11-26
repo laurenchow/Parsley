@@ -15,7 +15,7 @@
   #map {
 width: 100%;
 position: inherited;
-height: 300px;
+height: 400px;
 width: 75%;
 margin:0;
 padding:0; 
@@ -35,7 +35,7 @@ border-radius: 8px;
 	<div class="panel-body">
 		<div class="container">  
     		<div class="row">
-        		<div class="col-md-6">  
+        		<div class="col-md-4">  
            			{{user[0].user.first_name}}, here are the restaurants you've favorited:
 				  	<br>
 				    <br>
@@ -54,13 +54,32 @@ border-radius: 8px;
 				    {%endfor%}
 				    <br>
        			 </div>
-        		<div class="col-md-6">
-		            <div id="map"></div>
+		            
+        			<div class="col-md-4">
+					<div id="map"></div>
+		            
 			            <script>
 			            var map = L.map('map').setView([37.760815, -122.402303], 14);
 			            mapLink = '<a href="http://openstreetmap.org">OpenStreetMap</a>';               
 			            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: 'Map data &copy; '+ mapLink , maxZoom: 24,}).addTo(map);
-			            </script>
+
+
+				    	{%for entry in user%}
+						L.mapbox.accessToken = 'pk.eyJ1IjoibGF1cmVuY2hvdyIsImEiOiJucUh0bW5JIn0.gBWRI2kU11jtbi_owjmZ2g';
+				    	L.marker([ {{entry.restaurant.latitude}}, {{entry.restaurant.longitude}} ], {
+					    icon: L.mapbox.marker.icon({
+					        'marker-size': 'large',
+					        'marker-symbol': 'bus',
+					        'marker-color': '#fa0'
+					    })
+
+					    
+					}).addTo(map);
+
+				    	   {%endfor%}
+				    	</script>
+
+
         			</div>
    				 </div>
 			</div>

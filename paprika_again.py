@@ -271,7 +271,6 @@ def user_feedback_on_restaurants():
     model.session.commit()
 
 
-    # import pdb; pdb.set_trace()
     
     # filter_by(user_id = session['user_id'], restaurant_id = restaurant, rating = feedback_restaurant_rating).first()
 
@@ -654,13 +653,15 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
                 total_cos_sim_value = total_cos_sim_value + cos_sim_result
             cosine_similarity_results[db_entry_for_restaurant.name] = total_cos_sim_value 
 
-        for entry in range(len(db_entry_data_for_restaurant_category_list)):
-            db_entry_data_for_restaurant_category_list.strip(" ")
-            split_cat_list = db_entry_data_for_restaurant_category_list.split(',')
-            for entry in split_cat_list:
-                if entry != '':
-                    cat_count = distinct_restaurant_categories.get(entry, 0)+1
-                    all_distinct_restaurant_category_labels[entry]=cat_count
+        # #TODO: fix this
+        #TODO: remove the last element in list for category_labels because it is breadcrumbs so only the last one
+        # for entry in range(len(db_entry_data_for_restaurant_category_list)):
+        db_entry_data_for_restaurant_category_list.strip(" ")
+        split_cat_list = db_entry_data_for_restaurant_category_list.split(',')
+        for entry in split_cat_list:
+            if entry != '':
+                cat_count = distinct_restaurant_categories.get(entry, 0)+1
+                all_distinct_restaurant_category_labels[entry]=cat_count
 
         for entry in range(len(db_entry_data_for_restaurants_cuisine_list)):
             db_entry_data_for_restaurants_cuisine_list.strip(" ")
@@ -670,6 +671,7 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
                     cuisine_count = distinct_restaurant_cuisines.get(entry, 0)+1
                     all_distinct_restaurant_cuisines[entry]=cuisine_count
         
+        # import pdb; pdb.set_trace()
         cuisine_total_cos_sim_value =0
         for key, value in all_distinct_restaurant_cuisines.iteritems():
                 cuisine_cos_sim_result = cosine_similarity(all_distinct_restaurant_cuisines.get(key, 0), user_ideal_distinct_restaurant_cuisines.get(key,0))
@@ -683,6 +685,8 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
         #TODO: check and see if this should be 0
         category_label_total_cos_sim_value=0
         for key, value in all_distinct_restaurant_category_labels.iteritems():
+                #TODO: this is a fancy counter, use this on vectors instead of individual keys
+                # import pdb; pdb.set_trace()
                 cat_cos_sim_result = cosine_similarity(all_distinct_restaurant_category_labels.get(key, 0),user_ideal_distinct_restaurant_cat_labels.get(key,0))
                 if cat_cos_sim_result > 0:
                     category_label_total_cos_sim_value= category_label_total_cos_sim_value+cat_cos_sim_result
