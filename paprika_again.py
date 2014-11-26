@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, flash, redirect, request, g
+from flask import Flask, render_template, session, flash, redirect, request, g, jsonify
 from passlib.hash import pbkdf2_sha256
 from factual import Factual
 import model
@@ -247,27 +247,26 @@ def user_feedback_on_restaurants():
     """
     This function stores user restaurant preferences from new restaurants
     """
-
+    #TODO: change to .get
     feedback_factual_id = request.form['factual_id']
     feedback_restaurant_rating = request.form['user_feedback']
-    print feedback_factual_id
-    print feedback_restaurant_rating
-    print "Here's the user id%r" % session['user_id']
-
-
     feedback_restaurant_rating = float(feedback_restaurant_rating)
-
+    feedback_button_id = request.form.get('button_id')
+    
     restaurant = model.session.query(model.Restaurant).filter_by(factual_id = feedback_factual_id).first()
-
-
-    user_preference = model.User_Restaurant_Rating()
-    user_preference.restaurant_id = restaurant.id
-    # factual_id = feedback_factual_id).first()
-    user_preference.rating = feedback_restaurant_rating
-    user_preference.user_id = session['user_id']
-
-
-    model.session.merge(user_preference)
+    user_preference = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = restaurant.id, user_id = session['user_id']).first()
+    
+    if user_preference:
+        user_preference.rating = feedback_restaurant_rating
+        model.session.add(user_preference)
+    #if/else write a function to try/except and get an integrity error if it already exists
+    else:
+        user_preference = model.User_Restaurant_Rating()
+        user_preference.restaurant_id = restaurant.id
+        # factual_id = feedback_factual_id).first()
+        user_preference.rating = feedback_restaurant_rating
+        user_preference.user_id = session['user_id']
+        model.session.add(user_preference)
 
     model.session.commit()
 
@@ -287,7 +286,7 @@ def user_feedback_on_restaurants():
     #query DB for id
     #dnoe function after ajax call - can call another function etc from within
     print "Working heyyyy"
-    return "works!"
+    return jsonify( { 'feedback_button_id': feedback_button_id} )
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
 def suggest_new_resto(restaurant_data):
@@ -298,7 +297,6 @@ def suggest_new_resto(restaurant_data):
         rest_ids = session.get('user_restaurant_ids')
 
     user_input_rest_data = get_user_inputs(rest_ids)
-    print user_input_rest_data
     restaurant_rating_price_similarities = get_restaurant_model_similarities(user_input_rest_data)
     print restaurant_rating_price_similarities
 
@@ -614,6 +612,8 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
     
 
     #TODO: create user_ideal_restaurant from three restaurant inputs along with user input
+    user_ideal_profile =  model.session.query(model.User_Preference).filter_by(user_id= session['user_id'])
+
     user_ideal_restaurant = model.session.query(model.Restaurant).get(1)
     user_ideal_restaurant_features = user_ideal_restaurant.restaurant_features.get_all_data()
     user_ideal_restaurant_cuisines = user_ideal_restaurant.restaurant_categories.cuisine.split(',')
@@ -699,14 +699,6 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
     sorted_cuisine_cosine_similarity_results_keys =  [x[0] for x in sorted_all_distinct_restaurant_cuisines]
 
 
-    """
-        {u'Boogaloos': 1.0, u'Beretta': 1.0, u'Taqueria Cancun': 1.0, u'La Taqueria': 1.0, u'El Farolito': 1.0, u'Foreign Cinema': 1.0, u'Luna Park': 0, u'Flour + Water': 2.0, u'Limon': 1.0, u'Humphry Slocombe': 2.0, u'Slow Club': 0, u'Philz Coffee': 2.0, u'Bi-Rite Creamery': 2.0, u'Tartine Bakery': 1.0}
-    (Pdb) category_cosine_similarity_results
-    {u'Boogaloos': 5.0, u'Beretta': 5.0, u'Taqueria Cancun': 5.0, u'La Taqueria': 5.0, u'El Farolito': 5.0, u'Foreign Cinema': 5.0, u'Luna Park': 3.0, u'Flour + Water': 5.0, u'Limon': 5.0, u'Humphry Slocombe': 5.0, u'Slow Club': 4.0, u'Philz Coffee': 5.0, u'Bi-Rite Creamery': 5.0, u'Tartine Bakery': 5.0}
-    (Pdb) cosine_similarity_results
-    {u'Boogaloos': 7.0, u'Beretta': 8.0, u'Taqueria Cancun': 7.0, u'La Taqueria': 7.0, u'El Farolito': 6.0, u'Foreign Cinema': 7.0, u'Luna Park': 8.0, u'Flour + Water': 0, u'Limon': 8.0, u'Humphry Slocombe': 3.0, u'Slow Club': 7.0, u'Philz Coffee': 1.0, u'Bi-Rite Creamery': 8.0, u'Tartine Bakery': 7.0}
-    (Pdb)  * Detected change in 'paprika_again.py', reloading
-    """
 
     #this gives you what the user input prioritizes in terms of cuisine
     #compares restaurants from factual results with this

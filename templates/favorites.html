@@ -47,7 +47,7 @@ border-radius: 8px;
 				    {%if entry.restaurant.website != None%}
 				    <a href = " {{ entry.restaurant.website }}"> {{entry.restaurant.name}}  </a></td></tr><br>
 				    {%else%}
-				     <tr><td> {{entry.restaurant.name}} </td></tr><br>
+				     <tr><td><a href = "https://www.google.com/search?q={{entry.restaurant.name}}"> {{entry.restaurant.name}}</a> </td></tr><br>
 				    {%endif%}
 
 				    {%endif%}

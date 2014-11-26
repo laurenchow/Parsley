@@ -26,28 +26,28 @@
      
       {% set entry_counter = 0 %}
       {%for entry in new_restaurant_suggestion.data()%}
-        
-       <div id = "{{entry_counter}}" > 
-            <a href = "{{entry.website}}" >{{entry['name']}} </a>
-            <br>How does this sound?<br><br>
-
-            <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
-            
-            <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" style="width:40xpx;height:40px"  />
-            <br> 
-            </a>
+       
+            <div id = "{{entry_counter}}" > 
+              <a href = "{{entry.website}}" >{{entry['name']}} </a>
+         
+              <br>How does this sound? 
+             
+                <br><br>
+              <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
+             
+              <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" data-restaurant-rating-id = "{{0}}" data-restaurant-id = "{{entry['factual_id']}}" style="width:40xpx;height:40px"  />
+              </a>
+              <br>
            
-            </div> 
       {% set entry_counter = entry_counter + 1 %}
+     
       {%endfor%}
-
+    </div> 
 <script>
 
 $(document).ready(function(){
 
-  console.log("This also might actually work")
-  $("[id^=happy_face_]").click(function(){
-    console.log("This might actually work");
+  $("[id^=happy_face_{{ entry_counter }}]").click(function(){
     var factual_id = $(this).attr("data-restaurant-id");
     var user_feedback = $(this).attr("data-restaurant-rating-id");
 
@@ -56,17 +56,35 @@ $(document).ready(function(){
       url: "/user_feedback",
       data: { factual_id: factual_id, user_feedback: user_feedback}
     })
-      .done(function( msg ) {
-        alert( "Data Saved: " + msg );
+       .done(function(msg){$("[id^=happy_face_{{ entry_counter }}]").attr('src',"static/clicked-happy.png");
       });
         });
 
 });
+
+$(document).ready(function(){
+
+  $("[id^=sad_face_]").click(function(){
+    var factual_id = $(this).data("restaurant-id");
+    var user_feedback = $(this).attr("data-restaurant-rating-id");
+    var button_id = $(this).attr("id");
+
+    $.ajax({
+      type: "POST",
+      url: "/user_feedback",
+      data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
+    })
+      .done(function( msg){
+        $('#' + msg['feedback_button_id']).attr('src',"static/clicked-sad.png");
+      });
+});;
+      });
+        
 </script>
 
 
         <form>
-        <button type="btn btn-lg btn-primary btn-block" align = "center" type="get">
+        <button type="btn btn-lg btn-primary btn-block" align = "center" type="get"><br>
        Show me some new restaurants</button><br>
         </form>
 </div>
