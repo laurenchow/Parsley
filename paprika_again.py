@@ -55,15 +55,18 @@ def other_restos():
     restaurant3 = request.form.get('restaurant_3')      
     user_geo = request.form.get('user_geo') 
 
-    restaurant1_data = parse_restaurant_input(restaurant1)
-    restaurant2_data = parse_restaurant_input(restaurant2)
-    restaurant3_data = parse_restaurant_input(restaurant3)
-    #TODO: Make it so that if it isn't in factual, a box prompts up asking you for another one
+    # restaurant1_data = parse_restaurant_input(restaurant1)
+    # restaurant2_data = parse_restaurant_input(restaurant2)
+    # restaurant3_data = parse_restaurant_input(restaurant3)
+    # #TODO: Make it so that if it isn't in factual, a box prompts up asking you for another one
 
+    print "\n\n\n\n\n\n\n1"
     restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
+    print "\n\n\n\n\n\n\n2"
     restaurant_ids = check_db_for_restos(restaurant_data)
+    print "\n\n\n\n\n\n\n3"
     add_restaurants_to_user_preferences(restaurant_ids)
-
+    print "\n\n\n\n\n\n\n4"
     session['user_restaurant_ids'] = restaurant_ids
     session['user_geo'] = user_geo
     return suggest_new_resto(restaurant_data)
@@ -253,16 +256,18 @@ def add_restaurants_to_user_preferences(restaurant_ids):
 @app.route('/user_feedback', methods = ['POST'])
 def user_feedback_on_restaurants():
     """
-    This function stores user restaurant preferences from new restaurants
+    This function stores user restaurant preferences from new restaurants that they've 
+    input whose data has been retrieved from Factual.
     """
     #TODO: change to .get
-    feedback_factual_id = request.form['factual_id']
-    feedback_restaurant_rating = request.form['user_feedback']
+    feedback_factual_id = request.form.get('factual_id')
+    feedback_restaurant_rating = request.form.get('user_feedback')
     feedback_restaurant_rating = float(feedback_restaurant_rating)
     feedback_button_id = request.form.get('button_id')
     
     restaurant = model.session.query(model.Restaurant).filter_by(factual_id = feedback_factual_id).first()
-    user_preference = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = restaurant.id, user_id = session['user_id']).first()
+    user_preference = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = restaurant.id, 
+        user_id = session['user_id']).first()
     
     if user_preference:
         user_preference.rating = feedback_restaurant_rating
@@ -305,18 +310,27 @@ def suggest_new_resto(restaurant_data):
     if session.get('user_restaurant_ids'):
         rest_ids = session.get('user_restaurant_ids')
 
+    print "\n\n\n\n\n\na"
     user_input_rest_data = get_user_inputs(rest_ids)
     restaurant_rating_price_similarities = get_average_rating_and_price_for_user_inputs(user_input_rest_data)
+    print "\n\n\n\n\n\nb"
     print restaurant_rating_price_similarities
-
+    print "\n\n\n\n\n\nc"
     sorted_restaurant_features_similarity_keys = get_rest_features_similarities(user_input_rest_data)
+    print "\n\n\n\n\n\nd"
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_similarity_keys)
+    print "\n\n\n\n\n\ne"
     distinct_restaurant_categories = get_rest_cat_label_similarities(user_input_rest_data)
+    print "\n\n\n\n\n\nf"
     db_result_new_restaurants_from_category_labels = get_new_restaurants_for_categories(distinct_restaurant_categories)
+    print "\n\n\n\n\n\ng"
     distinct_restaurant_cuisines = get_rest_cuisine_similarities(user_input_rest_data)
+    print "\n\n\n\n\n\nh"
     db_result_new_restaurants_from_cuisines = get_new_restaurants_for_cuisines(distinct_restaurant_cuisines)
+    print "\n\n\n\n\n\ni"
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_similarity_keys)
     
+    print "\n\n\n\n\n\nj"
 
     new_restaurant_suggestion_from_all = get_combined_feature_cat_cuisine_results(
         db_result_new_restaurants_from_features, db_result_new_restaurants_from_category_labels,
@@ -512,7 +526,9 @@ def get_rest_cuisine_similarities(user_input_rest_data):
     return distinct_restaurant_cuisines
 
 def get_new_restaurants_for_cuisines(distinct_restaurant_cuisines):
-
+    """This function takes the top-ranked cuisines and returns restaurant suggestions 
+    matching those cuisines, then checks the database for them, then adds them.
+    """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo =  session['user_geo'] 
@@ -593,14 +609,13 @@ def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_
     'parking_valet': "have valet", 'parking_validated': "have validated parking",
     'payment_cashonly': "are cash only", 'reservations': "allow reservations", 
     'room_private': "have private rooms", 'seating_outdoor': "have outdoor seating",
-    'smoking': "allow sm'oking", 'wifi': "have wifi"}
+    'smoking': "allow smoking", 'wifi': "have wifi"}
 
     for entry in range(len(translated_sorted_rest_feat_sim_keys)):
         phrase_to_change =  translated_sorted_rest_feat_sim_keys[entry]
         if phrase_to_change in translated_restaurant_features.keys():
              translated_sorted_rest_feat_sim_keys[entry] = translated_restaurant_features[phrase_to_change]
 
-    # import pdb; pdb.set_trace()
     return translated_sorted_rest_feat_sim_keys
 
 def get_rest_features_results(sorted_restaurant_features_similarity_keys):
@@ -628,11 +643,15 @@ def get_rest_features_results(sorted_restaurant_features_similarity_keys):
     #TODO: if it returns nothing, reload the page to ask for new restaurants? 
     #TODO: return to new page so users know they moved URLs when they get new restaurants
     # list_new_restaurant_suggestion = new_restaurant_suggestion_from_features
+    print "\n\n\n\n\n\nXX1"   
     db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features)
+    print "\n\n\n\n\n\nXX2"
+
 
     return db_result_new_restaurants_from_features
 
 #TODO: weight cuisines differently and rank more important if user selects 
+
 def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_features, 
         db_result_new_restaurants_from_category_labels,
         db_result_new_restaurants_from_cuisines, distinct_restaurant_cuisines, 
@@ -656,7 +675,8 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
     #TODO: create user_ideal_restaurant from three restaurant inputs along with user input
     user_ideal_profile =  model.session.query(model.User_Preference).filter_by(user_id= session['user_id'])
 
-    user_ideal_restaurant = model.session.query(model.Restaurant).get(1)
+    user_ideal_restaurant = model.session.query(model.Restaurant).get(2)
+    # import pdb; pdb.set_trace()
     user_ideal_restaurant_features = user_ideal_restaurant.restaurant_features.get_all_data()
     user_ideal_restaurant_cuisines = user_ideal_restaurant.restaurant_categories.cuisine.split(',')
     user_ideal_restaurant_cat_labels = user_ideal_restaurant.restaurant_categories.category_labels.split(',')
@@ -718,7 +738,7 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
         cuisine_total_cos_sim_value =0
         for key, value in all_distinct_restaurant_cuisines.iteritems():
                 cuisine_cos_sim_result = cosine_similarity(all_distinct_restaurant_cuisines.get(key, 0), user_ideal_distinct_restaurant_cuisines.get(key,0))
-                print key, cuisine_cos_sim_result
+                # import pdb; pdb.set_trace()
                 if cuisine_cos_sim_result > 0:
                     cuisine_total_cos_sim_value = cuisine_total_cos_sim_value + cuisine_cos_sim_result
                 cuisine_cosine_similarity_results[db_entry_for_restaurant.name] = cuisine_total_cos_sim_value
@@ -786,7 +806,7 @@ def user_favorites():
     if single_user:
         return render_template("favorites.html", user = single_user)
     else:
-         return render_template("favorites.html")
+         return render_template("sorry.html")
     #TODO: FIX THIS SO IT STORES USER ALWAYS
 @app.route('/user', methods = ['GET'])
 def user_profile():
@@ -877,8 +897,8 @@ def submit_user_details(current_user_id):
       
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
 
-    kwargs = {'age': request.form['age'], 'gender': request.form['gender'],
-    'zip': request.form['zip'], 'occupation': request.form['job'], 'id': current_user_id}
+    kwargs = {'age': request.form.get('age', 0), 'gender': request.get('gender', None),
+    'zip': request.form.get('zip', 00000), 'occupation': request.form.get('job', None), 'id': current_user_id}
 
     new_user_info = model.User(**kwargs)
 
@@ -889,34 +909,142 @@ def submit_user_details(current_user_id):
     
 
 
-
 @app.route('/user_preferences', methods = ['GET'])
 def user_preferences():
+    """
+    Looks up existing user preferences and loads the restaurants a user has reviewed.
+    For each restaurant a user has reviewed, increments the feature in user preferences
+    to show that the user strongly values that feature.
+    """
+    current_user_id = session['user_id']  
+    print "This is who is logged in right now %r" % current_user_id
+    existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+ 
+
+    #you'll want to check if the restaurant has already been entered into the user
+    if existing_user_prefs:
+        user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
+        if user_fave_rests:
+            user_prefs_to_store = {}
+            user_prefs = existing_user_prefs.get_all_data()
+
+            for key, value in user_prefs.iteritems():
+                user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
+
+
+            # import pdb; pdb.set_trace()
+                    
+
+            for entry in user_fave_rests:
+                rest_features = entry.restaurant.restaurant_features.get_all_data()
+                for key, value in rest_features.iteritems():
+                    user_prefs_to_store[key] = getattr(rest_features,key,value)
+                    #create a new key in dictionary to add this value in
+                    #make this a counter where the key is the feature, the value is the number of times it's happened
+                    #if key already exists, add feature value to it
+                    #add all keys (which are db columns) in to session and commit
+
+                    
+                    import pdb; pdb.set_trace()
+                    
+
+                    # setattr(user_prefs_to_store, key, value)
+
+                    # feature_value = rest_features.get(value, 0)
+                    # if user_prefs_to_store[key]:
+                        
+                    #     user_prefs_to_store[key] = user_prefs_to_store[key] + feature_value 
+                    # else:
+                        
+                    
+                    # setattr(user_prefs_to_store, key, value)
+                    
+                    # existing_feature_rating = user_prefs_to_store[key].get(value,0)
+                 
+                    # existing_user_prefs.key = existing_user_prefs.key + feature_value  
+                    # session.add(existing_user_prefs)   
+                     # user_prefs_to_store[key] + 
+                
+
+                    # category_count= distinct_restaurant_categories.get(entry, 0)+1
+                    # distinct_restaurant_categories[entry]=category_count   
+                    # user_feature_pref[key] rest_features, key, value)
+                    # if user_feature_pref:
+                    #     user_prefs_to_store[key].append(user_feature_pref)
+                      
+        else:
+            pass
+            redirect("/sorry")
+
     return render_template("user_preferences.html")
     
 
 @app.route('/user_preferences', methods = ['POST'])
+# def submit_user_preferences(restaurant_data): 
 def submit_user_preferences(): 
+    """
+    This function stores user preferences for all restaurants rated.
+    
+    If user preferences do not exist (e.g., at signup), creates instance of User_Preference 
+    class and stores preferences.
+    
+    If user preferences do already exist, this function reviews all the restaurants 
+    a user has favorited and stores in a dictionary of values indicating how strongly a user prefers 
+    a certain feature, category of restaurant or cuisine.
+    """
+
     current_user_id = session['user_id']  
-    print "This is where you'll show what the user says they prefer"  
     print "This is who is logged in right now %r" % current_user_id
-    update_existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+    existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+ 
+    if existing_user_prefs:
+        user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).first()
+        if user_fave_rests:
+            pass
+            # import pdb; pdb.set_trace()
+        else:
+            pass
+            redirect("/sorry")
+            #TODO: tell the user they need to rate some restaurants
+        #TODO tie into user feedback
+    else:
+    
+        kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
+        'kids_goodfor': request.form.get('kids_goodfor'),
+        'options_healthy': request.form.get('options_healthy'), 
+        'options_organic': request.form.get('options_organic'), 
+        'parking': request.form.get('parking'), 
+        'wifi' : request.form.get('wifi'), 
+        'user_id': current_user_id}
 
-    # print "This exists!!! %r" % new_user_prefs_info
-    if update_existing_user_prefs:
-    # if current_user_id:
-        kwargs = {'accessible_wheelchair': request.form['accessible_wheelchair'],
-        'kids_goodfor': request.form['kids_goodfor'],
-        'options_healthy': request.form['options_healthy'], 
-        'options_organic': request.form['options_organic'], 
-        'parking': request.form['parking'], 
-        'wifi' : request.form['wifi'], 'user_id': current_user_id}
+        initial_user_prefs = model.User_Preference(**kwargs)
 
-        update_existing_user_prefs = model.User_Preference(**kwargs)
-        model.session.merge(update_existing_user_prefs)
+        model.session.merge(initial_user_prefs)
         model.session.commit()
     
-        return redirect("/")
+    
+        """
+        user_ideal_profile =  model.session.query(model.User_Preference).filter_by(user_id= session['user_id'])
+
+        user_ideal_restaurant = model.session.query(model.Restaurant).get(1)
+        user_ideal_restaurant_features = user_ideal_restaurant.restaurant_features.get_all_data()
+        user_ideal_restaurant_cuisines = user_ideal_restaurant.restaurant_categories.cuisine.split(',')
+        user_ideal_restaurant_cat_labels = user_ideal_restaurant.restaurant_categories.category_labels.split(',')
+
+
+        user_ideal_distinct_restaurant_cuisines ={}
+        user_ideal_distinct_restaurant_cat_labels ={}
+
+        for entry in user_ideal_restaurant_cuisines:
+            if entry != '':
+                user_cuisine_count = user_ideal_distinct_restaurant_cuisines.get(entry, 0)+1
+                user_ideal_distinct_restaurant_cuisines[entry]=user_cuisine_count
+
+        for entry in user_ideal_restaurant_cat_labels: 
+            if entry !='':
+                user_cat_label_count = user_ideal_distinct_restaurant_cat_labels.get(entry,0)+1
+                user_ideal_distinct_restaurant_cat_labels[entry]=user_cat_label_count
+        """
 
     return redirect("/")
 

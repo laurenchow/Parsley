@@ -45,16 +45,22 @@
 			         Where would you like to search? <br> 
 			         </p>
 			 
-			         <input type = "user_geo" name = "user_geo" id ="user_geo" autocomplete="hi"> <br> <br><br>	
+			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
+			          <script>
+			         function isValidUSZip(user_gep) {
+						   return /^\d{5}(-\d{4})?$/.test(user_geo);
+						}
+			         </script>	
+
 			    </div>
 			     
-		    
+		  <!--   
 		     <p class="help-block">     
 		        What types of cuisine are you looking for?
 		        <br>
-		    </p>
+		    </p> -->
        
-        		<div class="col-md-6">  
+        	<!-- 	<div class="col-md-6">  
 					
 					<div class="btn-group" role="group" aria-label="...">
 						<button id="lauren1" type="button" class="btn btn-default"> Cuisines similar to these restaurants
@@ -64,58 +70,22 @@
 					<div class="btn-group" role="group" aria-label="...">
 						<button id="lauren2" type="button" class="btn btn-default"> Surprise me.
 						
-					</div>
+					</div> -->
 
-				</div>
 
         	
 		</div>
 	</div>
-		<br><br><br>
+		<br>  
+         <button class="btn btn-primary btn-lg" class="btn btn-default" align = "right" type="submit"> Tell me where to go 
+         </button><br>
 
-         <button type="btn btn-lg btn-primary btn-block" class="btn btn-default" align = "right" type="submit"> Tell me where to go </button><br>
+				</div>
+
+           
    </form>
   </div>
-  <!--       <form class="favorite-restaurants" method="POST">
-        Restaurant: <input type = "restaurant_1" class="favorite-restaurants" name ="restaurant_1" id="searchTextField" > <br> 
-        Restaurant: <input type = "restaurant_2" class="favorite-restaurants" name = "restaurant_2" id="searchTextField2" size="50"> <br>
-        Restaurant: <input type = "restaurant_3" class="favorite-restaurants" name ="restaurant_3" id="searchTextField3" > <br><br>
-        
-
-         Where would you like to search? (Please use zipcode.) 
-         <input type = "user_geo" name = "user_geo" id ="user_geo"> <br> <br><br> -->
-
-
-        <!--  What are your must-haves? <input type = "user_geo" name = "user_geo"> <br> <br><br>
-       -->
-      
-		<!-- <div class="btn-group" data-toggle="buttons">
-		<label class="btn btn-primary active">
-		<input type="checkbox" autocomplete="off" checked> Wifi
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> Kid-friendly
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> Good for dates
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> Good for a group
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> I have dietary restrictions
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> Kid-friendly
-		</label>
-		<label class="btn btn-primary">
-		<input type="checkbox" autocomplete="off"> Budget bites
-		</label>
-		</div>
-		<br><br><br> -->
-
-
-
+  <!--      
         
 
 

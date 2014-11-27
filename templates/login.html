@@ -2,14 +2,20 @@
 <html lang="en">
 {% extends 'base.html' %}
 {% block body %}
+
+<div class="panel panel-default">
+<div class="panel-body">
  
 <form class="form-signin" method="POST">
-    <h2 class="form-signin-heading" width = "40px" align ="center">Please Log In</h2>
+    <h4 class="form-signin-heading" width = "40px">Please Log In</h4>
     <input type="email" name="email" class="form-control" placeholder="Email Address" required autofocus width = "40px" align ="center" />
-    <input type="password" name="password" class="form-control" placeholder="Password" required  width = "40px" align ="center" />
-    <button type="btn btn-lg btn-primary btn-block" type="submit">Sign In</button>
+    <input type="password" name="password" class="form-control" placeholder="Password" required  width = "40px" align ="center" /><br>
+
+    <button type="btn btn-lg btn-primary btn-block" align ="center" type="submit">Sign In</button>
     <br><br>
- 
+
+</div>
+</div>
 
     <i> Forgot your password? We'll have something for that one day. </i>
 </form>

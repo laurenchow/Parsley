@@ -32,12 +32,12 @@
          
               <br>How does this sound? 
              
-                <br><br>
+                <br>
               <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
              
               <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" data-restaurant-rating-id = "{{0}}" data-restaurant-id = "{{entry['factual_id']}}" style="width:40xpx;height:40px"  />
               </a>
-              <br>
+              <br><br><br>
            
       {% set entry_counter = entry_counter + 1 %}
             

@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, backref
 ENGINE = None
 Session = None
 
-engine = create_engine("sqlite:///paprika_spice.db", echo=False)
+engine = create_engine("sqlite:///parsley.db", echo=True)
 session = scoped_session(sessionmaker(bind=engine,
                                       autocommit = False,
                                       autoflush = False))
@@ -17,10 +17,6 @@ session = scoped_session(sessionmaker(bind=engine,
 Base = declarative_base()
 Base.query = session.query_property()
 
-
-ENGINE= None
-Session= None
-Base = declarative_base()
 
 class User(Base):
     __tablename__="users"
@@ -425,6 +421,25 @@ class User_Preference(Base):
 
     user = relationship("User", backref=backref("user_preferences", order_by=user_id))
 
+    def get_all_data(self):
+    
+        kwargs = {'accessible_wheelchair': self.accessible_wheelchair,
+        'alcohol_byob': self.alcohol_byob, 'alcohol_bar': self.alcohol_bar,
+        'alcohol_beer_wine': self.alcohol_beer_wine, 'alcohol': self.alcohol,
+        'groups_goodfor':  self.groups_goodfor, 'kids_goodfor': self.kids_goodfor,
+        'kids_menu': self.kids_menu, 'meal_breakfast':  self.meal_breakfast,
+        'meal_dinner':  self.meal_dinner, 'meal_deliver':  self.meal_deliver,
+        'options_healthy': self.options_healthy, 
+        'options_glutenfree': self.options_glutenfree, 
+        'options_lowfat': self.options_lowfat, 
+        'options_vegan': self.options_vegan, 
+        'options_vegetarian': self.options_vegetarian, 
+        'options_organic': self.options_organic, 'parking': self.parking, 
+        'reservations':  self.reservations,
+        'wifi' : self.wifi}
+
+        return kwargs
+
 class User_Restaurant_Rating(Base):
     __tablename__="user_restaurant_ratings"
     # this table will basically say users like the first three restaurants they type in
@@ -440,19 +455,19 @@ class User_Restaurant_Rating(Base):
 
     
 
-def connect():
-    global ENGINE
-    global Session
+# def connect():
+#     global ENGINE
+#     global Session
 
-    ENGINE = create_engine("sqlite:///paprika_spice.db", echo=True)
-    Session = sessionmaker(bind=ENGINE)
+#     ENGINE = create_engine("sqlite:///paprika_spice.db", echo=True)
+#     Session = sessionmaker(bind=ENGINE)
 
-    return Session()
+#     return Session()
  
 
 def main():
     Base.metadata.create_all(ENGINE)
 
 if __name__ == "__main__":
-    session = connect() 
+    # session = connect() 
     main()
