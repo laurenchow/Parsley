@@ -303,7 +303,7 @@ def get_suggestions(db_result_new_restaurants_from_features):
  
         total_cos_sim_value = 0 
         for item in db_entry_data_for_restaurant_features:
-            cos_sim_result = cosine_similarity(db_entry_data_for_restaurant_features[item], user_ideal_restaurant_features[item])
+            cos_sim_result = cos_similarity(db_entry_data_for_restaurant_features[item], user_ideal_restaurant_features[item])
             if cos_sim_result > 0:
                 total_cos_sim_value = total_cos_sim_value + cos_sim_result
             cosine_similarity_results[db_entry_for_restaurant.name] = total_cos_sim_value 
@@ -322,6 +322,8 @@ def get_suggestions(db_result_new_restaurants_from_features):
     sorted_cosine_similarity_results_keys = [x[0] for x in sorted_cosine_similarity_results]
 
     #TODO: write a function to pass in here in case length is variable so it doesn't break
+
+    #TODO: this searches top 5 restaurant name results. these should already be in DB? so don't need to ping factual for.
     new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_cosine_similarity_results_keys[0],
     sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
     sorted_cosine_similarity_results_keys[4], ]}, "postcode": user_geo}).limit(5)
@@ -456,7 +458,37 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
 
     return db_result_new_restaurants_from_features
 
-def cosine_similarity(v1, v2):
+
+def sk_cosine_similarity(dict1, dict2):
+    """ This takes list of restaurants features returned from Factual and compares them to user's 
+    preferences to see how similar they are.
+    It is passed two dictionaries, which it converts to vectors.
+    returns a dictionary with list of restaurant names as keys, array of values as values.
+    The first one returned is the user's preferences and should always be a 1.
+    """
+    dv = DictVectorizer(sparse=True)
+    rest_ids = session['user_restaurant_ids']
+    #pull in list of restaurants returned from Factual
+    #pull in user preferences
+    #create dictionary of all entries
+    #convert to array or vector
+    #do math magic
+    #return sorted list of values and keys (as tuples)
+    D = session.model.query(model.Restaurant_Features).filter_by(rest_ids)
+
+    x = dv.fit_transform(D)
+    import pdb; pdb.set_trace()
+    # x = v.fit_transform(D) 
+
+    # print x
+
+    # x = v.fit_transform(D)
+    # # y = v.fit_transform(a)
+    # # y.todense()
+    # x.todense()
+    # cs = cosine_similarity(x[0:1], x)
+
+def cos_similarity(v1, v2):
     """ This takes list of restaurants features returned from Factual and compares them to user's 
     ideal restaurant to see how similar they are.
     It returns an integer value.
@@ -473,9 +505,9 @@ def cosine_similarity(v1, v2):
     # x.todense()
     # cs = cosine_similarity(x[0:1], x)
 
-    cosine_similarity_result = np.dot(v1, v2) / (np.sqrt(np.dot(v1, v1)) * np.sqrt(np.dot(v2, v2)))
+    cos_similarity_result = np.dot(v1, v2) / (np.sqrt(np.dot(v1, v1)) * np.sqrt(np.dot(v2, v2)))
     
-    return cosine_similarity_result
+    return cos_similarity_result
    
 # @app.route('/get_restos', methods = ['GET'])
 # def new_restaurants():
@@ -484,7 +516,7 @@ def cosine_similarity(v1, v2):
 #     table = factual.table('restaurants')
 #     user_geo =  session['user_geo']  
 #     # import pdb; pdb.set_trace()
-#     new_restaurants = table.filters({"postcode": 94102}).offset(75).limit(25)
+#     new_restaurants = table.filters({"postcode": 94114}).offset(50).limit(25)
 #     check_db_for_restos(new_restaurants)
 
 #     return "Success"
@@ -509,18 +541,18 @@ def user_favorites():
     else:
          return render_template("sorry.html")
 
-@app.route('/user', methods = ['GET'])
-def user_profile():
-    """
-    This function may not be necessary.
-    """
-    current_user_id = session['user_id']
-    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
-    default_user =model.session.query(model.User_Restaurant_Rating).filter_by(user_id = 1).all()
-    if single_user:
-        return render_template("favorites.html", user = single_user)
-    else:
-        return render_template("user.html", user = default_user)
+# @app.route('/user', methods = ['GET'])
+# def user_profile():
+#     """
+#     This function may not be necessary.
+#     """
+#     current_user_id = session['user_id']
+#     single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
+#     default_user =model.session.query(model.User_Restaurant_Rating).filter_by(user_id = 1).all()
+#     if single_user:
+#         return render_template("favorites.html", user = single_user)
+#     else:
+#         return render_template("user.html", user = default_user)
     #TODO make map, make it so you can save map
 
 @app.route('/browse', methods = ['GET'])
@@ -535,22 +567,60 @@ def browse_new_rests():
     user_geo =  session['user_geo']  
     current_user_id = session['user_id']
 
-    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id, rating = 1.0).all()
+    user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+
+
+    if user_preferences:
+        user_prefs_as_dict = {}
+        user_prefs = user_preferences.get_all_data()
+        # import pdb; pdb.set_trace()
+
+        for key, value in user_prefs.iteritems():
+            user_prefs_as_dict[key] = getattr(user_prefs, key,value)
+
+
+        # for entry in user_fave_rests:
+        #     rest_features = entry.restaurant.restaurant_features.get_all_data()
+        #     for key, value in rest_features.iteritems():
+        #         feature_count = rest_features.get(key, 0) +1
+        #         user_prefs_to_store[key] = feature_count
+
+        sorted_user_pref_results = sorted(user_prefs_as_dict.items(), key = lambda (k,v): v)
+        sorted_user_pref_results.reverse()
+        sorted_user_pref_results_keys = [x[0] for x in sorted_user_pref_results]
+
+
+        #TODO: write a function to pass in here in case length is variable so it doesn't break
+        #TODO: make button that's clicked on page create an offset
+        new_restaurant_suggestion = table.filters({sorted_user_pref_results_keys[0]: 1, "postcode": user_geo}).limit(5)
+       
+
+        
+        translated_sorted_rests_from_user_prefs_keys = convert_restaurant_features_to_normal_words(sorted_user_pref_results_keys)
+
+        return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
+                translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
+
+
+
+    # single_user_ratings = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id, rating = 1.0).all()
     
-    single_user_features = {}
-    for item in single_user:
-        single_user_features = single_user.restaurant_features.get_all_data()
+    # single_user_features = {}
+    # for item in single_user_ratings:
+    #     single_user_features = item.restaurant.restaurant_features.get_all_data()
 
-    # import pdb; pdb.set_trace()
-    default_user =model.session.query(model.User_Restaurant_Rating).filter_by(user_id = 1).all()
+    #     
+    # default_user =model.session.query(model.User_Restaurant_Rating).filter_by(user_id = 1).all()
+       
 
-
-    new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_cosine_similarity_results_keys[0],
-    sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
-    sorted_cosine_similarity_results_keys[4], ]}, "postcode": user_geo}).limit(5)
+    else:
+        return render_template("sorry.html")
+    # new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_cosine_similarity_results_keys[0],
+    # sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
+    # sorted_cosine_similarity_results_keys[4], ]}, "postcode": user_geo}).limit(5)
     
-    return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
-        translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
+    # return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
+    #     translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
 
 @app.route('/contact', methods = ['GET'])
@@ -684,7 +754,7 @@ def update_user_prefs():
     current_user_id = session['user_id']  
     print "This is who is logged in right now %r" % current_user_id
     existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
-    
+    #TODO: you need to allow user to update their preferences
 
     #you'll want to check if the restaurant has already been entered into the user
     if existing_user_prefs:
@@ -692,6 +762,7 @@ def update_user_prefs():
         if user_fave_rests:
             user_prefs_to_store = {}
             user_prefs = existing_user_prefs.get_all_data()
+            # import pdb; pdb.set_trace()
 
             for key, value in user_prefs.iteritems():
                 user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
@@ -703,6 +774,7 @@ def update_user_prefs():
                     feature_count = rest_features.get(key, 0) +1
                     user_prefs_to_store[key] = feature_count
                     #should be 20 keys
+                    #need to add user's initial preferences as well
                     # user_prefs_to_store[key] = getattr(rest_features,key,value)
                     #create a new key in dictionary to add this value in
                     #make this a counter where the key is the feature, the value is the number of times it's happened
@@ -712,42 +784,32 @@ def update_user_prefs():
                     
             kwargs = user_prefs_to_store
 
-            
             new_user_prefs = model.User_Preference(user_id = current_user_id, **kwargs)
             model.session.add(new_user_prefs)
-           
-            # updated_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = existing_user_prefs.id).first()
-            # updated_user_prefs = model.session.User_Preference(user_id = existing_user_prefs.id,  **kwargs)
-
-            # model.session.commit()
-        
-
-#             model.session.add(updated_user_prefs, user_id = current_user_id)
-
-#             model.session.add(updated_user_prefs, user_id = current_user_id)
-#             import pdb; pdb.set_trace()
-#         
-        else:
-        
-            kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
-            'kids_goodfor': request.form.get('kids_goodfor'),
-            'options_healthy': request.form.get('options_healthy'), 
-            'options_organic': request.form.get('options_organic'), 
-            'parking': request.form.get('parking'), 
-            'wifi' : request.form.get('wifi'), 
-            'user_id': current_user_id}
-
-            initial_user_prefs = model.User_Preference(**kwargs)
-
-            model.session.add(initial_user_prefs, user_id = current_user_id)
-        
-        model.session.commit()
-                      
+            #TODO: this adds a new row for user preferences each time instead of updating. how to fix?          
     else:
-        pass
+    
+        kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
+        'kids_goodfor': request.form.get('kids_goodfor'),
+        'options_healthy': request.form.get('options_healthy'), 
+        'options_organic': request.form.get('options_organic'), 
+        'parking': request.form.get('parking'), 
+        'wifi' : request.form.get('wifi'), 
+        'user_id': current_user_id}
+
+
+        initial_user_prefs = model.User_Preference(**kwargs)
+        
+
+        model.session.add(initial_user_prefs)
+
+    model.session.commit()
+        # import pdb; pdb.set_trace()        
         # return redirect("/sorry")
 
-    return render_template("user_preferences.html")
+    return redirect("/")
+    # TODO: think about using Javascript to pop up success message
+    # return render_template("user_preferences.html")
     
 
 # @app.route('/user_preferences', methods = ['GET', 'POST'])
