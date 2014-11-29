@@ -4,6 +4,7 @@ from sqlalchemy import Column, Integer, String, Float, Boolean
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy import update
 
 
 ENGINE = None
@@ -376,7 +377,69 @@ class Restaurant_Neighborhood(Base):
     restaurant_id = Column(Integer, ForeignKey('restaurants.id'))
     neighborhood = Column(String(128), nullable=True)
     
+class User_Profile(Base):
+    __tablename__="user_profiles"
+
+    id = Column (Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id')) #because each should be unique
+    accessible_wheelchair= Column(String(64), nullable=True)
+    alcohol_byob = Column(String(64), nullable=True)
+    alcohol_bar = Column(String(64), nullable=True)
+    alcohol_beer_wine = Column(String(64), nullable=True)
+    alcohol= Column(String(64), nullable=True) 
+    groups_goodfor= Column(String(64), nullable=True) 
+    kids_goodfor= Column(String(64), nullable=True) 
+    kids_menu = Column(String(64), nullable=True) 
+    meal_breakfast= Column(String(64), nullable=True)    
+    meal_cater= Column(String(64), nullable=True) 
+    meal_deliver= Column(String(64), nullable=True) 
+    meal_dinner= Column(String(64), nullable=True) 
+    meal_lunch = Column(String(64), nullable=True)
+    meal_takeout= Column(String(64), nullable=True)
+    open_24hrs= Column(String(64), nullable=True)
+    options_glutenfree  = Column(String(64), nullable=True)
+    options_lowfat  = Column(String(64), nullable=True)
+    options_organic = Column(String(64), nullable=True)
+    options_healthy= Column(String(64), nullable=True) 
+    options_vegan= Column(String(64), nullable=True) 
+    options_vegetarian= Column(String(64), nullable=True)
+    parking = Column(String(64), nullable=True)
+    parking_free = Column(String(64), nullable=True)
+    parking_garage = Column(String(64), nullable=True)
+    parking_lot= Column(String(64), nullable=True) 
+    parking_street= Column(String(64), nullable=True)
+    parking_valet= Column(String(64), nullable=True) 
+    parking_validated = Column(String(64), nullable=True) 
+    payment_cashonly= Column(String(64), nullable=True)
+    reservations =  Column(String(64), nullable=True)
+    room_private= Column(String(64), nullable=True) 
+    seating_outdoor= Column(String(64), nullable=True) 
+    smoking= Column(String(64), nullable=True) 
+    wifi= Column(String(64), nullable=True)
+    reservations = Column(String(64), nullable=True)
+    timestamp = Column(Integer, nullable=True)
+
+    user = relationship("User", backref=backref("user_profiles", order_by=user_id))
+
+    def get_all_data(self):
     
+        kwargs = {'accessible_wheelchair': self.accessible_wheelchair,
+        'alcohol_byob': self.alcohol_byob, 'alcohol_bar': self.alcohol_bar,
+        'alcohol_beer_wine': self.alcohol_beer_wine, 'alcohol': self.alcohol,
+        'groups_goodfor':  self.groups_goodfor, 'kids_goodfor': self.kids_goodfor,
+        'kids_menu': self.kids_menu, 'meal_breakfast':  self.meal_breakfast,
+        'meal_dinner':  self.meal_dinner, 'meal_deliver':  self.meal_deliver,
+        'options_healthy': self.options_healthy, 
+        'options_glutenfree': self.options_glutenfree, 
+        'options_lowfat': self.options_lowfat, 
+        'options_vegan': self.options_vegan, 
+        'options_vegetarian': self.options_vegetarian, 
+        'options_organic': self.options_organic, 'parking': self.parking, 
+        'reservations':  self.reservations,
+        'wifi' : self.wifi}
+
+        return kwargs
+
 class User_Preference(Base):
     __tablename__="user_preferences"
 
@@ -455,19 +518,19 @@ class User_Restaurant_Rating(Base):
 
     
 
-# def connect():
-#     global ENGINE
-#     global Session
+def connect():
+    global ENGINE
+    global Session
 
-#     ENGINE = create_engine("sqlite:///paprika_spice.db", echo=True)
-#     Session = sessionmaker(bind=ENGINE)
+    ENGINE = create_engine("sqlite:///parsley.db", echo=True)
+    Session = sessionmaker(bind=ENGINE)
 
-#     return Session()
+    return Session()
  
 
 def main():
     Base.metadata.create_all(ENGINE)
 
 if __name__ == "__main__":
-    # session = connect() 
+    session = connect() 
     main()

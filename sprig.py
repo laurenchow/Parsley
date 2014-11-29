@@ -262,6 +262,8 @@ def suggest_new_resto(restaurant_data):
     print "\n\n\n\n\n\nc"
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
     print "\n\n\n\n\n\nd"
+    sk_cos_sim = sk_cosine_similarity(rest_ids)
+    print sk_cos_sim
      # import pdb; pdb.set_trace()
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
     new_restaurant_suggestion = get_suggestions(db_result_new_restaurants_from_features)
@@ -459,25 +461,84 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
     return db_result_new_restaurants_from_features
 
 
-def sk_cosine_similarity(dict1, dict2):
+def sk_cosine_similarity(restaurant_ids):
     """ This takes list of restaurants features returned from Factual and compares them to user's 
     preferences to see how similar they are.
     It is passed two dictionaries, which it converts to vectors.
     returns a dictionary with list of restaurant names as keys, array of values as values.
     The first one returned is the user's preferences and should always be a 1.
     """
-    dv = DictVectorizer(sparse=True)
+    current_user_id = session['user_id']
     rest_ids = session['user_restaurant_ids']
+
+    user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
     #pull in list of restaurants returned from Factual
     #pull in user preferences
     #create dictionary of all entries
     #convert to array or vector
     #do math magic
     #return sorted list of values and keys (as tuples)
+
+    #instead of creating these dictionaries in this function, concat and pass to this function from main function
+    # restaurants_to_suggest = []
+    restaurant_features = {}
+
+    #get the name of the restaurant
+
+    restaurants_to_suggest = model.session.query(model.Restaurant).filter(model.Restaurant.id.in_(rest_ids)).all()
+
+    # filter(Record.id.in_(seq)).all()
+
+    # for item in range(len(rest_ids)):
+    #     restaurants_to_suggest[item] = model.session.query(model.Restaurant).filter_by(id = rest_ids[item]).first()
+
+    #get all of that restaurant's features
+    for entry in range(len(restaurants_to_suggest)):
+        rest_features_from_db = model.session.query(model.Restaurant_Features).filter_by(id = restaurants_to_suggest[entry].id).first()
+        restaurant_features[restaurants_to_suggest[entry].name] = rest_features_from_db.get_all_data()
+
+
+    import pdb; pdb.set_trace()
+    # sorted_rest_features_from_db = sorted(rest_features_from_db.items(), key = lambda (k,v): v)
+    # sorted_rest_features_from_db.reverse()
+
+    # sorted_rest_features_from_db_keys = [x[0] for x in sorted_rest_features_from_db]
+
+
+    """
+    if existing_user_prefs:
+            user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
+            if user_fave_rests:
+                user_prefs_to_store = {}
+                user_prefs = existing_user_prefs.get_all_data()
+                # import pdb; pdb.set_trace()
+
+                for key, value in user_prefs.iteritems():
+                    user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
+
+                #this is writing over initial user preferences instead of adding to them
+                #should add ALL restaurants to the initial user preferences
+
+                for entry in user_fave_rests:
+                    rest_features = entry.restaurant.restaurant_features.get_all_data()
+                 
+
+                    for key, value in rest_features.iteritems():
+                        try:
+                            existing_feature_count = int(user_prefs_to_store[key])
+                        except:
+                            user_prefs_to_store[key] = None
+
+                        # feature_count = rest_features.get(key, 0) +1
+                        if rest_features[key] > 0:
+                            user_prefs_to_store[key] = existing_feature_count + 1
+    """
+    dv = DictVectorizer(sparse=True)
+    
     D = session.model.query(model.Restaurant_Features).filter_by(rest_ids)
 
     x = dv.fit_transform(D)
-    import pdb; pdb.set_trace()
+    
     # x = v.fit_transform(D) 
 
     # print x
@@ -509,17 +570,17 @@ def cos_similarity(v1, v2):
     
     return cos_similarity_result
    
-# @app.route('/get_restos', methods = ['GET'])
-# def new_restaurants():
+@app.route('/get_restos', methods = ['GET'])
+def new_restaurants():
 
-#     factual = Factual(KEY, SECRET)
-#     table = factual.table('restaurants')
-#     user_geo =  session['user_geo']  
-#     # import pdb; pdb.set_trace()
-#     new_restaurants = table.filters({"postcode": 94114}).offset(50).limit(25)
-#     check_db_for_restos(new_restaurants)
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    user_geo =  session['user_geo']  
+    # import pdb; pdb.set_trace()
+    new_restaurants = table.filters({"postcode": 94110}).offset(125).limit(25)
+    check_db_for_restos(new_restaurants)
 
-#     return "Success"
+    return "Success"
 
 
 @app.route('/favorites', methods = ['GET'])
@@ -753,10 +814,11 @@ def update_user_prefs():
     """
     current_user_id = session['user_id']  
     print "This is who is logged in right now %r" % current_user_id
-    existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+    existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
     #TODO: you need to allow user to update their preferences
 
     #you'll want to check if the restaurant has already been entered into the user
+    #this updates existing user_prefs to include sums of all features for each restaurant that the user has liked
     if existing_user_prefs:
         user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
         if user_fave_rests:
@@ -767,26 +829,59 @@ def update_user_prefs():
             for key, value in user_prefs.iteritems():
                 user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
 
+            #this is writing over initial user preferences instead of adding to them
+            #should add ALL restaurants to the initial user preferences
 
             for entry in user_fave_rests:
                 rest_features = entry.restaurant.restaurant_features.get_all_data()
+             
+
                 for key, value in rest_features.iteritems():
-                    feature_count = rest_features.get(key, 0) +1
-                    user_prefs_to_store[key] = feature_count
+                    try:
+                        existing_feature_count = int(user_prefs_to_store[key])
+                    except:
+                        user_prefs_to_store[key] = None
+
+                    # feature_count = rest_features.get(key, 0) +1
+                    if rest_features[key] > 0:
+                        user_prefs_to_store[key] = existing_feature_count + 1
+                    
                     #should be 20 keys
-                    #need to add user's initial preferences as well
-                    # user_prefs_to_store[key] = getattr(rest_features,key,value)
+                    #need to add user's initial preferences as well 
                     #create a new key in dictionary to add this value in
                     #make this a counter where the key is the feature, the value is the number of times it's happened
                     #if key already exists, add feature value to it
                     #add all keys (which are db columns) in to session and commit
                     #should set all user preferences to zero then try as negative 1
-                    
+               
             kwargs = user_prefs_to_store
+            
+            new_user_prefs = model.User_Preference(id = existing_user_prefs.id, user_id = current_user_id, **kwargs)
 
-            new_user_prefs = model.User_Preference(user_id = current_user_id, **kwargs)
-            model.session.add(new_user_prefs)
+            model.session.merge(new_user_prefs)
+
+            # import pdb; pdb.set_trace()
+          
+            # model.session.add(existing_user_prefs, user_id = current_user_id)
+
+            # new_user_prefs = model.User_Preference(user_id = current_user_id)
+            # nupdate = new_user_prefs(**kwargs)
+            
+
+            # model.User_Preference.update(whereclause=current_user_id, **kwargs)
+
+            # existing_user_prefs.update().values(user_id =current_user_id, **kwargs)
+
+            # new_user_prefs = update(model.User_Preference).filter_by(user_id =current_user_id).\
+            # values(**kwargs)
+            # new_user_prefs = model.User_Preference.get(user_id = current_user_id)
+            # update.new_user_prefs.filter_by(**kwargs)
+            
             #TODO: this adds a new row for user preferences each time instead of updating. how to fix?          
+    
+    #this else function will only run when the user initially sets preferences
+    #these preferences are stored in user_profiles table. Users can select to update
+    #baseline preferences, otherwise they stay set.
     else:
     
         kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
@@ -797,68 +892,17 @@ def update_user_prefs():
         'wifi' : request.form.get('wifi'), 
         'user_id': current_user_id}
 
-
-        initial_user_prefs = model.User_Preference(**kwargs)
+        initial_user_prefs = model.User_Profile(**kwargs)
         
 
         model.session.add(initial_user_prefs)
 
-    model.session.commit()
-        # import pdb; pdb.set_trace()        
-        # return redirect("/sorry")
+    model.session.commit() 
 
     return redirect("/")
     # TODO: think about using Javascript to pop up success message
     # return render_template("user_preferences.html")
     
-
-# @app.route('/user_preferences', methods = ['GET', 'POST'])
-# # def submit_user_preferences(restaurant_data): 
-# def submit_user_preferences(): 
-#     """
-#     This function stores user preferences for all restaurants rated.
-    
-#     If user preferences do not exist (e.g., at signup), creates instance of User_Preference 
-#     class and stores preferences.
-    
-#     If user preferences do already exist, this function reviews all the restaurants 
-#     a user has favorited and stores in a dictionary of values indicating how strongly a user prefers 
-#     a certain restaurant feature, category or cuisine.
-#     """
-
-#     current_user_id = session['user_id']  
-#     print "This is who is logged in right now %r" % current_user_id
-#     existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
- 
-#     if existing_user_prefs:
-#         user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).first()
-#         if user_fave_rests:
-#             pass
-
-#             model.session.add(updated_user_prefs, user_id = current_user_id)
-#             import pdb; pdb.set_trace()
-#         else:
-#             pass
-#             redirect("/sorry")
-#     else:
-    
-#         kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
-#         'kids_goodfor': request.form.get('kids_goodfor'),
-#         'options_healthy': request.form.get('options_healthy'), 
-#         'options_organic': request.form.get('options_organic'), 
-#         'parking': request.form.get('parking'), 
-#         'wifi' : request.form.get('wifi'), 
-#         'user_id': current_user_id}
-
-#         initial_user_prefs = model.User_Preference(**kwargs)
-
-#         model.session.add(initial_user_prefs, user_id = current_user_id)
-    
-#     model.session.commit()
-    
-    
-#     return redirect("/")
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():
