@@ -658,10 +658,11 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
         distinct_restaurant_categories):
 
     """
-    This function incorporates user preferences and determines the cosine similarity 
-    between restaurants returned from Factual (adding together results from categories, 
-    features and cuisines) then suggest those restaurantsand a user's ideal restaurant, 
-    then determines best restaurants. 
+    This function:
+    (1) Queries the database for a user's established preferences. 
+    (2) Determines the cosine similarity between restaurants returned from Factual (adding together results from categories, 
+    features and cuisines) and the 'ideal restaurant' for this user.
+    (3) Returns best restaurants. 
     """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -674,6 +675,7 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
 
     #TODO: create user_ideal_restaurant from three restaurant inputs along with user input
     user_ideal_profile =  model.session.query(model.User_Preference).filter_by(user_id= session['user_id'])
+    #this will give you a row for the user that contains all their weighted preferences
 
     user_ideal_restaurant = model.session.query(model.Restaurant).get(2)
     # import pdb; pdb.set_trace()
@@ -786,6 +788,7 @@ def get_combined_feature_cat_cuisine_results(db_result_new_restaurants_from_feat
 def cosine_similarity(v1, v2):
     """ This takes list of restaurants features returned from Factual and compares them to user's 
     ideal restaurant to see how similar they are.
+    It returns an integer value.
     """
 
     cosine_similarity_result = np.dot(v1, v2) / (np.sqrt(np.dot(v1, v1)) * np.sqrt(np.dot(v2, v2)))
@@ -797,6 +800,12 @@ def cosine_similarity(v1, v2):
 
 @app.route('/favorites', methods = ['GET'])
 def user_favorites():
+    """
+    This function queries DB to determine what user favorites are.
+    If user has filled out user preferences form or submitted any information on preferred restaurants,
+    it will return all the restaurants a user has rated and display those on the page.
+    If a user has not completed any, it will send the user to a page to submit more information.
+    """
     current_user_id = session['user_id']
     single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
     # default_user = model.session.query(model.User_Restaurant_Rating)
@@ -810,6 +819,9 @@ def user_favorites():
     #TODO: FIX THIS SO IT STORES USER ALWAYS
 @app.route('/user', methods = ['GET'])
 def user_profile():
+    """
+    This function may not be necessary.
+    """
     current_user_id = session['user_id']
     single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
     default_user =model.session.query(model.User_Restaurant_Rating).filter_by(user_id = 1).all()
@@ -821,16 +833,28 @@ def user_profile():
 
 @app.route('/contact', methods = ['GET'])
 def contact_us():
+    """
+    This function returns an HTML template containing contact information and how to contact developer.
+    """
     return render_template("contact.html")
 
 @app.route('/about', methods = ['GET'])
 def about_us():
+    """
+    This function returns an HTML template containing license information and how to contact developer.
+    """
     return render_template("about.html")
 
 #TODO: make this evaluate whether it's retuning nthing because restaurant list is bad
 # or if you need to search different parameters
 @app.route('/sorry', methods = ['GET'])
 def more_restaurant_data_needed():
+    """
+    This function returns an HTML template containing a request for the user to submit more information.
+    It redirects them to either 
+    (a) the /restaurants page to submit preferred restaurant information or
+    (b) the /user_preferences page to submit user preferences 
+    """
     return render_template("sorry.html")
 
 @app.route('/signup', methods = ['GET', 'POST'])
@@ -843,6 +867,11 @@ def user_signup():
 
 
 def signup_user():
+    """
+    This function requests information from the signup form, then returns the
+    user to the welcome page via redirect after storing user_id and user_email in session.
+
+    """
     user_email = request.form['email']
     user_password = request.form['password']
     user_first_name = request.form['first_name']
@@ -894,11 +923,16 @@ def new_user_welcome():
 # # fix this so you don't see it unless logged in
 
 def submit_user_details(current_user_id):
-      
+    """
+    This function requests demographic information from the signup form, then returns the
+    user to the user preferences form via a redirect. 
+    """
+    current_user_id = session['user_id']  
+
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
 
-    kwargs = {'age': request.form.get('age', 0), 'gender': request.get('gender', None),
-    'zip': request.form.get('zip', 00000), 'occupation': request.form.get('job', None), 'id': current_user_id}
+    kwargs = {'age': request.form['age'], 'gender': request.form['gender'],
+    'zip': request.form['zip'], 'occupation': request.form['job'], 'id': current_user_id}
 
     new_user_info = model.User(**kwargs)
 
@@ -906,16 +940,17 @@ def submit_user_details(current_user_id):
     model.session.commit()
 
     return redirect("/user_preferences")
+
     
 
-
+#TODO: this has a weird bug smetimes, make sure it doesn't happen
 @app.route('/user_preferences', methods = ['GET'])
 def user_preferences():
     """
     Looks up existing user preferences and loads the restaurants a user has reviewed.
     For each restaurant a user has reviewed, increments the feature in user preferences
     to show that the user strongly values that feature.
-    """
+    # """
     current_user_id = session['user_id']  
     print "This is who is logged in right now %r" % current_user_id
     existing_user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
@@ -944,7 +979,8 @@ def user_preferences():
                     #if key already exists, add feature value to it
                     #add all keys (which are db columns) in to session and commit
 
-                    
+                    #right now these are all storing as different data types...boolean, unicode and nonetype
+                    #should set all user preferences to zero
                     import pdb; pdb.set_trace()
                     
 
@@ -979,7 +1015,7 @@ def user_preferences():
     return render_template("user_preferences.html")
     
 
-@app.route('/user_preferences', methods = ['POST'])
+@app.route('/user_preferences', methods = ['GET', 'POST'])
 # def submit_user_preferences(restaurant_data): 
 def submit_user_preferences(): 
     """
@@ -990,7 +1026,7 @@ def submit_user_preferences():
     
     If user preferences do already exist, this function reviews all the restaurants 
     a user has favorited and stores in a dictionary of values indicating how strongly a user prefers 
-    a certain feature, category of restaurant or cuisine.
+    a certain restaurant feature, category or cuisine.
     """
 
     current_user_id = session['user_id']  
