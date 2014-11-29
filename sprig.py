@@ -5,6 +5,7 @@ import model
 import os
 import jinja2
 import numpy as np
+from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -130,10 +131,9 @@ def check_db_for_restos(restaurant_data):
                         restaurant_ids.append(db_result.id)
                 
                     else:
-                        print "***NOT IN DATABASE YET***"
                         new_restaurant = model.Restaurant()
                         new_restaurant.set_from_factual(item)
-                        #use get to check for keys, otherwise make it none
+                        #use get to check for keys, otherwise make it 0
                        
                         model.session.add(new_restaurant)
 
@@ -214,7 +214,6 @@ def user_feedback_on_restaurants():
     This function receives user feedback on suggested restaurants, then checks to see 
     if this already exists in the database. If it does not, it adds it to the DB.
     """
-    #TODO: change to .get
     feedback_factual_id = request.form.get('factual_id')
     feedback_restaurant_rating = request.form.get('user_feedback')
     feedback_restaurant_rating = float(feedback_restaurant_rating)
@@ -250,8 +249,6 @@ def suggest_new_resto(restaurant_data):
         user's top-ranked features (if cuisine is selected, weights cuisine as well.)
     """ 
 
-   
-
     if session.get('user_restaurant_ids'):
         rest_ids = session.get('user_restaurant_ids')
 
@@ -262,11 +259,13 @@ def suggest_new_resto(restaurant_data):
     print "\n\n\n\n\n\nc"
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
     print "\n\n\n\n\n\nd"
-    sk_cos_sim = sk_cosine_similarity(rest_ids)
+    sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features)
     print sk_cos_sim
-     # import pdb; pdb.set_trace()
+    
+    # return sorted_sk_cos_sim_results_keys
+    # import pdb; pdb.set_trace()
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
-    new_restaurant_suggestion = get_suggestions(db_result_new_restaurants_from_features)
+    new_restaurant_suggestion = get_suggestions(sk_cos_sim)
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
@@ -461,94 +460,99 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
     return db_result_new_restaurants_from_features
 
 
-def sk_cosine_similarity(restaurant_ids):
-    """ This takes list of restaurants features returned from Factual and compares them to user's 
-    preferences to see how similar they are.
-    It is passed two dictionaries, which it converts to vectors.
-    returns a dictionary with list of restaurant names as keys, array of values as values.
-    The first one returned is the user's preferences and should always be a 1.
+def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features):
+    """ 
+    This function takes list of restaurant ids (from restaurants returned from Factual)
+    and compares them to user's preferences to see how similar the restaurants are to
+    a user's ideal restaurant using cosine similarity.
+
+    It returns the list of restaurant ids ranked by cosine similarity values.
     """
     current_user_id = session['user_id']
-    rest_ids = session['user_restaurant_ids']
+    # rest_ids = session['user_restaurant_ids']
 
+    rest_ids = db_result_new_restaurants_from_features
     user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
+
     #pull in list of restaurants returned from Factual
     #pull in user preferences
     #create dictionary of all entries
     #convert to array or vector
     #do math magic
     #return sorted list of values and keys (as tuples)
-
     #instead of creating these dictionaries in this function, concat and pass to this function from main function
     # restaurants_to_suggest = []
     restaurant_features = {}
-
-    #get the name of the restaurant
-
+    
+    #get the name of the restaurant from list of restaurants returned
     restaurants_to_suggest = model.session.query(model.Restaurant).filter(model.Restaurant.id.in_(rest_ids)).all()
-
-    # filter(Record.id.in_(seq)).all()
-
-    # for item in range(len(rest_ids)):
-    #     restaurants_to_suggest[item] = model.session.query(model.Restaurant).filter_by(id = rest_ids[item]).first()
-
     #get all of that restaurant's features
     for entry in range(len(restaurants_to_suggest)):
         rest_features_from_db = model.session.query(model.Restaurant_Features).filter_by(id = restaurants_to_suggest[entry].id).first()
         restaurant_features[restaurants_to_suggest[entry].name] = rest_features_from_db.get_all_data()
 
+    restaurant_features[user_prefs.user_id] = user_prefs.get_all_data() 
 
-    import pdb; pdb.set_trace()
-    # sorted_rest_features_from_db = sorted(rest_features_from_db.items(), key = lambda (k,v): v)
-    # sorted_rest_features_from_db.reverse()
-
-    # sorted_rest_features_from_db_keys = [x[0] for x in sorted_rest_features_from_db]
+    # #you need this to know the restaurant name as its the key
 
 
-    """
-    if existing_user_prefs:
-            user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
-            if user_fave_rests:
-                user_prefs_to_store = {}
-                user_prefs = existing_user_prefs.get_all_data()
-                # import pdb; pdb.set_trace()
-
-                for key, value in user_prefs.iteritems():
-                    user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
-
-                #this is writing over initial user preferences instead of adding to them
-                #should add ALL restaurants to the initial user preferences
-
-                for entry in user_fave_rests:
-                    rest_features = entry.restaurant.restaurant_features.get_all_data()
-                 
-
-                    for key, value in rest_features.iteritems():
-                        try:
-                            existing_feature_count = int(user_prefs_to_store[key])
-                        except:
-                            user_prefs_to_store[key] = None
-
-                        # feature_count = rest_features.get(key, 0) +1
-                        if rest_features[key] > 0:
-                            user_prefs_to_store[key] = existing_feature_count + 1
-    """
     dv = DictVectorizer(sparse=True)
+    x = dv.fit_transform(restaurant_features.values())
+    x.todense()
+    cs = cosine_similarity(x[0:1], x)
+    cs = cs.tolist()
+    #changes array to a list containing several items in one entry
+        
+    """
+    Two ways to approach: 
+    Create a list where you compare initial list of restaurants (make it a tuple to make it immutable)
+    and the cosine scores each one got.
+    So if you had a list of 4, 1, 3, 2,0 you would know that you need to get cs[4] as highest value
+
+    Create a dictionary with restaurant names and cosine values, turn into tuples, order 
+
+    array([[ 1.        ,  0.        ,  0.93541435,  0.71269665,  0.96609178,
+             0.77151675]])
+
+    Here's what we want:
+    Key: restaurants_to_suggest[1].name = 'Luna Park'
+    Value: cs[0][1] = 0
+
+    """
+    #you now have an array in cs which is the length of user_preferences plus the list of restaurant_ids
+    #need to take value from array , put it back with the restaurant name
+
+    import collections
+    rest_name_plus_cos_sim_value = collections.OrderedDict()
+
+
+
+    for item in range(len(restaurants_to_suggest)):
+        print item
+        resto_id = restaurants_to_suggest[item].id
+        rest_name_plus_cos_sim_value[resto_id] = cs[0][item+1]
+        # restaurant_names[item].append(restaurant_name)
+
+    sorted_sk_cos_sim_results = sorted(rest_name_plus_cos_sim_value.items(), key = lambda (k,v): v)
+    sorted_sk_cos_sim_results.reverse()
+    sorted_sk_cos_sim_results_keys = [z[0] for z in sorted_sk_cos_sim_results]
+
+    print sorted_sk_cos_sim_results_keys
     
-    D = session.model.query(model.Restaurant_Features).filter_by(rest_ids)
+     
+    return sorted_sk_cos_sim_results_keys
+        
 
-    x = dv.fit_transform(D)
-    
-    # x = v.fit_transform(D) 
+    #sometimes returns NaN is this happening because restaurant 3 comes in twice? if you limit it to distinct restaurants, goes away
+    #TODO: deal with NaN when it happens because you can't have it
+    #you need to pass this a dictionary of features without any names or other info
 
-    # print x
-
-    # x = v.fit_transform(D)
-    # # y = v.fit_transform(a)
-    # # y.todense()
-    # x.todense()
-    # cs = cosine_similarity(x[0:1], x)
-
+    #since you can't pass in the name with each set of features
+    #need to do per restaurant, then add value in to new dictionary
+        # """
+        # *** ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
+        # """
+         
 def cos_similarity(v1, v2):
     """ This takes list of restaurants features returned from Factual and compares them to user's 
     ideal restaurant to see how similar they are.
@@ -841,11 +845,14 @@ def update_user_prefs():
                         existing_feature_count = int(user_prefs_to_store[key])
                     except:
                         user_prefs_to_store[key] = None
-
-                    # feature_count = rest_features.get(key, 0) +1
+                    #TODO: make sure this updates every key for a user -- use a standard dictionary?
+                    if user_prefs_to_store[key] == None:
+                        # import pdb; pdb.set_trace()
+                        user_prefs_to_store[key] = 0
                     if rest_features[key] > 0:
                         user_prefs_to_store[key] = existing_feature_count + 1
                     
+
                     #should be 20 keys
                     #need to add user's initial preferences as well 
                     #create a new key in dictionary to add this value in
