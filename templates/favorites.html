@@ -9,9 +9,6 @@
 
 
 <style>
-  body { margin:0; padding:0; }
-
-
   #map {
 width: 100%;
 position: inherited;
@@ -22,20 +19,32 @@ padding:0;
 border: 1px solid black;
 border-radius: 8px;
 }
+
+
+
 </style>
 </head>
 
 {% extends 'base.html' %}
 {% block body %}
 
-
+<style>
+ body {
+    background-image: url('static/unsplash_computer.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 100%; 
+}
+</style>
     
 <div class="panel panel-default">
 	<div class="panel-body">
 		<div class="container">  
     		<div class="row">
         		<div class="col-md-3">  
-        
+
            			{{user[0].user.first_name}}, here are the restaurants you've favorited:
 				  	<br>
 				    <br>

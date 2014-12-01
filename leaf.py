@@ -1,14 +1,10 @@
 from flask import Flask, render_template, session, flash, redirect, request, g, jsonify
 from passlib.hash import pbkdf2_sha256
 from factual import Factual
-import model
-import collections
-import os
-import jinja2
+import model, collections, os, jinja2
 import numpy as np
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
@@ -19,12 +15,10 @@ app = Flask(__name__)
 app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
 app.jinja_env.undefined = jinja2.StrictUndefined
 
-
 # use g in a before_request function to check and see if a user is logged in -- if they are logged in you can save it in g    
 @app.before_request
 def load_user_id():
-    g.user_id = session.get('user_id')
-    # just use flask logins
+    g.user_id = session.get('user_id') 
 
 @app.route('/', methods = ['GET'])
 def index():
@@ -32,45 +26,34 @@ def index():
     
 @app.route('/restaurants', methods = ['GET'])
 def restos():
-
     return render_template("restaurants.html")
 
 @app.route('/restaurants', methods = ['POST'])
 def other_restos():
-    """This is the main function for suggesting a new restaurant. It contains
-    functions that 
-    (1) take in user input for restaurants using Google Maps JS autocomplete
-    (2) parse restaurant inputs to determine name, city
-    (3) make API call to Factual to find information on those restaurants
-
-    (4) determine the most common features of those restaurants
-    (5) make API call to Factual to find similar restaurants using parameters defined in (4)
-    (6) ranks results from (5) using cosine similarity, which measures how each restaurant
-    in (5) compares to a user's established preferences
-    (7) returns the highest-ranked restaurants to surface to user for user feedback
+    """This function: 
+    (1) takes in user input for restaurants using Google Maps JS autocomplete
+    (2) parses restaurant inputs to determine name, city
+    (3) calls function to suggest new restaurants 
 
     """
     restaurant1 = request.form.get('restaurant_1')
     restaurant2 = request.form.get('restaurant_2')
     restaurant3 = request.form.get('restaurant_3')      
     user_geo = request.form.get('user_geo') 
+    feedback_cuisine_id = request.form.get('cuisine_id')
+    
 
-    restaurant_data = ping_factual([restaurant1, restaurant2, restaurant3], user_geo)
-    print "\n\n\n\n\n\n\n2"
-    restaurant_ids = check_db_for_restos(restaurant_data)
+    restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
+     
     session['user_restaurant_ids'] = restaurant_ids
-    session['user_geo'] = user_geo
-    print "\n\n\n\n\n\n\n3"
+    session['user_geo'] = user_geo 
     add_restaurants_to_user_preferences(restaurant_ids)
-    print "\n\n\n\n\n\n\n4"
-   
-    return suggest_new_resto()
+    return suggest_new_resto(feedback_cuisine_id)
         
 # use jquery AJAX here to add on same page
 # show some things only when logged in
 
 def parse_restaurant_input(restaurant_text):
- 
     data = {}
 
     #TODO: make sure everything is entered in here and that it adheres to GMaps
@@ -90,113 +73,60 @@ def parse_restaurant_input(restaurant_text):
 
     return data
 
-
-def ping_factual(restaurants, user_geo):
-
-    factual = Factual(KEY, SECRET)
-    table = factual.table('restaurants')
-
-    restaurant_data = [] 
-
-    #TODO: validate user enters three restaurants
-    for restaurant in restaurants:
-    #     db_entry = model.session.query(model.Restaurant).filter_by(restaurant_id = restaurant).first()
-
-    #     if db_entry:
-    #         q = 
-    #         restaurant_data.append(q)
-    #     else: 
-        #TODO: when you ping factual check DB there
-    
-        q = table.search(restaurant).limit(1)
-        # print "Here's what's stored in Factual for %r" %restaurant
-        print q.data()
-        print q.get_url()
-
-        restaurant_data.append(q)
-
-    # import pdb; pdb.set_trace()
-
-    return restaurant_data
-
-
-def check_db_for_restos(restaurant_data):
+def check_db_for_restos(restaurant_data, user_geo):
     """ 
     Checks database for restaurants to see if they exist as entries yet. 
     If not, adds restaurants into database.
     """
     restaurant_ids = []
 
-    if type(restaurant_data) == list:
-        for entry in range(len(restaurant_data)): 
+    factual = Factual(KEY, SECRET)
+    table = factual.table('restaurants')
+    for restaurant in restaurant_data: 
+        parsed_data = parse_restaurant_input(restaurant)
        
-            #searching the database seems to need to be case-sensitive for now, make it case insensitive
-            restaurant_deets = restaurant_data[entry].data() 
-            #TODO: Make sure three entries are valid
-            if restaurant_deets:
-                for item in restaurant_deets:
-                    db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
+        db_entry = model.session.query(model.Restaurant).filter_by(name= parsed_data['name']).first() 
+    
+        if db_entry:
+             restaurant_deets = db_entry.restaurant_features.get_all_data()
+             if restaurant_deets:
+                restaurant_ids.append(db_entry.id)
 
-                    if db_result:
-                        restaurant_ids.append(db_result.id)
-                
-                    else:
-                        new_restaurant = model.Restaurant()
-                        new_restaurant.set_from_factual(item)
-                        #use get to check for keys, otherwise make it 0
-                       
-                        model.session.add(new_restaurant)
+        #TODO: Make sure three entries are valid
+        else:
 
-                        new_restaurant_features = model.Restaurant_Features()
-                        new_restaurant_features.restaurant = new_restaurant
-                        new_restaurant_features.set_from_factual(item)
+            q = table.filters({'name':{'$includes':parsed_data['name']}})
+            new_resto_data = q.data()
+            print q.get_url()
 
-                        model.session.add(new_restaurant_features)
+            if new_resto_data:
+                new_restaurant = model.Restaurant()
 
-                        new_restaurant_categories = model.Restaurant_Category()  
-                        new_restaurant_categories.restaurant_id = new_restaurant.id                  
-                        new_restaurant_categories.set_from_factual(item)
-                        model.session.add(new_restaurant_categories)
-                        model.session.commit()
-
-                        restaurant_ids.append(new_restaurant.id)
-    #TODO: figure out how to handle this when not a list
-    else: 
-        restaurant_deets = restaurant_data.data() 
-
-    #this handles in event restaurant is not passed in in list form
-    if restaurant_deets:
-        #check to see if restaurant details are in the DB for this restaurant
-        #if not add it, if it is check to see that it's still the same
-            for item in restaurant_deets:
-                db_result = model.session.query(model.Restaurant).filter_by(factual_id = item['factual_id']).first() 
-
-                if db_result:
-                    restaurant_ids.append(db_result.id)
-
-                else:
-                    new_restaurant = model.Restaurant()
+                for item in new_resto_data: 
                     new_restaurant.set_from_factual(item)
+                    #use get to check for keys, otherwise make it 0
                     model.session.add(new_restaurant)
-
+            
                     new_restaurant_features = model.Restaurant_Features()
                     new_restaurant_features.restaurant = new_restaurant
                     new_restaurant_features.set_from_factual(item)
+
                     model.session.add(new_restaurant_features)
-                    
 
                     new_restaurant_categories = model.Restaurant_Category()  
-                    # new_restaurant_categories.restaurant_id = new_restaurant.id
-                    new_restaurant_categories.restaurant = new_restaurant                  
+                    new_restaurant_categories.restaurant_id = new_restaurant.id                  
                     new_restaurant_categories.set_from_factual(item)
                     model.session.add(new_restaurant_categories)
                     model.session.commit()
 
-                    restaurant_ids.append(new_restaurant.id)
+                restaurant_ids.append(new_restaurant.id) 
 
-                
+    #handle in event restaurant is not passed in in list form (when does this happen?)
     return restaurant_ids
 
+@app.route('/refresh_restaurants', methods = ['GET', 'POST'])
+def show_different_restos(restaurant_ids):
+    pass
 
 @app.route('/user_restaurant_preferences', methods = ['GET', 'POST'])
 def add_restaurants_to_user_preferences(restaurant_ids):
@@ -205,6 +135,7 @@ def add_restaurants_to_user_preferences(restaurant_ids):
     It checks to see if a user's restaurant preference already exists in a user's entry in the User_Restaurant_Rating table.
     If not, it adds to the DB.
     """
+
     user_restaurant_preference = model.User_Restaurant_Rating(user_id = session['user_id'])
 
     for entry in range(len(restaurant_ids)):
@@ -248,10 +179,8 @@ def user_feedback_on_restaurants():
     model.session.commit()
     return jsonify( { 'feedback_button_id': feedback_button_id} )
 
-
-
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
-def suggest_new_resto():
+def suggest_new_resto(feedback_cuisine_id):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
 
@@ -261,90 +190,70 @@ def suggest_new_resto():
 
     if session.get('user_restaurant_ids'):
         rest_ids = session.get('user_restaurant_ids')
+    
 
-    print "\n\n\n\n\n\na"
     user_input_rest_data = get_user_inputs(rest_ids)
-    print "\n\n\n\n\n\nb"
+    # cuisine_type = filter_by_cuisine(user_input_rest_data, feedback_cuisine_id)
+    
+    # import pdb; pdb.set_trace()
     sorted_restaurant_features_counter_keys = get_rest_features_similarities(user_input_rest_data)
-    print "\n\n\n\n\n\nc"
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
-    print "\n\n\n\n\n\nd"
     sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features)
     print sk_cos_sim
-    
-    # return sorted_sk_cos_sim_results_keys
-    # import pdb; pdb.set_trace()
+     
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
-    new_restaurant_suggestion = get_suggestions(sk_cos_sim)
+    
+
+    new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
+    # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
+def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
+    """
+    This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
+    If filtering by cuisine, returns list of cuisines to search for.
+    """
 
-def get_suggestions(db_result_new_restaurants_from_features):
+    if feedback_cuisine_id == 'sim_cuis':
+        cuisine_type = "hi"
+        print "hi"
+        pass
 
+    else:
+        cuisine_type = "this is what's happening"
+        print cuisine_type
+
+    return cuisine_type
+
+def get_resto_suggestions(sk_cos_sim):
     """
     This function:
-    (1) Queries the database for a user's established preferences. 
-    (2) Determines the cosine similarity between restaurants returned from Factual (adding together results from categories, 
-    features and cuisines) and the 'ideal restaurant' for this user.
-    (3) Returns best restaurants. 
+    (1) Takes the list of restaurant ids returned from cosine similarity function 
+    (2) Loops over list to remove any restaurants the user has already rated
+    (3) Returns the edited list of dictionaries of database objects containing all restaurants, ordered by preference,
+    to print on new_restaurants.html page.
     """
-    factual = Factual(KEY, SECRET)
-    table = factual.table('restaurants')
-    user_geo =  session['user_geo'] 
 
-     #turn the Factual objects into lists, then go over each list
-    
-    #TODO: create user_ideal_restaurant from three restaurant inputs along with user input
-   
-    #this will give you a row for the user that contains all their weighted preferences
+    new_restaurant_suggestion = []
 
-    #TODO: replace placeholder of ideal restaurant with user preferences
-    user_ideal_restaurant = model.session.query(model.Restaurant).get(2)
-    user_ideal_profile =  model.session.query(model.User_Preference).filter_by(user_id= session['user_id'])
-    # import pdb; pdb.set_trace()
-    user_ideal_restaurant_features = user_ideal_restaurant.restaurant_features.get_all_data() 
-    cosine_similarity_results = {}
+    # if cuisine_type != 'all':
+    #     pass
+    # else:
+    for rest_id in sk_cos_sim:
+        already_rated = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = rest_id).first()
+        if not already_rated:
+            rest_data = model.session.query(model.Restaurant).get(rest_id)
+            new_restaurant_suggestion.append(rest_data)
 
-    for restaurant in db_result_new_restaurants_from_features:
-        db_entry_for_restaurant= model.session.query(model.Restaurant).get(restaurant)
-        db_entry_data_for_restaurant_features = db_entry_for_restaurant.restaurant_features.get_all_data() 
-        
- 
-        total_cos_sim_value = 0 
-        for item in db_entry_data_for_restaurant_features:
-            cos_sim_result = cos_similarity(db_entry_data_for_restaurant_features[item], user_ideal_restaurant_features[item])
-            if cos_sim_result > 0:
-                total_cos_sim_value = total_cos_sim_value + cos_sim_result
-            cosine_similarity_results[db_entry_for_restaurant.name] = total_cos_sim_value 
+    return new_restaurant_suggestion
 
-        # #TODO: fix this
-        #TODO: remove the last element in list for category_labels because it is breadcrumbs so only the last one
-        # for entry in range(len(db_entry_data_for_restaurant_category_list)):
-
-
-    #this gives you what the user input prioritizes in terms of cuisine
-    #compares restaurants from factual results with this
-
-    #this is cosine similarity for features, doesn't include cuisines
-    sorted_cosine_similarity_results = sorted(cosine_similarity_results.items(), key = lambda (k,v): v)
-    sorted_cosine_similarity_results.reverse()
-    sorted_cosine_similarity_results_keys = [x[0] for x in sorted_cosine_similarity_results]
-
-    #TODO: write a function to pass in here in case length is variable so it doesn't break
-
-    #TODO: this searches top 5 restaurant name results. these should already be in DB? so don't need to ping factual for.
-    new_restaurant_suggestion_from_all = table.filters({'name': {"$in": [sorted_cosine_similarity_results_keys[0],
-    sorted_cosine_similarity_results_keys[1], sorted_cosine_similarity_results_keys[2], sorted_cosine_similarity_results_keys[3], 
-    sorted_cosine_similarity_results_keys[4], ]}, "postcode": user_geo}).limit(5)
-    
-    return new_restaurant_suggestion_from_all
 
 def get_user_inputs(rest_ids):
     """
     This function takes the restaurant ids from the three restaurants that the user inputs and creates a list 
-    containing all DB data for restaurants.
+    containing all DB data for those three restaurants.
     """
    
     user_input_rest_data = []
@@ -428,36 +337,51 @@ def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_
 def get_rest_features_results(sorted_restaurant_features_counter_keys):
     """
     This function takes the ranked restaurant features, searches 
-    Factual for matching restaurants and returns restaurants from Factual that 
-    match these features.
+    for matching restaurants and returns restaurants that 
+    match these features in the user's desired zipcode.
+
+    If function determines there are insufficient number (less than 25) restaurants
+    to suggest in desired user zipcode, will ping Factual for entries in that area.
+
+    Returns a list of restaurant ids.
+
     """
+
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo =  session['user_geo']  
+ 
+    db_zip_density = model.session.query(model.Restaurant).filter_by(postcode = user_geo).all()
+    db_restaurant_list = []
 
-    #TODO: figure out why this error is happening when you type in certain restaurants
-    # AttributeError: 'NoneType' object has no attribute 'cuisine'
+    if db_zip_density >= 25:
+        print sorted_restaurant_features_counter_keys
 
-    #TODO: could you make it so it queries for all things that are 3 out of 3?
-    new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
-     sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
-     "postcode": user_geo}).limit(5)
+        kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
+            sorted_restaurant_features_counter_keys[2]: "1"}
 
+        new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
 
-    #TODO: is this the most sensible way to handle errors?    
-    if new_restaurant_suggestion_from_features == []:
-        return render_template("sorry.html")
-    print "\n\n\n\n\n\nXX1"   
-    
-    #TODO: fix looping here in check_db_for_restos.
-    #you could loop over the entry instead and pass DB a list of factual IDs
-    #to check all at once instead of checking each factual ID
+        for item in new_restaurant_suggestion_from_features:
+            db_restaurant_list.append(item.id)
 
-    db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features)
+        db_result_new_restaurants_from_features = db_restaurant_list
+  
+    else:
+        new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
+        sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
+        "postcode": user_geo}).limit(5)
 
+         
+        if new_restaurant_suggestion_from_features == []:
+            return render_template("sorry.html")
+        print "\n\n\n\n\n\nXX1"   
+        
+        #TODO: fix looping here in check_db_for_restos. 
+
+        db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features, user_geo)
 
     print "\n\n\n\n\n\nXX2"
-
 
     return db_result_new_restaurants_from_features
 
@@ -471,19 +395,10 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
     It returns the list of restaurant ids ranked by cosine similarity values.
     """
     current_user_id = session['user_id']
-    # rest_ids = session['user_restaurant_ids']
 
     rest_ids = db_result_new_restaurants_from_features
     user_prefs = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
 
-    #pull in list of restaurants returned from Factual
-    #pull in user preferences
-    #create dictionary of all entries
-    #convert to array or vector
-    #do math magic
-    #return sorted list of values and keys (as tuples)
-    #instead of creating these dictionaries in this function, concat and pass to this function from main function
-    # restaurants_to_suggest = []
     restaurant_features = {}
     
     #get the name of the restaurant from list of restaurants returned
@@ -495,35 +410,26 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
 
     restaurant_features[user_prefs.user_id] = user_prefs.get_all_data() 
 
-    # #you need this to know the restaurant name as its the key
-
-
     dv = DictVectorizer(sparse=True)
     x = dv.fit_transform(restaurant_features.values())
     x.todense()
     cs = cosine_similarity(x[0:1], x)
     cs = cs.tolist()
     
-    #you now have an array in cs which is the length of user_preferences plus the list of restaurant_ids
-    #need to take value from array , put it back with the restaurant name
-
     
     rest_name_plus_cos_sim_value = collections.OrderedDict()
 
-
+    length_of_rest_list = len(restaurants_to_suggest)
 
     for item in range(len(restaurants_to_suggest)):
-        print item
         resto_id = restaurants_to_suggest[item].id
+        # import pdb; pdb.set_trace()
         rest_name_plus_cos_sim_value[resto_id] = cs[0][item+1]
         # restaurant_names[item].append(restaurant_name)
 
     sorted_sk_cos_sim_results = sorted(rest_name_plus_cos_sim_value.items(), key = lambda (k,v): v)
     sorted_sk_cos_sim_results.reverse()
     sorted_sk_cos_sim_results_keys = [z[0] for z in sorted_sk_cos_sim_results]
-
-    print sorted_sk_cos_sim_results_keys
-    
      
     return sorted_sk_cos_sim_results_keys
         
@@ -534,16 +440,12 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
 
     #since you can't pass in the name with each set of features
     #need to do per restaurant, then add value in to new dictionary
-        # """
-        # *** ValueError: Input contains NaN, infinity or a value too large for dtype('float64').
-        # """
          
 def cos_similarity(v1, v2):
     """ This takes list of restaurants features returned from Factual and compares them to user's 
     ideal restaurant to see how similar they are.
     It returns an integer value.
     """
-
     cos_similarity_result = np.dot(v1, v2) / (np.sqrt(np.dot(v1, v1)) * np.sqrt(np.dot(v2, v2)))
     
     return cos_similarity_result
@@ -559,7 +461,6 @@ def new_restaurants():
 
     return "Success"
 
-
 @app.route('/favorites', methods = ['GET'])
 def user_favorites():
     """
@@ -569,10 +470,7 @@ def user_favorites():
     If a user has not completed any, it will send the user to a page to submit more information.
     """
     current_user_id = session['user_id']
-    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
-    # default_user = model.session.query(model.User_Restaurant_Rating)
-    # ValueError: View function did not return a response happened when no favorites
-    # TODO: figure out why user is undefined
+    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()  
 
     if single_user:
         return render_template("favorites.html", user = single_user)
@@ -580,20 +478,18 @@ def user_favorites():
          return render_template("sorry.html")
 
 
-@app.route('/browse', methods = ['GET'])
+@app.route('/browse_restos', methods = ['GET'])
 def browse_new_rests():
     """ 
     This function allows the user to browse new restaurants based on user preferences
     and requires no new input from the user.
     """
 
-    factual = Factual(KEY, SECRET)
-    table = factual.table('restaurants')
-    user_geo =  session['user_geo']  
     current_user_id = session['user_id']
+    current_user = model.session.query(model.User).filter_by(id = current_user_id).first()
+    user_geo = current_user.zip
 
     user_preferences = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).first()
-
 
     if user_preferences:
         user_prefs_as_dict = {}
@@ -602,31 +498,35 @@ def browse_new_rests():
         for key, value in user_prefs.iteritems():
             user_prefs_as_dict[key] = getattr(user_prefs, key,value)
 
-
-        # for entry in user_fave_rests:
-        #     rest_features = entry.restaurant.restaurant_features.get_all_data()
-        #     for key, value in rest_features.iteritems():
-        #         feature_count = rest_features.get(key, 0) +1
-        #         user_prefs_to_store[key] = feature_count
+        for key, value in user_prefs.iteritems():
+            user_prefs_as_dict[key] = int(user_prefs_as_dict[key])
 
         sorted_user_pref_results = sorted(user_prefs_as_dict.items(), key = lambda (k,v): v)
         sorted_user_pref_results.reverse()
         sorted_user_pref_results_keys = [x[0] for x in sorted_user_pref_results]
 
+        kwargs = {sorted_user_pref_results_keys[0]: 1, sorted_user_pref_results_keys[1]: 1, 
+        sorted_user_pref_results_keys[2]: 1, sorted_user_pref_results_keys[3]: 1}
+        
+        new_restaurant_suggestion = []
+        
+        restaurants_in_zip = model.session.query(model.Restaurant).filter_by(postcode = user_geo).limit(50)
+        restaurants = restaurants_in_zip.restaurant.restaurant_features.filter_by(**kwargs).limit(25)
 
-        #TODO: write a function to pass in here in case length is variable so it doesn't break
-        #TODO: make button that's clicked on page create an offset
-        new_restaurant_suggestion = table.filters({sorted_user_pref_results_keys[0]: 1, "postcode": user_geo}).limit(5)
-               
+        for rest_id in restaurants:
+            already_rated = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = rest_id).first()
+            if not already_rated:
+                rest_data = model.session.query(model.Restaurant).get(rest_id)
+                new_restaurant_suggestion.append(rest_data)
+
+        # return new_restaurant_suggestion
+
+              
         translated_sorted_rests_from_user_prefs_keys = convert_restaurant_features_to_normal_words(sorted_user_pref_results_keys)
 
         return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
                 translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
 
-
-    else:
-        return render_template("sorry.html")
-   
 
 @app.route('/contact', methods = ['GET'])
 def contact_us():
@@ -671,8 +571,7 @@ def signup_user():
     user_email = request.form['email']
     user_password = request.form['password']
     user_first_name = request.form['first_name']
-    user_last_name = request.form['last_name']
-    print "This is what user_password is stored as %r" % type(user_password)
+    user_last_name = request.form['last_name'] 
 
     already_registered = model.session.query(model.User).filter_by(email = user_email).first()
 
@@ -680,8 +579,8 @@ def signup_user():
         flash("Looks like you already have an account. Want to try signing in?")
 
     secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
-    print "this is the secure hashed password %r" % secure_password
-    #put something in here about making good passwords with uppercase and flash suggestion
+    print "this is the secure hashed password %r" % secure_password 
+
     new_user = model.User(email = user_email, password = secure_password, 
         first_name = user_first_name, last_name = user_last_name)
 
@@ -689,9 +588,9 @@ def signup_user():
     model.session.commit() 
     
     current_user = model.session.query(model.User).filter_by(email = user_email).first()
-    current_user_preferences = model.User_Preference(user_id=current_user.id)
+    current_user_profile = model.User_Profile(user_id=current_user.id)
 
-    model.session.add(current_user_preferences)
+    model.session.add(current_user_profile)
     model.session.commit() 
 
     session['user_id'] = current_user.id
@@ -703,8 +602,7 @@ def signup_user():
 
 
 @app.route('/welcome', methods = ['GET', 'POST'])
-def new_user_welcome():
-    print "Here's what in the session in welcome %r" % session
+def new_user_welcome(): 
     current_user_id = session['user_id']  
 
     if request.method == "GET":
@@ -731,9 +629,79 @@ def submit_user_details(current_user_id):
     model.session.merge(new_user_info)
     model.session.commit()
 
-    return redirect("/user_preferences")
+    return redirect("/user_profiles")
 
+@app.route('/user_profiles', methods = ['GET', 'POST'])
+def user_profiles():
+    """
+    Determines if user has submitted preferences. If post method, 
+    submits user pref data to the update_user_prefs function.
+    """
+
+    if request.method == "GET":
+        return render_template("user_preferences.html")
+    else:
+        # import pdb; pdb.set_trace()
+        return update_user_profile()
+
+def update_user_profile():
+
+    current_user_id = session['user_id']  
+
+    existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
+
+    if existing_user_prefs:
+
+        kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
+        'kids_goodfor': request.form.get('kids_goodfor'),
+        'options_healthy': request.form.get('options_healthy'), 
+        'options_organic': request.form.get('options_organic'), 
+        'parking': request.form.get('parking'), 
+        'wifi' : request.form.get('wifi'), 
+        'alcohol_byob': 0, 'alcohol_bar': 0,
+        'alcohol_beer_wine': 0, 'alcohol': 0,
+        'groups_goodfor':  0, 'kids_goodfor':0,
+        'kids_menu': 0, 'meal_breakfast':  0,
+        'meal_dinner': 0, 'meal_deliver':  0,
+        'options_glutenfree': 0, 
+        'options_lowfat': 0, 
+        'options_vegan': 0, 
+        'options_vegetarian': 0, 
+        'reservations':  0,
+        'user_id': current_user_id}
+
+        #TODO: get this to work 
+        new_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
+        model.session.merge(new_user_prefs)
+        #TODO: this is creating a new row instead of merging with existing
+    else:
+        kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
+        'kids_goodfor': request.form.get('kids_goodfor'),
+        'options_healthy': request.form.get('options_healthy'), 
+        'options_organic': request.form.get('options_organic'), 
+        'parking': request.form.get('parking'), 
+        'wifi' : request.form.get('wifi'), 
+        'alcohol_byob': 0, 'alcohol_bar': 0,
+        'alcohol_beer_wine': 0, 'alcohol': 0,
+        'groups_goodfor':  0, 'kids_goodfor':0,
+        'kids_menu': 0, 'meal_breakfast':  0,
+        'meal_dinner': 0, 'meal_deliver':  0,
+        'options_glutenfree': 0, 
+        'options_lowfat': 0, 
+        'options_vegan': 0, 
+        'options_vegetarian': 0, 
+        'reservations':  0,
+        'user_id': current_user_id}
+
+
+        initial_user_prof = model.User_Profile(**kwargs)
+        initial_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
+        model.session.add(initial_user_prof)
+        model.session.add(initial_user_prefs)
     
+    model.session.commit() 
+
+    return redirect("/")
 
 #TODO: this has a weird bug smetimes, make sure it doesn't happen
 @app.route('/user_preferences', methods = ['GET', 'POST'])
@@ -757,8 +725,7 @@ def update_user_prefs():
     current_user_id = session['user_id']  
     print "This is who is logged in right now %r" % current_user_id
     existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
-    #TODO: you need to allow user to update their preferences
-
+   
     #you'll want to check if the restaurant has already been entered into the user
     #this updates existing user_prefs to include sums of all features for each restaurant that the user has liked
     if existing_user_prefs:
@@ -766,8 +733,7 @@ def update_user_prefs():
         if user_fave_rests:
             user_prefs_to_store = {}
             user_prefs = existing_user_prefs.get_all_data()
-            # import pdb; pdb.set_trace()
-
+        
             for key, value in user_prefs.iteritems():
                 user_prefs_to_store[key] = getattr(existing_user_prefs, key,value)
 
@@ -776,8 +742,7 @@ def update_user_prefs():
 
             for entry in user_fave_rests:
                 rest_features = entry.restaurant.restaurant_features.get_all_data()
-             
-
+    
                 for key, value in rest_features.iteritems():
                     try:
                         existing_feature_count = int(user_prefs_to_store[key])
@@ -790,7 +755,6 @@ def update_user_prefs():
                     if rest_features[key] > 0:
                         user_prefs_to_store[key] = existing_feature_count + 1
                     
-
                     #should be 20 keys
                     #need to add user's initial preferences as well 
                     #create a new key in dictionary to add this value in
@@ -800,55 +764,29 @@ def update_user_prefs():
                     #should set all user preferences to zero then try as negative 1
                
             kwargs = user_prefs_to_store
-            
             new_user_prefs = model.User_Preference(id = existing_user_prefs.id, user_id = current_user_id, **kwargs)
-
             model.session.merge(new_user_prefs)
 
-            # import pdb; pdb.set_trace()
-          
-            # model.session.add(existing_user_prefs, user_id = current_user_id)
-
-            # new_user_prefs = model.User_Preference(user_id = current_user_id)
-            # nupdate = new_user_prefs(**kwargs)
-            
-
-            # model.User_Preference.update(whereclause=current_user_id, **kwargs)
-
-            # existing_user_prefs.update().values(user_id =current_user_id, **kwargs)
-
-            # new_user_prefs = update(model.User_Preference).filter_by(user_id =current_user_id).\
-            # values(**kwargs)
-            # new_user_prefs = model.User_Preference.get(user_id = current_user_id)
-            # update.new_user_prefs.filter_by(**kwargs)
-            
-            #TODO: this adds a new row for user preferences each time instead of updating. how to fix?          
-    
     #this else function will only run when the user initially sets preferences
+    #TODO: let user update these. 
     #these preferences are stored in user_profiles table. Users can select to update
     #baseline preferences, otherwise they stay set.
-    else:
-    
-        kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
-        'kids_goodfor': request.form.get('kids_goodfor'),
-        'options_healthy': request.form.get('options_healthy'), 
-        'options_organic': request.form.get('options_organic'), 
-        'parking': request.form.get('parking'), 
-        'wifi' : request.form.get('wifi'), 
-        'user_id': current_user_id}
+    # else:
+    #     kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
+    #     'kids_goodfor': request.form.get('kids_goodfor'),
+    #     'options_healthy': request.form.get('options_healthy'), 
+    #     'options_organic': request.form.get('options_organic'), 
+    #     'parking': request.form.get('parking'), 
+    #     'wifi' : request.form.get('wifi'), 
+    #     'user_id': current_user_id}
 
-        initial_user_prefs = model.User_Profile(**kwargs)
-        
-
-        model.session.add(initial_user_prefs)
+    #     initial_user_prefs = model.User_Profile(**kwargs)
+    #     model.session.add(initial_user_prefs)
 
     model.session.commit() 
 
     return redirect("/")
-    # TODO: think about using Javascript to pop up success message
-    # return render_template("user_preferences.html")
-    
-
+    # TODO: think about using Javascript to pop up success message    
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():
     if request.method == "GET":
@@ -858,7 +796,6 @@ def show_login():
 
 def login_user():
     user_email = request.form['email']
-
     # does a user with this email exist?
     current_user = model.session.query(model.User).filter_by(email = user_email).first()
 
@@ -869,6 +806,7 @@ def login_user():
         
         if pbkdf2_sha256.verify(input_password, current_user.password):
             session['user_email'] = current_user.email    
+            session['user_id'] = current_user.id
             print session
             return redirect("/")    
             
@@ -877,8 +815,7 @@ def login_user():
             return redirect("/signup") 
     else:
         flash("Invalid username or password", "error")
-        return redirect("/signup") 
-    
+        return redirect("/signup")   
 
 @app.route('/logout')
 def logout_user():
@@ -886,8 +823,6 @@ def logout_user():
     print "This is what session looks like now %r" % session
     return redirect("/login")
   
-
-
 
 if __name__ == "__main__":
     app.debug = True

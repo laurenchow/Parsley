@@ -4,23 +4,37 @@
 {% extends 'base.html' %}
 {% block body %}
  
+<style>
+body {
+    background-image: url('static/unsplash_resto.jpeg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 25%;
+}
+</style>
 
+
+<div class="col-sm-4" align = "center">
+</div>
+<div class="col-sm-4" align = "center">
     
  <div class="panel panel-default">
 <div class="panel-body">
 <form class="form-signin" method="POST">
-    <h2 class="form-signin-heading">Please Sign Up!</h2>
+    <h2 class="form-signin-heading">Welcome.</h2>
     <input type="first_name" name="first_name" class="form-control" placeholder="First name" required autofocus />
     <input type="last_name" name="last_name" class="form-control" placeholder="Last name" required autofocus />
+    <br>
     <input type="email" name="email" class="form-control" placeholder="Email Address" required autofocus />
     <input type="password" name="password" class="form-control" placeholder="Password" required />
     <br>
     <button type="btn btn-lg btn-primary btn-block" type="submit">Sign Up</button><br><br>
     Already signed up? Log in<a href = "/login"> here. </a><br><br>
 
-    <i> Forgot your password? We'll have something for that one day. </i>
-    
 </form>
+</div>
 </div>
 </div>
 {% endblock %}

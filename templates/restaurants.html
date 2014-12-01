@@ -1,12 +1,26 @@
-{% extends 'base.html' %}
+<script src="~/Scripts/js/jquery.validate.js"></script>
+<script src="jquery-1.11.1.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
+
+    {% extends 'base.html' %}
  
 	 <link rel="stylesheet" type="text/css" href="/static/map_time.css">
 
- 
 
 {% block body %}
  
 
+
+<style>
+body {
+    background-image: url('static/unsplash_resto.jpeg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 25%;
+}
+</style>
 
     <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script> 
     <script src ="static/autocomplete.js"></script>
@@ -47,7 +61,7 @@
 			 
 			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
 			          <script>
-			         function isValidUSZip(user_gep) {
+			         function isValidUSZip(user_geo) {
 						   return /^\d{5}(-\d{4})?$/.test(user_geo);
 						}
 			         </script>	
@@ -63,30 +77,82 @@
         		<div class="col-md-6">  
 					
 					<div class="btn-group" role="group" aria-label="...">
-						<button id="lauren1" type="button" class="btn btn-default"> Cuisines similar to these restaurants
+						<checkbox id="cuisines_similar" type="checkbox" class="btn btn-default" data-cuisine-id = "sim_cuis"> Cuisines similar to these restaurants
 						
 					</div>
 
 					<div class="btn-group" role="group" aria-label="...">
-						<button id="lauren2" type="button" class="btn btn-default"> Surprise me.
+						<checkbox id="cuisines_different" type="checkbox" class="btn btn-default" data-cuisine-id ="diff_cuis"> Surprise me.
 						
-					</div>
+				</div>
 
+         
+        <script>
+        
+            var text = document.getElementById("cuisines_similar");  
+            text.addEventListener('click', function(e) {
+            console.log(e);
+            e.preventDefault();
+            text.innerHTML = "Okay - we'll look for similar cuisines.";
+            })
+
+            var text2 = document.getElementById("cuisines_different"); 
+            text2.addEventListener('click', function(f) {
+            console.log(f);
+            f.preventDefault();
+            text2.innerHTML = "Got it – we'll look for all types of cuisines.";
+            })
+
+
+        
+            $('#toggle').click(function (event) {
+            event.preventDefault();
+            var checkbox = $('#cuisines_similar'),
+                isChecked = checkbox.is(':checked'),
+                status = $('#status');
+            if(isChecked) {
+                checkbox.prop('checked',false);
+                status.html('unchecked');
+                checkbox.innerHTML = "Cuisines similar to these restaurants.";
+            } else {
+                checkbox.prop('checked', true); 
+                status.html('checked');
+                checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
+            }
+              });
+
+        </script>  
+    </div>
 
         	
 		</div>
 	</div>
+
 		<br>  
          <button class="btn btn-primary btn-lg" class="btn btn-default" align = "right" type="submit"> Tell me where to go 
          </button><br>
-
 				</div>
-
-           
    </form>
   </div>
-  <!--      
         
+          <script>
+
+            $(document).ready(function(){
+
+            $("[id^=cuisines_]").click(function(){
+              var cuisine_id = $(this).data("cuisine-id"); 
+              console.log("[id^=cuisines_]")
+              $.ajax({
+                type: "POST",
+                url: "/restaurants",
+                data: { cuisine_id: cuisine_id}
+              })
+            
+                });
+          });;
+
+
+  </script>
 
 
 

@@ -26,7 +26,7 @@
       <br><br>
      
       {% set entry_counter = 0 %}
-      {%for entry in new_restaurant_suggestion.data()%} 
+      {%for entry in new_restaurant_suggestion%} 
             <div id = "{{entry_counter}}" > 
               <a href = "{{entry.website}}" >{{entry['name']}} </a>
          
@@ -35,7 +35,7 @@
                 <br>
               <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
              
-              <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" data-restaurant-rating-id = "{{0}}" data-restaurant-id = "{{entry['factual_id']}}" style="width:40xpx;height:40px"  />
+              <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it"  data-restaurant-rating-id = "{{0}}" data-restaurant-id = "{{entry['factual_id']}}" style="width:40xpx;height:40px"  />
               </a>
               <br><br><br>
            
@@ -85,11 +85,15 @@ $(document).ready(function(){
 
         
 </script>
-
+<!-- 
+<form action="/refresh_restaurants" method="get">
+  <button type="btn btn-lg btn-primary btn-block" input type="submit"  name="Submit" id="frm1_submit" >
+       Show me some new restaurants</button><br>
+</form> -->
 
         <form>
         <button type="btn btn-lg btn-primary btn-block" align = "center" type="get"> 
-       Show me some new restaurants</button><br>
+          Show me some new restaurants
         </form>
 </div>
 </div>

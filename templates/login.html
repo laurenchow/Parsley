@@ -1,24 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 {% extends 'base.html' %}
-{% block body %}
 
+
+{% block body %}
+<style>
+body {
+    background-image: url('static/unsplash_salad.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 25%;
+}
+</style>
+<div class="col-sm-4" align = "center">
+</div>
+<div class="col-sm-4" align = "center">
 <div class="panel panel-default">
 <div class="panel-body">
+
  
-<form class="form-signin" method="POST">
+<form class="form-signin" method="POST" width = "40px">
     <h4 class="form-signin-heading" width = "40px">Please Log In</h4>
     <input type="email" name="email" class="form-control" placeholder="Email Address" required autofocus width = "40px" align ="center" />
     <input type="password" name="password" class="form-control" placeholder="Password" required  width = "40px" align ="center" /><br>
 
-    <button type="btn btn-lg btn-primary btn-block" align ="center" type="submit">Sign In</button>
+    <button type="btn btn-lg btn-primary btn-block" type="submit">Sign In</button>
     <br><br>
 
 </div>
 </div>
-
-    <i> Forgot your password? We'll have something for that one day. </i>
 </form>
-
+</div>
 {% endblock %}
 </html>
