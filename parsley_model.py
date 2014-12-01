@@ -1,3 +1,4 @@
+#TODO: update requirements.txt
 from flask import Flask, render_template, session, flash, redirect, request, g, jsonify
 from passlib.hash import pbkdf2_sha256
 from factual import Factual
@@ -21,10 +22,16 @@ def load_user_id():
 
 @app.route('/', methods = ['GET'])
 def index():
+    """
+    This function returns the app's homepage.
+    """
     return render_template("index.html")
     
 @app.route('/restaurants', methods = ['GET'])
 def restos():
+    """
+    This function returns the app's restaurant submission template.
+    """
     return render_template("restaurants.html")
 
 @app.route('/restaurants', methods = ['POST'])
@@ -41,12 +48,13 @@ def other_restos():
         restaurants.
     (4) calls function to suggest new restaurants 
     """
-    
+
     restaurant1 = request.form.get('restaurant_1')
     restaurant2 = request.form.get('restaurant_2')
     restaurant3 = request.form.get('restaurant_3')      
     user_geo = request.form.get('user_geo') 
     feedback_cuisine_id = request.form.get('cuisine_id')
+    feedback_category_id = request.form.get('category_id')
     
     if restaurant1 and restaurant2 and restaurant3:
         restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
@@ -55,7 +63,7 @@ def other_restos():
         session['user_geo'] = user_geo 
         add_restaurants_to_user_preferences(restaurant_ids)
 
-        return suggest_new_resto(feedback_cuisine_id)
+        return suggest_new_resto(feedback_cuisine_id, feedback_category_id)
 
     else:
         flash("Please re-enter using format from autocomplete.", "error")
@@ -70,6 +78,7 @@ def parse_restaurant_input(restaurant_text):
 
     If information submitted in incorrect format, asks user to re-enter.
     """
+
     data = {}
 
     restaurant_split = restaurant_text.split(',')
@@ -94,6 +103,7 @@ def check_db_for_restos(restaurant_data, user_geo):
     Checks database for restaurants to see if they exist as entries yet. 
     If not, adds restaurants into database.
     """
+
     restaurant_ids = []
 
     factual = Factual(KEY, SECRET)
@@ -108,12 +118,11 @@ def check_db_for_restos(restaurant_data, user_geo):
              if restaurant_deets:
                 restaurant_ids.append(db_entry.id)
 
-        #TODO: Make sure three entries are valid
+        #TODO: Make sure three entries are valid formatting first
         else:
-
             q = table.filters({'name':{'$includes':parsed_data['name']}})
             new_resto_data = q.data()
-            print q.get_url()
+            # print q.get_url()
 
             if new_resto_data:
                 new_restaurant = model.Restaurant()
@@ -138,9 +147,10 @@ def check_db_for_restos(restaurant_data, user_geo):
  
     return restaurant_ids
 
-@app.route('/refresh_restaurants', methods = ['GET', 'POST'])
-def show_different_restos(restaurant_ids):
-    pass
+#TODO: get this to work when you click on it from restaurants suggestion page
+# @app.route('/refresh_restaurants', methods = ['GET', 'POST'])
+# def show_different_restos(restaurant_ids):
+#     pass
 
 @app.route('/user_restaurant_preferences', methods = ['GET', 'POST'])
 def add_restaurants_to_user_preferences(restaurant_ids):
@@ -192,7 +202,7 @@ def user_feedback_on_restaurants():
     return jsonify( { 'feedback_button_id': feedback_button_id} )
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
-def suggest_new_resto(feedback_cuisine_id):
+def suggest_new_resto(feedback_cuisine_id, feedback_category_id):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
 
@@ -205,14 +215,13 @@ def suggest_new_resto(feedback_cuisine_id):
     
     user_input_rest_data = get_user_inputs(rest_ids)
     # cuisine_type = filter_by_cuisine(user_input_rest_data, feedback_cuisine_id)
+    # category_type = filter_by_category(user_input_rest_data, feedback_category_id)
     
     sorted_restaurant_features_counter_keys = get_rest_features_similarities(user_input_rest_data)
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
-    sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features)
-    print sk_cos_sim
-     
+    # db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys, cuisine_type, category_type)
+    sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features) 
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
-    
 
     new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
     # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
@@ -220,22 +229,35 @@ def suggest_new_resto(feedback_cuisine_id):
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
-def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
-    """
-    This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
-    If filtering by cuisine, returns list of cuisines to search for.
-    """
+#TODO: GET THIS TO WORK using jquery and buttons
+# def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
+#     """
+#     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
+#     If filtering by cuisine, returns list of cuisines to search for.
+#     """
 
-    if feedback_cuisine_id == 'sim_cuis':
-        cuisine_type = "hi"
-        print "hi"
-        pass
+#     if feedback_cuisine_id == 'similar_cuisines':
+#         cuisine_type = "similar"
 
-    else:
-        cuisine_type = "this is what's happening"
-        print cuisine_type
+#     else:
+#         cuisine_type = "all"
 
-    return cuisine_type
+#     return cuisine_type
+
+
+#TODO: GET THIS TO WORK using jquery and buttons
+# def filter_by_category(user_input_rest_data, feedback_category_id):
+#     """
+#     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
+#     If filtering by category, returns list of categories to search for.
+#     """
+
+#     if feedback_category_id == 'similar_categories':
+#         category_type = "similar"
+#     else:
+#         category_type = "all"
+
+#     return category_type 
 
 def get_resto_suggestions(sk_cos_sim):
     """
@@ -248,9 +270,7 @@ def get_resto_suggestions(sk_cos_sim):
 
     new_restaurant_suggestion = []
 
-    # if cuisine_type != 'all':
-    #     pass
-    # else:
+
     for rest_id in sk_cos_sim:
         already_rated = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = rest_id).first()
         if not already_rated:
@@ -258,7 +278,6 @@ def get_resto_suggestions(sk_cos_sim):
             new_restaurant_suggestion.append(rest_data)
 
     return new_restaurant_suggestion
-
 
 def get_user_inputs(rest_ids):
     """
@@ -280,20 +299,12 @@ def get_rest_features_similarities(user_input_rest_data):
     that the user input, returns most relevant (highest frequency) restaurant features.
     """ 
 
-    restaurant_features_counter = {'alcohol': 0,
-        'groups_goodfor':  0, 'kids_goodfor': 0,
-        'kids_menu': 0, 'meal_breakfast':  0,
-        'meal_dinner':  0, 'meal_deliver':  0,
-        'options_healthy': 0, 
-        'options_glutenfree': 0, 
-        'options_lowfat':0, 
-        'options_vegan': 0, 
-        'options_vegetarian': 0, 
-        'options_organic': 0, 'parking': 0, 
-        'reservations':  0,
-        'wifi' : 0}
+    restaurant_features_counter = {'alcohol': 0, 'groups_goodfor': 0, 'kids_goodfor': 0,
+        'kids_menu': 0, 'meal_breakfast': 0, 'meal_dinner': 0, 'meal_deliver': 0, 
+        'options_healthy': 0, 'options_glutenfree': 0, 'options_lowfat': 0, 
+        'options_vegan': 0, 'options_vegetarian': 0, 'options_organic': 0, 'parking': 0, 
+        'reservations':  0, 'wifi' : 0}
     
-
     for entry in range(len(user_input_rest_data)):
         restaurant_model = user_input_rest_data[entry]
         restaurant_features = restaurant_model.restaurant_features
@@ -302,7 +313,6 @@ def get_rest_features_similarities(user_input_rest_data):
             restaurant_feature_value = getattr(restaurant_features, feature)
             if restaurant_feature_value:
                 restaurant_features_counter[feature] += 1
-
 
     sorted_restaurant_features_counter = sorted(restaurant_features_counter.items(), key = lambda (k,v): v)
     sorted_restaurant_features_counter.reverse()
@@ -342,6 +352,8 @@ def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_
 
     return translated_sorted_rest_feat_sim_keys
 
+#TODO: pass cuisine and category to this function to evaluate whether or not to show all cuisines or all categories
+# def get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type, category_type):
 def get_rest_features_results(sorted_restaurant_features_counter_keys):
     """
     This function takes the ranked restaurant features, searches 
@@ -363,11 +375,51 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
     db_restaurant_list = []
 
     if db_zip_density >= 25:
-        print sorted_restaurant_features_counter_keys
 
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
+        # what you need to do here is get the list of cuisines from restaurant_categories table, then split on commas
+        # then create a dictionary of incidences of that cuisine in all three restaurants, with the cuisine type as key
+        # and 1 as calue
+
+        # if cuisine_type == 'similar':
+        #     rest_cuisines = {}
+        #       for entry in user_input_rest_data:
+        #           each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
+        #           each_restaurant_cuisine = each_restaurant.cuisine
+        #           list_of_each_restaurant_cuisine = each_restaurant_cuisine.split(',')
+        #           for item in list_of_each_restaurant_cuisine:
+        #               rest_cuisines[item] = 1
+
+        # rest_cuisine_keys = rest_cuisines.keys()
+        # new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
+        
+        # TODO: How to query in SQLA for like %%? Redefine kwargs as cuisines, then filter by?
+        # new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.filter_by()
+        # for item in new_restaurant_suggestion_filtered_by_cuisine:
+        #       db_restaurant_list.append(item.id)
+
+        # TODO: How to query in SQLA for like %%? 
+        # TODO: Filter by kwargs, then filter by cuisine list searches for those cuisine strings   
+
+        # if category_type == 'similar':
+        #     rest_categories = {}
+        #       for entry in user_input_rest_data:
+        #           each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
+        #           each_restaurant_category = each_restaurant.category_labels
+        #           list_of_each_restaurant_category = each_restaurant_category.split(',')
+        #           for item in list_of_each_restaurant_category:
+        #               rest_categories[item] = 1
+
+        #   rest_category_keys = rest_categories.keys()
+        #   new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
+        #   TODO: How to query in SQLA for like %%? Redefine kwargs as cuisines, then filter by?
+        #   new_restaurant_suggestion_filtered_by_categories = new_restaurant_suggestion_from_features.filter_by()
+        #   for item in new_restaurant_suggestion_filtered_by_categories:
+        #       db_restaurant_list.append(item.id)
+       
+        #else: 
         new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
 
         for item in new_restaurant_suggestion_from_features:
@@ -387,7 +439,6 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
 
     return db_result_new_restaurants_from_features
 
-
 def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features):
     """ 
     This function takes list of restaurant ids (from the new restaurants returned)
@@ -396,6 +447,7 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
 
     It returns the list of restaurant ids ranked by cosine similarity values.
     """
+
     current_user_id = session['user_id']
 
     rest_ids = db_result_new_restaurants_from_features
@@ -432,11 +484,10 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
     #sometimes returns NaN is this happening because restaurant 3 comes in twice? if you limit it to distinct restaurants, goes away
     #TODO: deal with NaN when it happens because you can't have it
          
-   
 @app.route('/get_restos', methods = ['GET'])
 def new_restaurants():
     """
-    This function gets restaurants for a certain zipcode.
+    This function gets restaurants for a certain zipcode and is not visible to the user.
     """
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
@@ -462,7 +513,7 @@ def user_favorites():
     else:
          return render_template("sorry.html")
 
-
+#TODO: get this to work
 @app.route('/browse_restos', methods = ['GET'])
 def browse_new_rests():
     """ 
@@ -536,6 +587,10 @@ def more_restaurant_data_needed():
 
 @app.route('/signup', methods = ['GET', 'POST'])
 def user_signup():
+    """
+    This function returns signup template. Once information is submitted, calls
+    function to sign up user.
+    """
     if request.method == "GET":
         return render_template("signup.html")
     else:
@@ -556,8 +611,7 @@ def signup_user():
     if already_registered:
         flash("Looks like you already have an account. Want to try signing in?")
 
-    secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16)
-    print "this is the secure hashed password %r" % secure_password 
+    secure_password = pbkdf2_sha256.encrypt(user_password, rounds=200000, salt_size=16) 
 
     new_user = model.User(email = user_email, password = secure_password, 
         first_name = user_first_name, last_name = user_last_name)
@@ -582,6 +636,7 @@ def new_user_welcome():
     This function welcomes a new user upon signup and requests details for 
     initial user profile.
     """
+
     current_user_id = session['user_id']  
 
     if request.method == "GET":
@@ -594,6 +649,7 @@ def submit_user_details(current_user_id):
     This function requests demographic information from the signup form, then returns the
     user to the user preferences form via a redirect. 
     """
+
     current_user_id = session['user_id']  
 
     new_user_info = model.session.query(model.User).filter_by(id = current_user_id).first()
@@ -686,8 +742,8 @@ def update_user_prefs():
     For each restaurant a user has reviewed, increments the feature in relevant
     row in user_preferences to show that the user strongly values that feature.
     """
-    current_user_id = session['user_id']  
-    print "This is who is logged in right now %r" % current_user_id
+
+    current_user_id = session['user_id']   
     existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
    
     if existing_user_prefs:
@@ -730,7 +786,7 @@ def show_login():
 
 def login_user():
     """
-    This allows registered users to log in and checks their password against
+    This function allows registered users to log in and checks their password against
     the hashed, salted entry using pbkdf2_sha256 encryption.
     """
     user_email = request.form['email'] 
@@ -738,12 +794,11 @@ def login_user():
  
     if current_user:
         input_password = request.form['password']
-        print "This is what user_password is stored as %r" % type(input_password)
         
         if pbkdf2_sha256.verify(input_password, current_user.password):
             session['user_email'] = current_user.email    
             session['user_id'] = current_user.id
-            print session
+
             return redirect("/")    
             
         else:
@@ -755,6 +810,9 @@ def login_user():
 
 @app.route('/logout')
 def logout_user():
+    """
+    This function clears the user session.
+    """
     session.clear()
     return redirect("/login")
 

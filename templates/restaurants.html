@@ -60,29 +60,29 @@ body {
 			         </p>
 			 
 			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
-			          <script>
-			         function isValidUSZip(user_geo) {
-						   return /^\d{5}(-\d{4})?$/.test(user_geo);
-						}
-			         </script>	
+			   //        <script>
+			   //       function isValidUSZip(user_geo) {
+						//    return /^\d{5}(-\d{4})?$/.test(user_geo);
+						// }
+			   //       </script>	
 
 			    </div>
 			     
 		    
 		     <p class="help-block">     
-		        What types of cuisine are you looking for?
+		        Are you looking for the same categories or cuisines?
 		        <br>
 		    </p>
        
         		<div class="col-md-6">  
 					
 					<div class="btn-group" role="group" aria-label="...">
-						<checkbox id="cuisines_similar" type="checkbox" class="btn btn-default" data-cuisine-id = "sim_cuis"> Cuisines similar to these restaurants
+						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Yes, cuisines similar to these restaurants
 						
 					</div>
 
 					<div class="btn-group" role="group" aria-label="...">
-						<checkbox id="cuisines_different" type="checkbox" class="btn btn-default" data-cuisine-id ="diff_cuis"> Surprise me.
+						<checkbox id="categories_similar" name="categories_similar" type="checkbox" class="btn btn-default" data-category-id ="similar_categories"> Yes, categories similar to these restaurants.
 						
 				</div>
 
@@ -96,46 +96,46 @@ body {
             text.innerHTML = "Okay - we'll look for similar cuisines.";
             })
 
-            var text2 = document.getElementById("cuisines_different"); 
+
+            var text2 = document.getElementById("categories_similar"); 
             text2.addEventListener('click', function(f) {
             console.log(f);
             f.preventDefault();
-            text2.innerHTML = "Got it – we'll look for all types of cuisines.";
+            text2.innerHTML = "Okay – we'll look for similar categories.";
             })
-
-
         
-            $('#cuisines_similar').click(function (event) {
-            event.preventDefault();
-            var checkbox = $('#cuisines_similar'),
-                isChecked = checkbox.is(':checked'),
-                status = $('#status');
-            if(isChecked) {
-                checkbox.prop('checked',false);
-                status.html('unchecked');
-                checkbox.innerHTML = "Cuisines similar to these restaurants.";
-            } else {
-                checkbox.prop('checked', true); 
-                status.html('checked');
-                checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
-            }
-              });
+            // $('#cuisines_similar').click(function (event) {
+            // event.preventDefault();
+            // var checkbox = $('#cuisines_similar'),
+            //     isChecked = checkbox.is(':checked'),
+            //     status = $('#status');
+            // if(isChecked) {
+            //     checkbox.prop('checked',false);
+            //     status.html('unchecked');
+            //     checkbox.innerHTML = "Cuisines similar to these restaurants.";
+            // } else {
+            //     checkbox.prop('checked', true); 
+            //     status.html('checked');
+            //     checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
+            // }
+            //   });
 
-             $('#cuisines_different').click(function (event) {
-            event.preventDefault();
-            var checkbox2 = $('#cuisines_different'),
-                isChecked = checkbox2.is(':checked'),
-                status = $('#status');
-            if(isChecked) {
-                checkbox.prop('checked',false);
-                status.html('unchecked');
-                checkbox2.innerHTML = "All cuisines.";
-            } else {
-                checkbox2.prop('checked', true); 
-                status.html('checked');
-                checkbox2.innerHTML = "Got it – we'll look for all types of cuisines.";
-            }
-              });
+            //  $('#categories_similar').click(function (event) {
+            // event.preventDefault();
+            // var checkbox2 = $('#categories_similar'),
+            //     isChecked = checkbox2.is(':checked'),
+            //     status = $('#status');
+            // if(isChecked) {
+            //     checkbox2.prop('checked',false);
+            //     status.html('unchecked');
+
+            //     checkbox2.innerHTML = "All categories.";
+            // } else {
+            //     checkbox2.prop('checked', true); 
+            //     status.html('checked');
+            //     checkbox2.innerHTML = "Got it – we'll look for similar places.";
+            // }
+            //   });
 
 
         </script>  
@@ -153,20 +153,49 @@ body {
   </div>
         
           <script>
+           $(document).ready(function(){
 
-            $(document).ready(function(){
-
-            $("[id^=cuisines_]").click(function(){
-              var cuisine_id = $(this).data("cuisine-id"); 
-              console.log("[id^=cuisines_]")
+            $("[id^=similar_categories]").click(function(){
+              var category_id = $(this).data("category-id"); 
+              console.log("[id^=similar_categories]")
               $.ajax({
                 type: "POST",
                 url: "/restaurants",
-                data: { cuisine_id: cuisine_id}
+                data: { category_id: category_id }
               })
             
                 });
-          });;
+
+       });
+
+            $(document).ready(function(){
+
+            $("[id^=similar_cuisines]").click(function(){
+              var cuisine_id = $(this).data("cuisine-id");  
+              console.log("[id^=similar_cuisines]")
+              $.ajax({
+                type: "POST",
+                url: "/restaurants",
+                data: { cuisine_id: cuisine_id }
+              })
+            
+                });
+          });
+
+
+          //   $(document).ready(function(){
+
+          //   $("[id^=cuisines_]").click(function(){
+          //     var cuisine_id = $(this).data("cuisine-id"); 
+          //     console.log("[id^=cuisines_]")
+          //     $.ajax({
+          //       type: "POST",
+          //       url: "/restaurants",
+          //       data: { cuisine_id: cuisine_id}
+          //     })
+            
+          //       });
+          // });;
 
 
   </script>
