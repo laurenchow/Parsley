@@ -31,127 +31,125 @@ body {
         <br><br>
 
     <p class="help-block">
-        Looking for a new spot to try?
+        Looking for a new spot to try? Tell me three restaurants that you like. <br><br></p>
+            <form class="favorite-restaurants" method="POST">
+            <form role="form">
+              <div class="form-group">
+                <label for="restaurant_1"></label>
+                <input type="text" class="form-control" name ="restaurant_1" id="searchTextField" size="50">
+              </div>
 
-        Tell me three restaurants that you like. <br><br></p>
-        <form class="favorite-restaurants" method="POST">
-        <form role="form">
-  <div class="form-group">
-    <label for="restaurant_1"></label>
-    <input type="text" class="form-control" name ="restaurant_1" id="searchTextField" size="50">
-  </div>
-  <div class="form-group">
-    <label for="restaurant_2"></label>
-    <input type="text" class="form-control" name = "restaurant_2" id="searchTextField2">
-  </div>
- <div class="form-group">
-    <label for="restaurant_3"></label>
-    <input type="text" class="form-control" name = "restaurant_3" id="searchTextField3" >
-  </div>
+              <div class="form-group">
+                <label for="restaurant_2"></label>
+                <input type="text" class="form-control" name = "restaurant_2" id="searchTextField2">
+              </div>
 
-  <br>
-    <div class="container">  
-    		<div class="row">
-        		<div class="col-md-6">  
-    
-			    <p class="help-block">
-			    
-			         Where would you like to search? <br> 
-			         </p>
-			 
-			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
-			   //        <script>
-			   //       function isValidUSZip(user_geo) {
-						//    return /^\d{5}(-\d{4})?$/.test(user_geo);
-						// }
-			   //       </script>	
+             <div class="form-group">
+                <label for="restaurant_3"></label>
+                <input type="text" class="form-control" name = "restaurant_3" id="searchTextField3" >
+              </div>
 
-			    </div>
-			     
-		    
-		     <p class="help-block">     
-		        Are you looking for the same categories or cuisines?
-		        <br>
-		    </p>
-       
-        		<div class="col-md-6">  
-					
-					<div class="btn-group" role="group" aria-label="...">
-						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Yes, cuisines similar to these restaurants
-						
-					</div>
+                <br>
+                <div class="container">  
+                		<div class="row">
+                    		<div class="col-md-6">  
+            			    <p class="help-block">
+            			         Where would you like to search? <br> 
+            			     </p>
+            			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
+            			          <script>
+            			   //       function isValidUSZip(user_geo) {
+            						//    return /^\d{5}(-\d{4})?$/.test(user_geo);
+            						// }
+            			   //       </script>	
 
-					<div class="btn-group" role="group" aria-label="...">
-						<checkbox id="categories_similar" name="categories_similar" type="checkbox" class="btn btn-default" data-category-id ="similar_categories"> Yes, categories similar to these restaurants.
-						
-				</div>
+            			    </div>
+            			     
+            		    
+            		     <p class="help-block">     
+            		        Are you looking for the same categories or cuisines?
+            		        <br>
+            		    </p>
+                   
+                    		<div class="col-md-6">  
+            					
+            					<div class="btn-group" role="group" aria-label="...">
+            						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Yes, cuisines similar to these restaurants
+            						
+            					</div>
 
-         
-        <script>
-        
-            var text = document.getElementById("cuisines_similar");  
-            text.addEventListener('click', function(e) {
-            console.log(e);
-            e.preventDefault();
-            text.innerHTML = "Okay - we'll look for similar cuisines.";
-            })
+            					<div class="btn-group" role="group" aria-label="...">
+            						<checkbox id="categories_similar" name="categories_similar" type="checkbox" class="btn btn-default" data-category-id ="similar_categories"> Yes, categories similar to these restaurants.
+            						
+            				    </div>
+
+                     
+                    <script>
+                    
+                        var text = document.getElementById("cuisines_similar");  
+                        text.addEventListener('click', function(e) {
+                        console.log(e);
+                        e.preventDefault();
+                        text.innerHTML = "Okay - we'll look for similar cuisines.";
+                        })
 
 
-            var text2 = document.getElementById("categories_similar"); 
-            text2.addEventListener('click', function(f) {
-            console.log(f);
-            f.preventDefault();
-            text2.innerHTML = "Okay – we'll look for similar categories.";
-            })
-        
-            // $('#cuisines_similar').click(function (event) {
-            // event.preventDefault();
-            // var checkbox = $('#cuisines_similar'),
-            //     isChecked = checkbox.is(':checked'),
-            //     status = $('#status');
-            // if(isChecked) {
-            //     checkbox.prop('checked',false);
-            //     status.html('unchecked');
-            //     checkbox.innerHTML = "Cuisines similar to these restaurants.";
-            // } else {
-            //     checkbox.prop('checked', true); 
-            //     status.html('checked');
-            //     checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
-            // }
-            //   });
+                        var text2 = document.getElementById("categories_similar"); 
+                        text2.addEventListener('click', function(f) {
+                        console.log(f);
+                        f.preventDefault();
+                        text2.innerHTML = "Okay – we'll look for similar categories.";
+                        })
+                    
+                        // $('#cuisines_similar').click(function (event) {
+                        // event.preventDefault();
+                        // var checkbox = $('#cuisines_similar'),
+                        //     isChecked = checkbox.is(':checked'),
+                        //     status = $('#status');
+                        // if(isChecked) {
+                        //     checkbox.prop('checked',false);
+                        //     status.html('unchecked');
+                        //     checkbox.innerHTML = "Cuisines similar to these restaurants.";
+                        // } else {
+                        //     checkbox.prop('checked', true); 
+                        //     status.html('checked');
+                        //     checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
+                        // }
+                        //   });
 
-            //  $('#categories_similar').click(function (event) {
-            // event.preventDefault();
-            // var checkbox2 = $('#categories_similar'),
-            //     isChecked = checkbox2.is(':checked'),
-            //     status = $('#status');
-            // if(isChecked) {
-            //     checkbox2.prop('checked',false);
-            //     status.html('unchecked');
+                        //  $('#categories_similar').click(function (event) {
+                        // event.preventDefault();
+                        // var checkbox2 = $('#categories_similar'),
+                        //     isChecked = checkbox2.is(':checked'),
+                        //     status = $('#status');
+                        // if(isChecked) {
+                        //     checkbox2.prop('checked',false);
+                        //     status.html('unchecked');
 
-            //     checkbox2.innerHTML = "All categories.";
-            // } else {
-            //     checkbox2.prop('checked', true); 
-            //     status.html('checked');
-            //     checkbox2.innerHTML = "Got it – we'll look for similar places.";
-            // }
-            //   });
+                        //     checkbox2.innerHTML = "All categories.";
+                        // } else {
+                        //     checkbox2.prop('checked', true); 
+                        //     status.html('checked');
+                        //     checkbox2.innerHTML = "Got it – we'll look for similar places.";
+                        // }
+                        //   });
 
 
-        </script>  
-    </div>
+                    </script>  
+                </div>
 
-        	
-		</div>
-	</div>
+                   <!--  	
+            		</div>
+            	</div> -->
 
-		<br>  
-         <button class="btn btn-primary btn-lg" class="btn btn-default" align = "right" type="submit"> Tell me where to go 
-         </button><br>
-				</div>
-   </form>
+            		<br>  
+                     <button class="btn btn-primary btn-lg" class="btn btn-default" align = "right" type="submit"> Tell me where to go 
+                     </button><br>
+            				<!-- </div> -->
+               </form>
   </div>
         
+        <!-- Uncaught ReferenceError: $ is not defined -->
           <script>
            $(document).ready(function(){
 
@@ -181,7 +179,6 @@ body {
             
                 });
           });
-
 
           //   $(document).ready(function(){
 

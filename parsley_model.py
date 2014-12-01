@@ -363,7 +363,10 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
     If function determines there are insufficient number (less than 25) restaurants
     to suggest in desired user zipcode, will ping Factual for entries in that area.
 
-    Returns a list of restaurant ids.
+    If a user opted to filter by category or cuisine, this function also filters by the cuisine or category
+    returned by earlier functions filter_by_category() and filter_by_cuisine().
+
+    This function returns a list of restaurant ids.
 
     """
 
