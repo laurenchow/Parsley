@@ -40,8 +40,8 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 
 <strong>APIs (require access keys):</strong><br>
 •	Factual <br>
-•	Google Maps autocomplete <br>
-•	Leaflet JS/Mapbox <br>
+•	Google Maps JS <br>
+•	Mapbox JS (Leaflet JS) <br>
  
 
 
