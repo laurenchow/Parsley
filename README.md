@@ -18,13 +18,13 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
  
 <h2><strong> User Experience </strong><br></h2>
 
-<strong>Login</strong><br>
+<strong>Login</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
-<strong>Restaurant search</strong><br>
+<strong>Restaurant search</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br><br>
-<strong>Restaurant results: filtered by zip</strong><br>
+<strong>Restaurant results: filtered by zip</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
-<strong>Favorites</strong><br>
+<strong>Favorites</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
 
 <h2><strong> Requirements (included in requirements.txt): </strong><br></h2>
