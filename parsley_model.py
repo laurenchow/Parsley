@@ -239,7 +239,7 @@ def suggest_new_resto(feedback_cuisine_id):
 #     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
 #     If filtering by cuisine, returns list of cuisines to search for.
 #     """
-
+#  *   *   *   *   *   *   *   Here's the feedback cuisine id u'similar_cuisines'   *   *   *   *   *
 #     if feedback_cuisine_id == 'similar_cuisines':
 #         cuisine_type = "similar"
 
