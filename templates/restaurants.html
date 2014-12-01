@@ -105,7 +105,7 @@ body {
 
 
         
-            $('#toggle').click(function (event) {
+            $('#cuisines_similar').click(function (event) {
             event.preventDefault();
             var checkbox = $('#cuisines_similar'),
                 isChecked = checkbox.is(':checked'),
@@ -120,6 +120,23 @@ body {
                 checkbox.innerHTML = "Okay - we'll look for similar cuisines.";
             }
               });
+
+             $('#cuisines_different').click(function (event) {
+            event.preventDefault();
+            var checkbox2 = $('#cuisines_different'),
+                isChecked = checkbox2.is(':checked'),
+                status = $('#status');
+            if(isChecked) {
+                checkbox.prop('checked',false);
+                status.html('unchecked');
+                checkbox2.innerHTML = "All cuisines.";
+            } else {
+                checkbox2.prop('checked', true); 
+                status.html('checked');
+                checkbox2.innerHTML = "Got it – we'll look for all types of cuisines.";
+            }
+              });
+
 
         </script>  
     </div>
