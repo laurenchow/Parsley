@@ -3,9 +3,7 @@ parsley
 
 Parsley is a personalized restaurant recommendation engine that solves the age-old question – where should I go to eat? It addresses a gap in today’s recommendation engines landscape, using cosine similarities as a quick, simple way to understand a user's preferences and make tailored recommendations.
 
-Parsley surfaces relevant suggestions to users based on restaurants, bars and cafes that they already love – and allows users an easy way to access and visualize their favorite restaurants. 
-
-It does this by searching more than 1.1 million US restaurants (with more than 40 restaurant-specific attributes for each) to surface relevant suggestions to users based on restaurants, bars and cafes that they already love. 
+Parsley searches more than 1.1 million US restaurants (with more than 40 restaurant-specific attributes for each) to surface relevant suggestions to users based on restaurants, bars and cafes that they already love – then surfaces relevant suggestions to users and allows users an easy way to access and visualize their favorite restaurants. 
 
 Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn to find restaurants that closely match a user’s preferences for a requested zipcode and cuisine.
 
