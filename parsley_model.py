@@ -54,7 +54,11 @@ def other_restos():
     restaurant3 = request.form.get('restaurant_3')      
     user_geo = request.form.get('user_geo') 
     feedback_cuisine_id = request.form.get('cuisine_id')
-    feedback_category_id = request.form.get('category_id')
+    # feedback_category_id = request.form.get('category_id')
+
+    print " *   *   *   *   *   *   *   Here's the feedback cuisine id %r   *   *   *   *   *" % feedback_cuisine_id 
+    
+    # print " *   *   *   *   *   *   *   Here's the feedback category id %r   *   *   *   *   *" % feedback_category_id 
     
     if restaurant1 and restaurant2 and restaurant3:
         restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
@@ -63,7 +67,7 @@ def other_restos():
         session['user_geo'] = user_geo 
         add_restaurants_to_user_preferences(restaurant_ids)
 
-        return suggest_new_resto(feedback_cuisine_id, feedback_category_id)
+        return suggest_new_resto(feedback_cuisine_id)
 
     else:
         flash("Please re-enter using format from autocomplete.", "error")
@@ -110,7 +114,7 @@ def check_db_for_restos(restaurant_data, user_geo):
     table = factual.table('restaurants')
     for restaurant in restaurant_data: 
         parsed_data = parse_restaurant_input(restaurant)
-       
+        # import pdb; pdb.set_trace()
         db_entry = model.session.query(model.Restaurant).filter_by(name= parsed_data['name']).first() 
     
         if db_entry:
@@ -202,7 +206,7 @@ def user_feedback_on_restaurants():
     return jsonify( { 'feedback_button_id': feedback_button_id} )
 
 @app.route('/suggest_restaurant', methods = ['GET', 'POST'])
-def suggest_new_resto(feedback_cuisine_id, feedback_category_id):
+def suggest_new_resto(feedback_cuisine_id):
     """ This processes the user's input regarding favorite restaurants as well 
         as what their preferences are, then queries to determine suitable matches.
 

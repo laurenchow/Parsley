@@ -1,5 +1,4 @@
-<script src="~/Scripts/js/jquery.validate.js"></script>
-<script src="jquery-1.11.1.min.js"></script>
+<script src="~/Scripts/js/jquery.validate.js"></script> 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
 
     {% extends 'base.html' %}
@@ -74,13 +73,14 @@ body {
                     		<div class="col-md-6">  
             					
             					<div class="btn-group" role="group" aria-label="...">
-            						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Yes, cuisines similar to these restaurants
+            						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Show me cuisines similar to these restaurants
             						
-            					</div>
-
+            					</div><br> 
+                                <!-- 
             					<div class="btn-group" role="group" aria-label="...">
-            						<checkbox id="categories_similar" name="categories_similar" type="checkbox" class="btn btn-default" data-category-id ="similar_categories"> Yes, categories similar to these restaurants.
-            						
+            						<checkbox id="categories_similar" name="categories_similar" type="checkbox" class="btn btn-default" data-category-id ="similar_categories"> Show me categories similar to these restaurants.
+                                    </div>
+            						 -->
             				    </div>
 
                      
@@ -88,18 +88,32 @@ body {
                     
                         var text = document.getElementById("cuisines_similar");  
                         text.addEventListener('click', function(e) {
-                        console.log(e);
-                        e.preventDefault();
-                        text.innerHTML = "Okay - we'll look for similar cuisines.";
-                        })
+                            console.log(e);
+                            e.preventDefault();
+                            text.innerHTML = "Okay - we'll look for similar cuisines.";
+                            var cuisine_id = $(this).data("cuisine-id");  
+                            console.log("[id^=similar_cuisines]")
+                              $.ajax({
+                                type: "POST",
+                                url: "/restaurants",
+                                data: { cuisine_id: cuisine_id }
+                              });
+                        });
 
-
-                        var text2 = document.getElementById("categories_similar"); 
-                        text2.addEventListener('click', function(f) {
-                        console.log(f);
-                        f.preventDefault();
-                        text2.innerHTML = "Okay – we'll look for similar categories.";
-                        })
+ 
+                        // var text2 = document.getElementById("categories_similar"); 
+                        // text2.addEventListener('click', function(f) {
+                        //     console.log(f);
+                        //     f.preventDefault();
+                        //     text2.innerHTML = "Okay – we'll look for similar categories.";
+                        //     var category_id = $(this).data("category-id"); 
+                        //     console.log("[id^=similar_categories]")
+                        //       $.ajax({
+                        //         type: "POST",
+                        //         url: "/restaurants",
+                        //         data: { category_id: category_id,  cuisine_id: cuisine_id }
+                        //       })
+                        // });
                     
                         // $('#cuisines_similar').click(function (event) {
                         // event.preventDefault();
@@ -149,37 +163,44 @@ body {
                </form>
   </div>
         
-        <!-- Uncaught ReferenceError: $ is not defined -->
+        <!-- Uncaught ReferenceError: $ is not defined TODO: add to static folder-->
           <script>
-           $(document).ready(function(){
+          //   $(document).ready(function(){
+                
 
-            $("[id^=similar_categories]").click(function(){
-              var category_id = $(this).data("category-id"); 
-              console.log("[id^=similar_categories]")
-              $.ajax({
-                type: "POST",
-                url: "/restaurants",
-                data: { category_id: category_id }
-              })
+          //       $("#similar_cuisines").click(function(){
+          //       // $("[id^=similar_cuisines]").click(function(){
+          //         var cuisine_id = $(this).data("cuisine-id");  
+          //         console.log("[id^=similar_cuisines]")
+          //         $.ajax({
+          //           type: "POST",
+          //           url: "/restaurants",
+          //           data: { cuisine_id: cuisine_id }
+          //         })
+                
+          //           });
+          // });
+
+
+           // $(document).ready(function(){
+
+           //  $("[id^=similar_categories]").click(function(){
+                
+           //    var category_id = $(this).data("category-id"); 
+           //    console.log("[id^=similar_categories]")
+           //    $.ajax({
+           //      type: "POST",
+           //      url: "/restaurants",
+           //      data: { category_id: category_id }
+           //    })
+           //    .done(function( msg){
+           //      $('#' + msg['feedback_button_id']).attr('src',"static/clicked-sad.png");
+           //    });
             
-                });
+           //      });
+ 
 
-       });
-
-            $(document).ready(function(){
-
-            $("[id^=similar_cuisines]").click(function(){
-              var cuisine_id = $(this).data("cuisine-id");  
-              console.log("[id^=similar_cuisines]")
-              $.ajax({
-                type: "POST",
-                url: "/restaurants",
-                data: { cuisine_id: cuisine_id }
-              })
-            
-                });
-          });
-
+          
           //   $(document).ready(function(){
 
           //   $("[id^=cuisines_]").click(function(){
