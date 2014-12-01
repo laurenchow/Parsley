@@ -21,7 +21,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 <strong>Login</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
 <strong>Restaurant search</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br><br>
+![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
 <strong>Restaurant results: filtered by zip</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
 <strong>Favorites</strong><br><br>
