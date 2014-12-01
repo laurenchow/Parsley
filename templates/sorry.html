@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block body %}
+
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&KEY=AIzaSyAXGlzHtApRcLiSO2qYeFuouCkAd4K4w08"></script> 
+    <script src ="static/autocomplete.js"></script>
+     <!--  MOVE THIS TO THE HEAD EVENTUALLY -->
+
+    
+    <div class="jumbotron">
+        <br><br>
+
+    <p class="help-block">
+        Looks like we need some additional information from you to generate your favorites.  <br><br>
+
+        You can either tell us some restaurants that you like or answer some questions about your preferences.
+        <br><br>
+        Which would you prefer?
+        <br>
+        
+        <p><a class="btn btn-primary btn-lg" href="/restaurants" role="button" align="right">Tell you my favorite places</a>
+       <a class="btn btn-primary btn-lg" href="/user_preferences" role="button">Answer some questions</a></p>
+
+    </p>
+
+    </div>    
+ 
+
+{%endblock%}
