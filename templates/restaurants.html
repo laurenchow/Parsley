@@ -56,24 +56,19 @@ body {
             			         Where would you like to search? <br> 
             			     </p>
             			         <input type = "user_geo" name = "user_geo" id ="user_geo" placeholder="Zip"> <br> <br><br>
-            			          <script>
-            			   //       function isValidUSZip(user_geo) {
-            						//    return /^\d{5}(-\d{4})?$/.test(user_geo);
-            						// }
-            			   //       </script>	
 
             			    </div>
             			     
             		    
             		     <p class="help-block">     
-            		        Are you looking for the same categories or cuisines?
+            		        Would you like to see only similar cuisines?
             		        <br>
             		    </p>
                    
                     		<div class="col-md-6">  
             					
             					<div class="btn-group" role="group" aria-label="...">
-            						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines"> Show me cuisines similar to these restaurants
+            						<checkbox id="cuisines_similar" name ="cuisines_similar"  type="checkbox" class="btn btn-default" data-cuisine-id = "similar_cuisines" value="true"> Yes, show me cuisines similar to these restaurants
             						
             					</div><br> 
                                 <!-- 
@@ -85,22 +80,24 @@ body {
 
                      
                     <script>
-                    
+                        
+                        // move checkbox to form 
                         var text = document.getElementById("cuisines_similar");  
                         text.addEventListener('click', function(e) {
                             console.log(e);
                             e.preventDefault();
                             text.innerHTML = "Okay - we'll look for similar cuisines.";
-                            var cuisine_id = $(this).data("cuisine-id");  
-                            console.log("[id^=similar_cuisines]")
-                              $.ajax({
-                                type: "POST",
-                                url: "/restaurants",
-                                data: { cuisine_id: cuisine_id }
-                              });
+                          
                         });
 
- 
+                        // var cuisine_id = $(this).data("cuisine-id");  
+                        // console.log("[id^=similar_cuisines]")
+                        //   $.ajax({
+                        //     type: "POST",
+                        //     url: "/restaurants",
+                        //     data: { cuisine_id: cuisine_id }
+                        //   });
+
                         // var text2 = document.getElementById("categories_similar"); 
                         // text2.addEventListener('click', function(f) {
                         //     console.log(f);
@@ -151,10 +148,6 @@ body {
 
                     </script>  
                 </div>
-
-                   <!--  	
-            		</div>
-            	</div> -->
 
             		<br>  
                      <button class="btn btn-primary btn-lg" class="btn btn-default" align = "right" type="submit"> Tell me where to go 

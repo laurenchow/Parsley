@@ -48,18 +48,26 @@ def other_restos():
         restaurants.
     (4) calls function to suggest new restaurants 
     """
-
+    current_user_id = session['user_id']
     restaurant1 = request.form.get('restaurant_1')
     restaurant2 = request.form.get('restaurant_2')
     restaurant3 = request.form.get('restaurant_3')      
-    user_geo = request.form.get('user_geo') 
-    feedback_cuisine_id = request.form.get('cuisine_id')
+    user_geo_input = request.form.get('user_geo') 
+    feedback_cuisine_id = request.form.get('cuisines_similar')
+
+    # import pdb; pdb.set_trace()
+
+    if len(user_geo_input) !=5:
+        user_info= model.session.query(model.User).filter_by(user_id = current_user_id).first()
+        user_geo = user_info.zipcode
+    else: 
+        user_geo = request.form.get('user_geo') 
+        #TODO: check that this is a valid zipcode
+
     # feedback_category_id = request.form.get('category_id')
 
     print " *   *   *   *   *   *   *   Here's the feedback cuisine id %r   *   *   *   *   *" % feedback_cuisine_id 
-    
-    # print " *   *   *   *   *   *   *   Here's the feedback category id %r   *   *   *   *   *" % feedback_category_id 
-    
+     
     if restaurant1 and restaurant2 and restaurant3:
         restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
         #TODO: this is where error page should load in case entries are poorly formatted 
@@ -114,20 +122,17 @@ def check_db_for_restos(restaurant_data, user_geo):
     table = factual.table('restaurants')
     for restaurant in restaurant_data: 
         parsed_data = parse_restaurant_input(restaurant)
-        # import pdb; pdb.set_trace()
         db_entry = model.session.query(model.Restaurant).filter_by(name= parsed_data['name']).first() 
     
         if db_entry:
              restaurant_deets = db_entry.restaurant_features.get_all_data()
              if restaurant_deets:
                 restaurant_ids.append(db_entry.id)
-
-        #TODO: Make sure three entries are valid formatting first
+ 
         else:
             q = table.filters({'name':{'$includes':parsed_data['name']}})
             new_resto_data = q.data()
-            # print q.get_url()
-
+       
             if new_resto_data:
                 new_restaurant = model.Restaurant()
 
@@ -218,52 +223,40 @@ def suggest_new_resto(feedback_cuisine_id):
         rest_ids = session.get('user_restaurant_ids')
     
     user_input_rest_data = get_user_inputs(rest_ids)
-    # cuisine_type = filter_by_cuisine(user_input_rest_data, feedback_cuisine_id)
-    # category_type = filter_by_category(user_input_rest_data, feedback_category_id)
+    cuisine_type = filter_by_cuisine(user_input_rest_data, feedback_cuisine_id)
+   
+    # print cuisine_type
     
     sorted_restaurant_features_counter_keys = get_rest_features_similarities(user_input_rest_data)
-    db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
-    # db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys, cuisine_type, category_type)
+    # db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
+    db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type)
     sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features) 
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
 
-    new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
-    # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
+    # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
+    new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
 
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
 #TODO: GET THIS TO WORK using jquery and buttons
-# def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
-#     """
-#     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
-#     If filtering by cuisine, returns list of cuisines to search for.
-#     """
-#  *   *   *   *   *   *   *   Here's the feedback cuisine id u'similar_cuisines'   *   *   *   *   *
-#     if feedback_cuisine_id == 'similar_cuisines':
-#         cuisine_type = "similar"
+def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
+    """
+    This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
+    If filtering by cuisine, returns list of cuisines to search for.
+    """
 
-#     else:
-#         cuisine_type = "all"
+    if feedback_cuisine_id == 'similar_cuisines':
+        cuisine_type = "similar"
 
-#     return cuisine_type
+    else:
+        cuisine_type = "all"
+
+    return cuisine_type
 
 
-#TODO: GET THIS TO WORK using jquery and buttons
-# def filter_by_category(user_input_rest_data, feedback_category_id):
-#     """
-#     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
-#     If filtering by category, returns list of categories to search for.
-#     """
-
-#     if feedback_category_id == 'similar_categories':
-#         category_type = "similar"
-#     else:
-#         category_type = "all"
-
-#     return category_type 
-
-def get_resto_suggestions(sk_cos_sim):
+def get_resto_suggestions(sk_cos_sim, cuisine_type): 
+# def get_resto_suggestions(sk_cos_sim):
     """
     This function:
     (1) Takes the list of restaurant ids returned from cosine similarity function 
@@ -357,8 +350,8 @@ def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_
     return translated_sorted_rest_feat_sim_keys
 
 #TODO: pass cuisine and category to this function to evaluate whether or not to show all cuisines or all categories
-# def get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type, category_type):
-def get_rest_features_results(sorted_restaurant_features_counter_keys):
+def get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type):
+# def get_rest_features_results(sorted_restaurant_features_counter_keys):
     """
     This function takes the ranked restaurant features, searches 
     for matching restaurants and returns restaurants that 
@@ -386,51 +379,52 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys):
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
+        # important_features = {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
+        #     sorted_restaurant_features_counter_keys[2]: "1"}
+
         # what you need to do here is get the list of cuisines from restaurant_categories table, then split on commas
         # then create a dictionary of incidences of that cuisine in all three restaurants, with the cuisine type as key
         # and 1 as calue
 
+
         # if cuisine_type == 'similar':
-        #     rest_cuisines = {}
-        #       for entry in user_input_rest_data:
-        #           each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
-        #           each_restaurant_cuisine = each_restaurant.cuisine
-        #           list_of_each_restaurant_cuisine = each_restaurant_cuisine.split(',')
-        #           for item in list_of_each_restaurant_cuisine:
-        #               rest_cuisines[item] = 1
+        if cuisine_type == 'similar':
+            rest_cuisines = {}
+            for entry in range(len(user_input_rest_data)):
+                each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
+                # import pdb; pdb.set_trace()
+                #make sure all restaurants have a cuisine
+                if each_restaurant != None:
+                    if each_restaurant.cuisine != None:
+                        each_restaurant_cuisine = each_restaurant.cuisine
+                        list_of_each_restaurant_cuisine = each_restaurant_cuisine.split(',')
+                        for item in list_of_each_restaurant_cuisine:
+                            if item!='':
+                                rest_cuisines[item] = 1
 
-        # rest_cuisine_keys = rest_cuisines.keys()
-        # new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
-        
-        # TODO: How to query in SQLA for like %%? Redefine kwargs as cuisines, then filter by?
-        # new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.filter_by()
-        # for item in new_restaurant_suggestion_filtered_by_cuisine:
-        #       db_restaurant_list.append(item.id)
+            rest_cuisine_keys = rest_cuisines.keys()
+            # new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id).all()
+            new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).filter(model.Restaurant_Category.cuisine.like(rest_cuisine_keys[0])).group_by(model.Restaurant.id).all()
+            # id for each individual cuisine, need one to many for restaurants to cuisine, that way you can index and seach quickly
+            # TODO: How to query in SQLA for like %%? 
+            # TODO: Filter by kwargs, then filter by cuisine list searches (reuse kwargs?) for those cuisine strings   
+            important_cuisines = {rest_cuisine_keys[0]: "1", rest_cuisine_keys[1]: "1", rest_cuisine_keys[2]: "1"}
+          
+            # kwargs = dict(important_cuisines.items() + important_features.items())
 
-        # TODO: How to query in SQLA for like %%? 
-        # TODO: Filter by kwargs, then filter by cuisine list searches for those cuisine strings   
 
-        # if category_type == 'similar':
-        #     rest_categories = {}
-        #       for entry in user_input_rest_data:
-        #           each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
-        #           each_restaurant_category = each_restaurant.category_labels
-        #           list_of_each_restaurant_category = each_restaurant_category.split(',')
-        #           for item in list_of_each_restaurant_category:
-        #               rest_categories[item] = 1
+            # new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.filter(model.Restaurant_Category.cuisine.like(rest_cuisine_keys[0])).limit(25)
 
-        #   rest_category_keys = rest_categories.keys()
-        #   new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
-        #   TODO: How to query in SQLA for like %%? Redefine kwargs as cuisines, then filter by?
-        #   new_restaurant_suggestion_filtered_by_categories = new_restaurant_suggestion_from_features.filter_by()
-        #   for item in new_restaurant_suggestion_filtered_by_categories:
-        #       db_restaurant_list.append(item.id)
-       
-        #else: 
-        new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
+            new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.restaurant_categories.filter_by(**kwargs) 
 
-        for item in new_restaurant_suggestion_from_features:
-            db_restaurant_list.append(item.id)
+            for item in new_restaurant_suggestion_filtered_by_cuisine:
+                  db_restaurant_list.append(item.id)
+        else:
+            # import pdb; pdb.set_trace()  
+            new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
+
+            for item in new_restaurant_suggestion_from_features:
+                db_restaurant_list.append(item.id)
 
         db_result_new_restaurants_from_features = db_restaurant_list
   
@@ -488,8 +482,6 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
      
     return sorted_sk_cos_sim_results_keys
         
-    #sometimes returns NaN is this happening because restaurant 3 comes in twice? if you limit it to distinct restaurants, goes away
-    #TODO: deal with NaN when it happens because you can't have it
          
 @app.route('/get_restos', methods = ['GET'])
 def new_restaurants():
