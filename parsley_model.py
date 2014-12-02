@@ -71,11 +71,19 @@ def other_restos():
     if restaurant1 and restaurant2 and restaurant3:
         restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
         #TODO: this is where error page should load in case entries are poorly formatted 
+        # import pdb; pdb.set_trace()
+
         session['user_restaurant_ids'] = restaurant_ids
         session['user_geo'] = user_geo 
-        add_restaurants_to_user_preferences(restaurant_ids)
 
-        return suggest_new_resto(feedback_cuisine_id)
+        # import pdb; pdb.set_trace()
+
+        if type(restaurant_ids) == list:
+            add_restaurants_to_user_preferences(restaurant_ids)
+            return suggest_new_resto(feedback_cuisine_id)
+        else:
+            flash("We don't have enough information on those restaurants. Please try some other restaurants.", "error")
+            return render_template("restaurants.html")
 
     else:
         flash("Please re-enter using format from autocomplete.", "error")
@@ -123,15 +131,18 @@ def check_db_for_restos(restaurant_data, user_geo):
     for restaurant in restaurant_data: 
         parsed_data = parse_restaurant_input(restaurant)
         db_entry = model.session.query(model.Restaurant).filter_by(name= parsed_data['name']).first() 
-    
+        
+
+
         if db_entry:
              restaurant_deets = db_entry.restaurant_features.get_all_data()
              if restaurant_deets:
                 restaurant_ids.append(db_entry.id)
  
         else:
-            q = table.filters({'name':{'$includes':parsed_data['name']}})
-            new_resto_data = q.data()
+            new_resto = table.filters({'name':{'$bw':parsed_data['name']}})
+            new_resto_data = new_resto.data()
+            # import pdb; pdb.set_trace()
        
             if new_resto_data:
                 new_restaurant = model.Restaurant()
@@ -153,8 +164,12 @@ def check_db_for_restos(restaurant_data, user_geo):
                     model.session.commit()
 
                 restaurant_ids.append(new_restaurant.id) 
- 
-    return restaurant_ids
+    
+    if restaurant_ids == []:
+        flash("We need a bit more information, please try some other restaurants.")
+        return redirect("/restaurants")
+    else: 
+        return restaurant_ids
 
 #TODO: get this to work when you click on it from restaurants suggestion page
 # @app.route('/refresh_restaurants', methods = ['GET', 'POST'])
@@ -360,8 +375,11 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
     If function determines there are insufficient number (less than 25) restaurants
     to suggest in desired user zipcode, will ping Factual for entries in that area.
 
-    If a user opted to filter by category or cuisine, this function also filters by the cuisine or category
-    returned by earlier functions filter_by_category() and filter_by_cuisine().
+    If a user opted to filter by cuisine, this function also filters by the top cuisines
+    returned by earlier function filter_by_cuisine() by splitting on commas, creating
+    a dictionary of incidences of that cuisine in all three restaurants with the cuisine as key
+    then converting those key, value pairs to tuples and sorting for the most frequently listed
+    cuisines.
 
     This function returns a list of restaurant ids.
 
@@ -379,55 +397,45 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
-        # important_features = {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
-        #     sorted_restaurant_features_counter_keys[2]: "1"}
-
-        # what you need to do here is get the list of cuisines from restaurant_categories table, then split on commas
-        # then create a dictionary of incidences of that cuisine in all three restaurants, with the cuisine type as key
-        # and 1 as calue
-
-
         # if cuisine_type == 'similar':
-        if cuisine_type == 'similar':
+        if cuisine_type == 'all':
             rest_cuisines = {}
             for entry in range(len(user_input_rest_data)):
                 each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
-                # import pdb; pdb.set_trace()
-                #make sure all restaurants have a cuisine
+                
                 if each_restaurant != None:
                     if each_restaurant.cuisine != None:
                         each_restaurant_cuisine = each_restaurant.cuisine
                         list_of_each_restaurant_cuisine = each_restaurant_cuisine.split(',')
                         for item in list_of_each_restaurant_cuisine:
                             if item!='':
-                                rest_cuisines[item] = 1
+                                cuisine_count = rest_cuisines.get(item, 0) + 1
+                                rest_cuisines[item] = cuisine_count
 
-            rest_cuisine_keys = rest_cuisines.keys()
-            # new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id).all()
-            new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).filter(model.Restaurant_Category.cuisine.like(rest_cuisine_keys[0])).group_by(model.Restaurant.id).all()
-            # id for each individual cuisine, need one to many for restaurants to cuisine, that way you can index and seach quickly
-            # TODO: How to query in SQLA for like %%? 
-            # TODO: Filter by kwargs, then filter by cuisine list searches (reuse kwargs?) for those cuisine strings   
-            important_cuisines = {rest_cuisine_keys[0]: "1", rest_cuisine_keys[1]: "1", rest_cuisine_keys[2]: "1"}
-          
-            # kwargs = dict(important_cuisines.items() + important_features.items())
+            sorted_rest_cuisines = sorted(rest_cuisines.items(), key = lambda (k,v): v)
+            sorted_rest_cuisines.reverse()
+            sorted_rest_cuisines_keys = [x[0] for x in sorted_rest_cuisines]
+           
+            new_restaurant_suggestion_filtered_by_cuisine= model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + sorted_rest_cuisines_keys[1]+ "%")).group_by(model.Restaurant.id).limit(20).all()
 
-
-            # new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.filter(model.Restaurant_Category.cuisine.like(rest_cuisine_keys[0])).limit(25)
-
-            new_restaurant_suggestion_filtered_by_cuisine = new_restaurant_suggestion_from_features.restaurant_categories.filter_by(**kwargs) 
+            #writing a for loop here to try all the variables
+            if new_restaurant_suggestion_filtered_by_cuisine == []:
+                new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + "%")).group_by(model.Restaurant.id).limit(25).all()
+            
+            if new_restaurant_suggestion_filtered_by_cuisine == []:
+                new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[1] + "%")).group_by(model.Restaurant.id).limit(25).all()
 
             for item in new_restaurant_suggestion_filtered_by_cuisine:
                   db_restaurant_list.append(item.id)
         else:
-            # import pdb; pdb.set_trace()  
-            new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id)
+            new_restaurant_suggestion_from_features = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).group_by(model.Restaurant.id).limit(25).all()
 
             for item in new_restaurant_suggestion_from_features:
                 db_restaurant_list.append(item.id)
 
         db_result_new_restaurants_from_features = db_restaurant_list
-  
+        #return the sorted features 
+
     else:
         new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
         sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
@@ -467,7 +475,10 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
     dv = DictVectorizer(sparse=True)
     x = dv.fit_transform(restaurant_features.values())
     x.todense()
+    
+    # import pdb; pdb.set_trace()
     cs = cosine_similarity(x[0:1], x)
+
     cs = cs.tolist()
     
     rest_name_plus_cos_sim_value = collections.OrderedDict()
@@ -491,8 +502,8 @@ def new_restaurants():
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
     user_geo =  session['user_geo']   
-    new_restaurants = table.filters({"postcode": user_geo}).limit(50)
-    check_db_for_restos(new_restaurants)
+    new_restaurants = table.filters({"postcode": 20006}).limit(50)
+    check_db_for_restos(new_restaurants, user_geo)
 
     return "Success"
 
@@ -762,7 +773,7 @@ def update_user_prefs():
                         existing_feature_count = int(user_prefs_to_store[key])
                     except:
                         user_prefs_to_store[key] = None
-                    #TODO: make sure this updates every key for a user -- use a standard dictionary?
+ 
                     if user_prefs_to_store[key] == None:
                         user_prefs_to_store[key] = 0
                     if rest_features[key] > 0:
