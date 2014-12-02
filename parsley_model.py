@@ -8,11 +8,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
-
+APP_SECRET_KEY = os.environ.get('APP_KEY_SECRET')
 app = Flask(__name__) 
 
-#TODO: TURN INTO ENVIRONMENT VARIABLE
-app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
+
 app.jinja_env.undefined = jinja2.StrictUndefined
 
 # use g in a before_request function to check and see if a user is logged in -- if they are logged in you can save it in g    
@@ -250,7 +249,7 @@ def suggest_new_resto(feedback_cuisine_id):
 
     # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
     new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
-
+    # import pdb; pdb.set_trace()
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
@@ -475,7 +474,7 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
     dv = DictVectorizer(sparse=True)
     x = dv.fit_transform(restaurant_features.values())
     x.todense()
-    
+
     # import pdb; pdb.set_trace()
     cs = cosine_similarity(x[0:1], x)
 
@@ -516,15 +515,14 @@ def user_favorites():
     If a user has not completed any, it will send the user to a page to submit more information.
     """
     current_user_id = session['user_id']
-    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()  
+    single_user = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).group_by(model.User_Restaurant_Rating.restaurant_id).all()  
 
     if single_user:
         return render_template("favorites.html", user = single_user)
     else:
          return render_template("sorry.html")
-
-#TODO: get this to work
-@app.route('/browse_restos', methods = ['GET'])
+ 
+@app.route('/browse', methods = ['GET'])
 def browse_new_rests():
     """ 
     This function allows the user to browse new restaurants based on user preferences
@@ -551,25 +549,15 @@ def browse_new_rests():
         sorted_user_pref_results.reverse()
         sorted_user_pref_results_keys = [x[0] for x in sorted_user_pref_results]
 
-        kwargs = {sorted_user_pref_results_keys[0]: 1, sorted_user_pref_results_keys[1]: 1, 
-        sorted_user_pref_results_keys[2]: 1, sorted_user_pref_results_keys[3]: 1}
-        
-        new_restaurant_suggestion = []
-        
-        restaurants_in_zip = model.session.query(model.Restaurant).filter_by(postcode = user_geo).limit(50)
-        restaurants = restaurants_in_zip.restaurant.restaurant_features.filter_by(**kwargs).limit(25)
+        kwargs = {sorted_user_pref_results_keys[0]: 1, sorted_user_pref_results_keys[1]: 1}
+           
+        restaurants = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).limit(50)
 
-        for rest_id in restaurants:
-            already_rated = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = rest_id).first()
-            if not already_rated:
-                rest_data = model.session.query(model.Restaurant).get(rest_id)
-                new_restaurant_suggestion.append(rest_data)
-              
         translated_sorted_rests_from_user_prefs_keys = convert_restaurant_features_to_normal_words(sorted_user_pref_results_keys)
 
-        return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
+        return render_template("new_restaurant.html", new_restaurant_suggestion = restaurants, 
                 translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
-
+        
 @app.route('/contact', methods = ['GET'])
 def contact_us():
     """
@@ -674,6 +662,16 @@ def submit_user_details(current_user_id):
 
     return redirect("/user_profiles")
 
+@app.route('/my_profile', methods = ['GET'])
+def view_profile():
+    current_user_id = session['user_id']
+    single_user = model.session.query(model.User_Preference).filter_by(user_id = current_user_id).group_by(model.User_Preference).all()  
+
+    if single_user:
+        return render_template("my_profile.html", user = single_user)
+    else:
+         return render_template("sorry.html")
+
 @app.route('/user_profiles', methods = ['GET', 'POST'])
 def user_profiles():
     """
@@ -694,7 +692,6 @@ def update_user_profile():
     """
 
     current_user_id = session['user_id']  
-
     existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
 
     if existing_user_prefs:
@@ -706,12 +703,15 @@ def update_user_profile():
         'parking': request.form.get('parking'), 'wifi' : request.form.get('wifi'), 
         'alcohol_byob': 0, 'alcohol_bar': 0, 'alcohol_beer_wine': 0, 'alcohol': 0,
         'groups_goodfor': 0, 'kids_goodfor':0, 'kids_menu': 0, 'meal_breakfast': 0,
-        'meal_dinner': 0, 'meal_deliver':  0,'options_glutenfree': 0, 
-        'options_lowfat': 0, 'options_vegan': 0, 'options_vegetarian': 0, 
-        'reservations':  0,'user_id': current_user_id}
+        'meal_cater': 0, 'meal_deliver':  0, 'meal_dinner': 0, 'meal_lunch': 0, 
+        'open_24hrs': 0, 'options_glutenfree': 0, 'options_lowfat': 0, 'options_vegan': 0, 
+        'options_vegetarian': 0, 'parking': 0, 'parking_free': 0, 'parking_garage': 0, 
+        'parking_lot': 0, 'parking_street': 0, 'parking_valet': 0, 'parking_validated': 0, 
+        'payment_cashonly': 0, 'room_private': 0, 'reservations':  0, 'seating_outdoor': 0, 
+        'smoking': 0, 'user_id': current_user_id}
  
-        new_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
-        model.session.merge(new_user_prefs) 
+        new_user_prefs = model.User_Profile(id = existing_user_prefs.id, **kwargs)
+        model.session.merge(new_user_prefs)
 
     else:
         kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
@@ -721,9 +721,13 @@ def update_user_profile():
         'parking': request.form.get('parking'), 'wifi' : request.form.get('wifi'), 
         'alcohol_byob': 0, 'alcohol_bar': 0, 'alcohol_beer_wine': 0, 'alcohol': 0,
         'groups_goodfor': 0, 'kids_goodfor':0, 'kids_menu': 0, 'meal_breakfast': 0,
-        'meal_dinner': 0, 'meal_deliver':  0,'options_glutenfree': 0, 
-        'options_lowfat': 0, 'options_vegan': 0, 'options_vegetarian': 0, 
-        'reservations':  0,'user_id': current_user_id}
+        'meal_cater': 0, 'meal_deliver':  0, 'meal_dinner': 0, 'meal_lunch': 0, 
+        'open_24hrs': 0, 'options_glutenfree': 0, 'options_lowfat': 0, 'options_vegan': 0, 
+        'options_vegetarian': 0, 'parking': 0, 'parking_free': 0, 'parking_garage': 0, 
+        'parking_lot': 0, 'parking_street': 0, 'parking_valet': 0, 'parking_validated': 0, 
+        'payment_cashonly': 0, 'room_private': 0, 'reservations':  0, 'seating_outdoor': 0, 
+        'smoking': 0, 'user_id': current_user_id}
+
 
         initial_user_prof = model.User_Profile(**kwargs)
         initial_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
@@ -782,6 +786,9 @@ def update_user_prefs():
             kwargs = user_prefs_to_store
             new_user_prefs = model.User_Preference(id = existing_user_prefs.id, user_id = current_user_id, **kwargs)
             model.session.merge(new_user_prefs)
+
+    else:
+        update_user_profile()
 
     model.session.commit() 
 
