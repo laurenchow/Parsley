@@ -8,10 +8,13 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 KEY = os.environ.get('FACTUAL_KEY')
 SECRET= os.environ.get('FACTUAL_SECRET')
-APP_SECRET_KEY = os.environ.get('APP_KEY_SECRET')
+# APP_KEY_SECRET = os.environ.get('APP_KEY_SECRET')
 app = Flask(__name__) 
 
 
+# app.secret_key = os.environ.get('APP_KEY_SECRET')
+
+app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
 app.jinja_env.undefined = jinja2.StrictUndefined
 
 # use g in a before_request function to check and see if a user is logged in -- if they are logged in you can save it in g    
@@ -54,7 +57,7 @@ def other_restos():
     user_geo_input = request.form.get('user_geo') 
     feedback_cuisine_id = request.form.get('cuisines_similar')
 
-    # import pdb; pdb.set_trace()
+    
 
     if len(user_geo_input) !=5:
         user_info= model.session.query(model.User).filter_by(user_id = current_user_id).first()
@@ -62,20 +65,14 @@ def other_restos():
     else: 
         user_geo = request.form.get('user_geo') 
         #TODO: check that this is a valid zipcode
-
-    # feedback_category_id = request.form.get('category_id')
-
-    print " *   *   *   *   *   *   *   Here's the feedback cuisine id %r   *   *   *   *   *" % feedback_cuisine_id 
+  
      
     if restaurant1 and restaurant2 and restaurant3:
         restaurant_ids = check_db_for_restos([restaurant1, restaurant2, restaurant3], user_geo)
-        #TODO: this is where error page should load in case entries are poorly formatted 
-        # import pdb; pdb.set_trace()
-
+     
         session['user_restaurant_ids'] = restaurant_ids
         session['user_geo'] = user_geo 
-
-        # import pdb; pdb.set_trace()
+ 
 
         if type(restaurant_ids) == list:
             add_restaurants_to_user_preferences(restaurant_ids)
@@ -127,11 +124,13 @@ def check_db_for_restos(restaurant_data, user_geo):
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
+
+    # import pdb; pdb.set_trace()
+
     for restaurant in restaurant_data: 
         parsed_data = parse_restaurant_input(restaurant)
         db_entry = model.session.query(model.Restaurant).filter_by(name= parsed_data['name']).first() 
         
-
 
         if db_entry:
              restaurant_deets = db_entry.restaurant_features.get_all_data()
@@ -140,8 +139,7 @@ def check_db_for_restos(restaurant_data, user_geo):
  
         else:
             new_resto = table.filters({'name':{'$bw':parsed_data['name']}})
-            new_resto_data = new_resto.data()
-            # import pdb; pdb.set_trace()
+            new_resto_data = new_resto.data() 
        
             if new_resto_data:
                 new_restaurant = model.Restaurant()
@@ -238,22 +236,17 @@ def suggest_new_resto(feedback_cuisine_id):
     
     user_input_rest_data = get_user_inputs(rest_ids)
     cuisine_type = filter_by_cuisine(user_input_rest_data, feedback_cuisine_id)
-   
-    # print cuisine_type
     
-    sorted_restaurant_features_counter_keys = get_rest_features_similarities(user_input_rest_data)
-    # db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys)
+    sorted_restaurant_features_counter_keys = get_rest_features_similarities(user_input_rest_data) 
     db_result_new_restaurants_from_features = get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type)
     sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features) 
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
 
-    # new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim) 
-    new_restaurant_suggestion = get_resto_suggestions(sk_cos_sim, cuisine_type) 
-    # import pdb; pdb.set_trace()
+    new_restaurant_suggestion = check_resto_suggestions(sk_cos_sim, cuisine_type) 
+
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
-#TODO: GET THIS TO WORK using jquery and buttons
 def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
     """
     This function takes the user input and determines whether or not to filter restaurant recommendations by cuisine.
@@ -269,7 +262,7 @@ def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
     return cuisine_type
 
 
-def get_resto_suggestions(sk_cos_sim, cuisine_type): 
+def check_resto_suggestions(restaurants, cuisine_type): 
 # def get_resto_suggestions(sk_cos_sim):
     """
     This function:
@@ -282,7 +275,7 @@ def get_resto_suggestions(sk_cos_sim, cuisine_type):
     new_restaurant_suggestion = []
 
 
-    for rest_id in sk_cos_sim:
+    for rest_id in restaurants:
         already_rated = model.session.query(model.User_Restaurant_Rating).filter_by(restaurant_id = rest_id).first()
         if not already_rated:
             rest_data = model.session.query(model.Restaurant).get(rest_id)
@@ -390,14 +383,14 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
  
     db_zip_density = model.session.query(model.Restaurant).filter_by(postcode = user_geo).all()
     db_restaurant_list = []
-
-    if db_zip_density >= 25:
+ 
+    if len(db_zip_density) >= 25:
 
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
-        # if cuisine_type == 'similar':
-        if cuisine_type == 'all':
+        if cuisine_type == 'similar':
+        # if cuisine_type == 'all':
             rest_cuisines = {}
             for entry in range(len(user_input_rest_data)):
                 each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
@@ -436,14 +429,17 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
         #return the sorted features 
 
     else:
-        new_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
-        sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
-        "postcode": user_geo}).limit(5)
-         
+        # import pdb; pdb.set_trace()
+        new_restaurant_suggestion_from_features = table.filters({"postcode": user_geo}).limit(50)
+        # factual_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
+        # sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
+        # "postcode": user_geo}).limit(5)
+          
         if new_restaurant_suggestion_from_features == []:
             return render_template("sorry.html") 
-
-        db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features, user_geo)
+        # import pdb; pdb.set_trace()
+        else: 
+            db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features, user_geo)
 
     return db_result_new_restaurants_from_features
 
@@ -474,8 +470,7 @@ def sk_cosine_similarity(restaurant_ids, db_result_new_restaurants_from_features
     dv = DictVectorizer(sparse=True)
     x = dv.fit_transform(restaurant_features.values())
     x.todense()
-
-    # import pdb; pdb.set_trace()
+ 
     cs = cosine_similarity(x[0:1], x)
 
     cs = cs.tolist()
@@ -551,13 +546,14 @@ def browse_new_rests():
 
         kwargs = {sorted_user_pref_results_keys[0]: 1, sorted_user_pref_results_keys[1]: 1}
            
-        restaurants = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).limit(50)
+        restaurants = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).limit(25)
 
         translated_sorted_rests_from_user_prefs_keys = convert_restaurant_features_to_normal_words(sorted_user_pref_results_keys)
 
         return render_template("new_restaurant.html", new_restaurant_suggestion = restaurants, 
                 translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
-        
+    else:
+        return render_template("sorry.html")
 @app.route('/contact', methods = ['GET'])
 def contact_us():
     """
