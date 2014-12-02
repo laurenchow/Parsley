@@ -10,7 +10,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 <h2><strong>Features</strong><br></h2>
 1.	Secure user log in functionality (pbkdf2_sha256 encryption) <br>
 2.	Search and autocomplete functionality (Google Maps JS Autocomplete)<br>
-3.	Matching/recommendation algorithm (cosine similarity)<br>
+3.	Matching/recommendation algorithm (using scikit-learn) <br>
 4.	Filter by zip code and cuisine <br>
 5.	Save and view user favorites (LeafletJS/Mapbox JS API)<br>
  
