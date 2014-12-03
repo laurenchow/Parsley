@@ -17,7 +17,7 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
   - [Results](#results)
   - [Favorites](#favorites)
   - [Browse](#browse)
-- [Cosine similarity](#cosine)
+- [Cosine similarity](#cosine-similarity)
 - [Installation](#install)
 - [Acknowledgements](#acknowledgements)
 
@@ -37,7 +37,7 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 •	WTForms 1.0.2<br>
 
 ####How it works
-•	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. Learn more about how cosine similarity is calculated <a href = #cosine> below </a>.
+•	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. Learn more about how cosine similarity is calculated <a href =#cosine-similarity> below</a>.
 
 ####Features 
 1.	Secure user log in functionality (pbkdf2_sha256 encryption) <br>
