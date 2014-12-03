@@ -10,6 +10,12 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 ####Details
 - [Features](#features)
 - [Screenshots](#screenshots) 
+  - [Landing Page](#landing-page)
+  - [Log in Page](#login-page)
+  - [Restaurant search page](#search)
+  - [Results](#results)
+  - [Favorites](#favorites)
+  - [Browse](#browse)
 - [Stack](#stack)
 - [Acknowledgements](#acknowledgements)
 
@@ -37,13 +43,17 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
  
 ####Screenshots
 
-<strong>Login</strong><br><br>
+###<strong>Landing page</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
-<strong>Restaurant search</strong><br><br>
+###<strong>Login page</strong><br><br>
+![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
+###<strong>Restaurant search</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
-<strong>Restaurant results: filtered by zip</strong><br><br>
+###<strong>Results </strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
-<strong>Favorites</strong><br><br>
+###<strong>Favorites</strong><br><br>
+![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
+###<strong>Browse</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
  
 
