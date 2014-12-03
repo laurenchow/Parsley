@@ -13,7 +13,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 - [Stack](#stack)
 - [Acknowledgements](#acknowledgements)
 
-###### Stack:
+##### Stack:
 •	Python 2.7 <br>
 •	Factual API <br>
 •	Flask 0.9<br>
