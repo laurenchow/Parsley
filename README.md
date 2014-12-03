@@ -39,8 +39,6 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 ####How it works
 •	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. 
 
-The advantage of using cosine similarity, which is a model-based recommendation system, here (building a model based on dataset of rating and  extracting only relevant information without having to use the complete dataset) is that it is better at handling sparse datasets and allows for speed and scalability. More on model-based vs. memory-based recommendation systems <a href="http://en.wikipedia.org/wiki/Collaborative_filtering#Model-based"> here</a>.
-
 Learn more about how cosine similarity is calculated <a href =#cosine-similarity> below</a>. 
 
 ####Features 
