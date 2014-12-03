@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<!-- 
+<link rel="stylesheet" href="magnific-popup/magnific-popup.css">  -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script> 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> 
+
+</head>
+
+{% extends 'base.html' %}
+{% block body %}
+
+<style>
+ body {
+    background-image: url('static/unsplash_green.jpg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+    width: 100%;
+    height: 100%; 
+}
+</style>
+
+
+
+<div class="panel panel-default">
+<div class="panel-body">
+
+
+
+      <h3><p class="help-block">
+        <!-- We noticed that you like places that {{translated_sorted_rest_feat_sim_keys[0]}},
+      {{translated_sorted_rest_feat_sim_keys [1]}} and
+      {{translated_sorted_rest_feat_sim_keys [2]}}.<br> -->
+
+      <br> 
+      Here's some restaurants we think you'll like.</p></h3>
+      <br><br>
+     
+      {% set entry_counter = 0 %}
+
+      
+      {%for entry in new_restaurant_suggestion.data()%} 
+            <div id = "{{entry_counter}}" > 
+              <a href = "{{entry.website}}" >{{entry['name']}} </a>
+         
+              <br>How does this sound? 
+             
+                <br>
+              <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>
+             
+              <input type="image" name="identify" id="sad_face_{{ entry_counter }}"value="ID" img src="/static/sad.png" alt="Love it" data-restaurant-rating-id = "{{0}}" data-restaurant-id = "{{entry['factual_id']}}" style="width:40xpx;height:40px"  />
+              </a>
+              <br><br><br>
+           
+      {% set entry_counter = entry_counter + 1 %}
+            
+      {%endfor%}
+    </div> 
+<script>
+
+$(document).ready(function(){
+
+  $("[id^=happy_face_]").click(function(){
+    var factual_id = $(this).data("restaurant-id");
+    var user_feedback = $(this).attr("data-restaurant-rating-id");
+    var button_id = $(this).attr("id");
+
+    $.ajax({
+      type: "POST",
+      url: "/user_feedback",
+      data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
+    })
+      .done(function( msg){
+        $('#' + msg['feedback_button_id']).attr('src',"static/clicked-happy.png");
+      });
+        });
+
+});
+
+$(document).ready(function(){
+
+  $("[id^=sad_face_]").click(function(){
+    var factual_id = $(this).data("restaurant-id");
+    var user_feedback = $(this).attr("data-restaurant-rating-id");
+    var button_id = $(this).attr("id");
+
+    $.ajax({
+      type: "POST",
+      url: "/user_feedback",
+      data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
+    })
+      .done(function( msg){
+        $('#' + msg['feedback_button_id']).attr('src',"static/clicked-sad.png");
+      });
+});;
+      });
+
+
+        
+</script>
+
+
+        <form>
+        <button type="btn btn-lg btn-primary btn-block" align = "center" type="get"> 
+       Show me some new restaurants</button><br>
+        </form>
+</div>
+</div>
+      <br>
+    
+{%endblock%}
+
+</html>

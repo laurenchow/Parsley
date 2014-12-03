@@ -389,8 +389,8 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
-        if cuisine_type == 'similar':
-        # if cuisine_type == 'all':
+        # if cuisine_type == 'similar':
+        if cuisine_type == 'all':
             rest_cuisines = {}
             for entry in range(len(user_input_rest_data)):
                 each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
@@ -665,6 +665,7 @@ def view_profile():
 
     if single_user:
         return render_template("my_profile.html", user = single_user)
+
     else:
          return render_template("sorry.html")
 
@@ -674,7 +675,7 @@ def user_profiles():
     Determines if user has submitted preferences. If post method, 
     submits user pref data to the update_user_prefs function.
     """
-
+    
     if request.method == "GET":
         return render_template("user_preferences.html")
     else:
@@ -688,6 +689,8 @@ def update_user_profile():
     """
 
     current_user_id = session['user_id']  
+
+    
     existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
 
     if existing_user_prefs:
@@ -706,8 +709,12 @@ def update_user_profile():
         'payment_cashonly': 0, 'room_private': 0, 'reservations':  0, 'seating_outdoor': 0, 
         'smoking': 0, 'user_id': current_user_id}
  
-        new_user_prefs = model.User_Profile(id = existing_user_prefs.id, **kwargs)
+        new_user_prof = model.User_Profile(id = existing_user_prefs.id, **kwargs)
+        new_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
+        # import pdb; pdb.set_trace()
+
         model.session.merge(new_user_prefs)
+        model.session.merge(new_user_prof)
 
     else:
         kwargs = {'accessible_wheelchair': request.form.get('accessible_wheelchair'),
@@ -732,6 +739,8 @@ def update_user_profile():
     
     model.session.commit() 
 
+    
+
     return redirect("/")
  
 @app.route('/user_preferences', methods = ['GET', 'POST'])
@@ -740,6 +749,9 @@ def user_preferences():
     Determines if user has submitted preferences. If post method, 
     submits user pref data to the update_user_prefs function.
     """
+
+    # current_user_id = session['user_id']  
+    # import pdb; pdb.set_trace()
 
     if request.method == "GET":
         return render_template("user_preferences.html")
@@ -755,7 +767,7 @@ def update_user_prefs():
 
     current_user_id = session['user_id']   
     existing_user_prefs = model.session.query(model.User_Profile).filter_by(user_id = current_user_id).first()
-   
+    
     if existing_user_prefs:
         user_fave_rests = model.session.query(model.User_Restaurant_Rating).filter_by(user_id = current_user_id).all()
         if user_fave_rests:
