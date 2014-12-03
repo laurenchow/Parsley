@@ -27,10 +27,13 @@
      
       {% set entry_counter = 0 %}
       {%for entry in new_restaurant_suggestion%} 
-            <div id = "{{entry_counter}}" > 
-              <a href = "{{entry.website}}" >{{entry['name']}} </a>
+            <div id = "{{entry_counter}}" class ="row-fluid" >
+            <div class="span6">
+              <a href = "{{entry.website}}" >{{entry['name']}} </a><br>
+              {{entry.address}} <br>
+              {{entry.tel}}<br>
          
-              <br>How does this sound? 
+              <br>How does this sound? <br>
              
                 <br>
               <input type="image" name="identify" id="happy_face_{{ entry_counter }}" value="ID" img src="/static/likeit.png" alt="Hate it" style="width:40xpx;height:40px" data-restaurant-rating-id = "{{1}}" data-restaurant-id = "{{entry['factual_id']}}"/>

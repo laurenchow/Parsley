@@ -55,14 +55,10 @@ def other_restos():
     restaurant2 = request.form.get('restaurant_2')
     restaurant3 = request.form.get('restaurant_3')      
     user_geo_input = request.form.get('user_geo') 
-    feedback_cuisine_id = request.form.get('cuisines_similar')
-    # if feedback_cuisine_id:
-    #     session['cuisine_type'] = feedback_cuisine_id 
-    # else:
-    #     session['cuisine_type'] = "all"
+    feedback_cuisine_id = request.form.get('cuisines_similar') 
 
     if len(user_geo_input) !=5:
-        user_info= model.session.query(model.User).filter_by(user_id = current_user_id).first()
+        user_info= model.session.query(model.User).filter_by(id = current_user_id).first()
         user_geo = user_info.zipcode
     else: 
         user_geo = request.form.get('user_geo') 
@@ -848,7 +844,7 @@ def login_user():
     else:
         flash("Invalid username or password", "error")
         return redirect("/login")   
- 
+
 
 @app.route('/logout')
 def logout_user():
