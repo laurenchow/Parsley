@@ -70,14 +70,14 @@ Upon clicking “submit”, a call to the server is made to check whether these 
 
 ####<strong>Results </strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
-<strong> Suggest new restaurants: </strong>
-Given that information, Parsley now loops over all restaurants a user has ever rated positively, along with a user’s initial preferences, to create a comprehensive dictionary of weighted user preferences. <br>
+<strong> Suggest new restaurants: </strong><br><br>
+Given that information, Parsley now loops over all restaurants a user has ever rated positively, along with a user’s initial preferences, to create a comprehensive dictionary of weighted user preferences. <br><br>
 1.	Parsley then identifies the top 3 features that are important to a user – and queries the restaurant table for
 restaurants that contain these features in the zip code that the user specified and creates a dictionary of all entries.
-<br>
-2. Using scikit learning’s DictVectorizer, both the user preferences and restaurant results dictionary are converted to vectors.<br>
+<br><br>
+2. Using scikit learning’s DictVectorizer, both the user preferences and restaurant results dictionary are converted to vectors.<br><br>
 3. Using scikit learning’s cosine similarity algorithm, Parsley then ranks all restaurants with those top features in that zip code by which restaurants most closely match a user’s preferences. 
-<br>
+<br><br>
 ####<strong>Favorites</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
 Parsley returns ranked restaurants to the user on a feedback page, which contains restaurant contact information and the ability to upvote/downvote restaurants.
