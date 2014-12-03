@@ -5,31 +5,10 @@ Parsley is a personalized restaurant recommendation engine that solves the age-o
 
 Parsley searches more than 1.1 million US restaurants (with more than 40 restaurant-specific attributes for each) to surface relevant suggestions to users based on restaurants, bars and cafes that they already love – then allows users an easy way to store, access and visualize their favorite restaurants. 
 
-####How it works
-
-Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine.
-
-#####Cosine similarity
-
-To borrow from Wikipedia: 
-
-Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. 
-
-It is thus a judgement of orientation and not magnitude: 
-
-•	Two vectors with the same orientation have a Cosine similarity of 1 
-•	Two vectors at 90° have a similarity of 0
-•	Two vectors diametrically opposed have a similarity of -1
-
-Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here</a>).
-
-Note that these bounds apply for any number of dimensions, and Cosine similarity is most commonly used in high-dimensional positive spaces. For example, in Information Retrieval and text mining, each term is notionally assigned a different dimension and a document is characterised by a vector where the value of each dimension corresponds to the number of times that term appears in the document. 
-
-Cosine similarity then gives a useful measure of how similar two restaurants are likely to be in terms of their subject matter – specifically, their features.
 
 ####Details
 - [Stack](#stack)
-- [Features](#how-it-works)
+- [How it works](#how-it-works)
 - [Features](#features)
 - [Screenshots](#screenshots) 
   - [Landing Page](#landing-page)
@@ -38,6 +17,7 @@ Cosine similarity then gives a useful measure of how similar two restaurants are
   - [Results](#results)
   - [Favorites](#favorites)
   - [Browse](#browse)
+- [Cosine similarity](#cosine)
 - [Installation](#install)
 - [Acknowledgements](#acknowledgements)
 
@@ -57,7 +37,7 @@ Cosine similarity then gives a useful measure of how similar two restaurants are
 •	WTForms 1.0.2<br>
 
 ####How it works
-•	Parsley uses a cosine similarity algorithm to determine restaurants that closely align with a user’s preferences along more than 40 different restaurant feature parameters, leveraging Factual’s API to access more than 1.1 million restaurants in the US. 
+•	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. Learn more about how cosine similarity is calculated <a href = #cosine> below </a>.
 
 ####Features 
 1.	Secure user log in functionality (pbkdf2_sha256 encryption) <br>
@@ -103,6 +83,25 @@ Parsley returns ranked restaurants to the user on a feedback page, which contain
 An alternative path for the user to quickly view suggested restaurants using their default zipcode established at signup. Users can modify their initial set of preferences and demographic information at any time by clicking on the My Profile tab.
 <br>
 
+#####Cosine similarity
+
+To borrow from Wikipedia: 
+
+Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. 
+
+It is thus a judgement of orientation and not magnitude: 
+
+•	Two vectors with the same orientation have a Cosine similarity of 1 
+•	Two vectors at 90° have a similarity of 0
+•	Two vectors diametrically opposed have a similarity of -1
+
+Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here</a>).
+
+Note that these bounds apply for any number of dimensions, and Cosine similarity is most commonly used in high-dimensional positive spaces. For example, in Information Retrieval and text mining, each term is notionally assigned a different dimension and a document is characterised by a vector where the value of each dimension corresponds to the number of times that term appears in the document. 
+
+Cosine similarity then gives a useful measure of how similar two restaurants are likely to be in terms of their subject matter – specifically, their features.
+
+
 ####<strong>Installation</strong><br> 
 
 1. Clone this repo and install all the required libraries.
@@ -131,6 +130,7 @@ An alternative path for the user to quickly view suggested restaurants using the
 
 7.  After model.py runs successfully, run python parsley.py, then point your browser to http://localhost:5000/ and get started!
  
+
 ####Acknowledgements
 Image credit:<br>
 • Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
