@@ -570,8 +570,7 @@ def browse_new_rests():
 
         return render_template("browse.html", new_restaurant_suggestion = new_restaurant_suggestion, 
                 translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
-        # return render_template("new_restaurant.html", new_restaurant_suggestion = restaurants, 
-        #         translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
+        
     else:
         return render_template("sorry.html")
 
@@ -759,8 +758,6 @@ def update_user_profile():
     
     model.session.commit() 
 
-    
-
     return redirect("/")
  
 @app.route('/user_preferences', methods = ['GET', 'POST'])
@@ -835,7 +832,7 @@ def login_user():
     """
     user_email = request.form['email'] 
     current_user = model.session.query(model.User).filter_by(email = user_email).first()
- 
+    
     if current_user:
         input_password = request.form['password']
         
@@ -844,13 +841,14 @@ def login_user():
             session['user_id'] = current_user.id
 
             return redirect("/")    
-            
+    
         else:
             flash("Invalid username or password", "error")
             return redirect("/login") 
     else:
         flash("Invalid username or password", "error")
         return redirect("/login")   
+ 
 
 @app.route('/logout')
 def logout_user():
