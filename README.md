@@ -13,7 +13,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 - [Stack](#stack)
 - [Acknowledgements](#acknowledgements)
 
-##### Stack:
+#####Stack
 •	Python 2.7 <br>
 •	Factual API <br>
 •	Flask 0.9<br>
@@ -28,14 +28,14 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 •	Wsgiref 0.1.2<br>
 •	WTForms 1.0.2<br>
 
-#### Features 
+####Features 
 1.	Secure user log in functionality (pbkdf2_sha256 encryption) <br>
 2.	Search and autocomplete functionality (Google Maps JS Autocomplete)<br>
 3.	Matching/recommendation algorithm (using scikit-learn) <br>
 4.	Filter by zip code and cuisine <br>
 5.	Save and view user favorites (LeafletJS/Mapbox JS API)<br>
  
-#### Screenshots
+####Screenshots
 
 <strong>Login</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
@@ -47,7 +47,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
  
 
-#### Acknowledgements
+####Acknowledgements
 Image credit:<br>
 Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
 Background images from <a href = "https://unsplash.com/grid"> Unsplash
