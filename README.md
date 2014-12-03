@@ -55,7 +55,7 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 Users sign up and log in using secure pbkdf2_sha256 encryption (assuming https connection). After signup, users complete a quick preferences survey that inserts a row into the user_preferences SQLite table, which has a one-to-one relationship with the user table.  
 ####<strong>Restaurant search</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
-Restaurant suggestions: A user can enter three restaurants that he or she likes, along with the zip code that they would like to search, and receive tailored recommendations, with the option to filter by either cuisine or category (bar, coffee shop, etc.).
+<strong> Restaurant suggestions: </strong> A user can enter three restaurants that he or she likes, along with the zip code that they would like to search, and receive tailored recommendations, with the option to filter by either cuisine or category (bar, coffee shop, etc.).
 <br><br>
 <strong>Google autocomplete: </strong>
 When a user starts to type in restaurants, Google Maps’ Javascript API autocompletes the text entry to ensure submission format is standardized to be restaurant, address, city, state, country.
