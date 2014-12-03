@@ -24,6 +24,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
   - [Results](#results)
   - [Favorites](#favorites)
   - [Browse](#browse)
+- [Installation](#install)
 - [Acknowledgements](#acknowledgements)
 
 ####Stack
@@ -88,6 +89,35 @@ Parsley returns ranked restaurants to the user on a feedback page, which contain
 An alternative path for the user to quickly view suggested restaurants using their default zipcode established at signup. Users can modify their initial set of preferences and demographic information at any time by clicking on the My Profile tab.
 <br>
 
+####<strong>Installation</strong><br>
+Installation
+
+1. Clone this repo and install all the required libraries.
+
+  git clone 
+
+2. Create a python virtual environment::
+
+  virtualenv env
+
+3. Activate the virtual environment::
+
+  source env/bin/activate
+
+4. Install the requirements::
+
+  pip install -r requirements.txt
+
+5. Sign up for API access keys for Factual, Mapbox and Google Maps and store the API key for Factual and Mapbox in your environment.
+
+6. Open model.py by typing:
+
+  python model.py
+
+  into your terminal. 
+
+7.  After model.py runs successfully, run python parsley.py, then point your browser to http://localhost:5000/ and get started!
+ 
 ####Acknowledgements
 Image credit:<br>
 • Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
