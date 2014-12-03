@@ -1,4 +1,4 @@
-parsley
+Parsley
 =======
 ####Summary
 Parsley is a personalized restaurant recommendation engine that solves the age-old question – where should I go to eat? It addresses a gap in today’s recommendation engines landscape, using cosine similarities as a quick, simple way to understand a user's preferences and make tailored recommendations.
@@ -11,7 +11,6 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 - [Features](#features)
 - [Screenshots](#screenshots) 
 - [Stack](#stack)
-- [About Me](#about-me)
 - [Acknowledgements](#acknowledgements)
 
 ###### Stack:
