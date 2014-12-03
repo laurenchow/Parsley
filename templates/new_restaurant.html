@@ -16,10 +16,10 @@
 <div class="panel panel-default">
 <div class="panel-body">
 
-      
+      <!-- 
       <h3><p class="help-block">We noticed that you like places that {{translated_sorted_rest_feat_sim_keys[0]}},
       {{translated_sorted_rest_feat_sim_keys [1]}} and
-      {{translated_sorted_rest_feat_sim_keys [2]}}.<br>
+      {{translated_sorted_rest_feat_sim_keys [2]}}.<br> -->
 
       <br> 
       Based on the restaurants you submitted, here's some restaurants we think you'll like.</p></h3>
@@ -50,22 +50,37 @@
 
 $(document).ready(function(){
 
-  $("[id^=happy_face_]").click(function(){
+   
+
+    $("[id^=happy_face_]").click(function(){
     var factual_id = $(this).data("restaurant-id");
     var user_feedback = $(this).attr("data-restaurant-rating-id");
     var button_id = $(this).attr("id");
 
-    $.ajax({
-      type: "POST",
-      url: "/user_feedback",
-      data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
-    })
-      .done(function( msg){
-        $('#' + msg['feedback_button_id']).attr('src',"static/clicked-happy.png");
-      });
-        });
-
+    if (!$(this).hasClass('happy')) {
+        $(this).attr('src', 'static/clicked-happy.png');
+        $(this).addClass('happy')
+        $.ajax({
+          type: "POST",
+          url: "/user_feedback",
+            data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
+          })
+    } else  {
+        $(this).attr('src', 'static/happy.png');
+        $(this).removeClass('happy')
+        $.ajax({
+          type: "POST",
+          url: "/user_feedback",
+            data: { factual_id: factual_id, user_feedback: user_feedback, button_id: button_id}
+          })
+      
+    }
 });
+
+
+    
+        });
+ 
 
 $(document).ready(function(){
 

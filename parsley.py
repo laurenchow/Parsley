@@ -389,8 +389,8 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
-        # if cuisine_type == 'similar':
-        if cuisine_type == 'all':
+        if cuisine_type == 'similar':
+        # if cuisine_type == 'all':
             rest_cuisines = {}
             for entry in range(len(user_input_rest_data)):
                 each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
