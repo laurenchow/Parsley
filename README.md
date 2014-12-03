@@ -89,12 +89,11 @@ Parsley returns ranked restaurants to the user on a feedback page, which contain
 An alternative path for the user to quickly view suggested restaurants using their default zipcode established at signup. Users can modify their initial set of preferences and demographic information at any time by clicking on the My Profile tab.
 <br>
 
-####<strong>Installation</strong><br>
-Installation
+####<strong>Installation</strong><br> 
 
 1. Clone this repo and install all the required libraries.
 
-  git clone 
+  git clone https://github.com/laurenchow/Parsley/
 
 2. Create a python virtual environment::
 
