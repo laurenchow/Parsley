@@ -4,14 +4,28 @@ Parsley
 Parsley is a personalized restaurant recommendation engine that solves the age-old question – where should I go to eat? It addresses a gap in today’s recommendation engines landscape, using cosine similarities as a quick, simple way to understand a user's preferences and make tailored recommendations.
 
 Parsley searches more than 1.1 million US restaurants (with more than 40 restaurant-specific attributes for each) to surface relevant suggestions to users based on restaurants, bars and cafes that they already love – then allows users an easy way to store, access and visualize their favorite restaurants. 
+
 ####How it works
 
-
-
-
-
-
 Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine.
+
+#####Cosine similarity
+
+To borrow from Wikipedia: 
+
+Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. 
+
+It is thus a judgement of orientation and not magnitude: 
+
+•	Two vectors with the same orientation have a Cosine similarity of 1 
+•	Two vectors at 90° have a similarity of 0
+•	Two vectors diametrically opposed have a similarity of -1
+
+Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here </a>).
+
+Note that these bounds apply for any number of dimensions, and Cosine similarity is most commonly used in high-dimensional positive spaces. For example, in Information Retrieval and text mining, each term is notionally assigned a different dimension and a document is characterised by a vector where the value of each dimension corresponds to the number of times that term appears in the document. 
+
+Cosine similarity then gives a useful measure of how similar two restaurants are likely to be in terms of their subject matter – specifically, their features.
 
 ####Details
 - [Stack](#stack)
