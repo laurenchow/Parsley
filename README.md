@@ -139,6 +139,9 @@ Image credit:<br>
 • Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
 • Background images from <a href = "https://unsplash.com/grid"> Unsplash
  
-
+#### Sources:
+http://en.wikipedia.org/wiki/Collaborative_filtering#Model-based
+http://en.wikipedia.org/wiki/Cosine_similarity
+http://www.cs.carleton.edu/cs_comps/0607/recommend/recommender/itembased.html
 
  
