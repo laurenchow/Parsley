@@ -62,17 +62,17 @@ Users sign up and log in using secure pbkdf2_sha256 encryption (assuming https c
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
 Restaurant suggestions: A user can enter three restaurants that he or she likes, along with the zip code that they would like to search, and receive tailored recommendations, with the option to filter by either cuisine or category (bar, coffee shop, etc.).
 <br>
-Google autocomplete: 
+<strong>Google autocomplete: </strong>
 When a user starts to type in restaurants, Google Maps’ Javascript API autocompletes the text entry to ensure submission format is standardized to be restaurant, address, city, state, country.
 If a user clicks submit with incorrectly formatted information, they’ll see an error page and be returned to the form to re-enter information.
 <br>
-Check DB – or ping Factual API: 
+<strong>Check DB – or ping Factual API: </strong>
 Upon clicking “submit”, a call to the server is made to check whether these restaurants exist in the Parsley database yet. If not, Parsley makes an API call to Factual (after parsing the entry to determine name, city, etc.) to search for restaurants by that name in that city. If restaurants are found, Parsley then takes the JSON object from Factual and inserts appropriate information into the restaurant, restaurant_features and user_restaurant_rating table. 
 <br>
 
 ###<strong>Results </strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
-Suggest new restaurants:
+<strong> Suggest new restaurants: </strong>
 Given that information, Parsley now loops over all restaurants a user has ever rated positively, along with a user’s initial preferences, to create a comprehensive dictionary of weighted user preferences. 
 1.	Parsley then identifies the top 3 features that are important to a user – and queries the restaurant table for restaurants that contain these features in the zip code that the user specified and creates a dictionary of all entries.
 2.	Using scikit learning’s DictVectorizer, both the user preferences and restaurant results dictionary are converted to vectors.
@@ -90,8 +90,8 @@ An alternative path for the user to quickly view suggested restaurants using the
 
 ####Acknowledgements
 Image credit:<br>
-Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
-Background images from <a href = "https://unsplash.com/grid"> Unsplash
+• Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
+• Background images from <a href = "https://unsplash.com/grid"> Unsplash
  
 
 
