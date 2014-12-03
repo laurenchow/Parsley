@@ -8,6 +8,7 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine.
 
 ####Details
+- [Stack](#stack)
 - [Features](#features)
 - [Screenshots](#screenshots) 
   - [Landing Page](#landing-page)
@@ -16,7 +17,6 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
   - [Results](#results)
   - [Favorites](#favorites)
   - [Browse](#browse)
-- [Stack](#stack)
 - [Acknowledgements](#acknowledgements)
 
 ####Stack
