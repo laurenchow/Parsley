@@ -62,11 +62,11 @@ Users sign up and log in using secure pbkdf2_sha256 encryption (assuming https c
 ####<strong>Restaurant search</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
 Restaurant suggestions: A user can enter three restaurants that he or she likes, along with the zip code that they would like to search, and receive tailored recommendations, with the option to filter by either cuisine or category (bar, coffee shop, etc.).
-<br>
+<br><br>
 <strong>Google autocomplete: </strong>
 When a user starts to type in restaurants, Google Maps’ Javascript API autocompletes the text entry to ensure submission format is standardized to be restaurant, address, city, state, country.
 If a user clicks submit with incorrectly formatted information, they’ll see an error page and be returned to the form to re-enter information.
-<br>
+<br><br>
 <strong>Check DB – or ping Factual API: </strong>
 Upon clicking “submit”, a call to the server is made to check whether these restaurants exist in the Parsley database yet. If not, Parsley makes an API call to Factual (after parsing the entry to determine name, city, etc.) to search for restaurants by that name in that city. If restaurants are found, Parsley then takes the JSON object from Factual and inserts appropriate information into the restaurant, restaurant_features and user_restaurant_rating table. 
 <br>
