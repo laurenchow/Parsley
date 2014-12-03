@@ -88,13 +88,13 @@ An alternative path for the user to quickly view suggested restaurants using the
 
 To borrow from Wikipedia: 
 
-Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. 
+Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. <br>
 
-It is thus a judgement of orientation and not magnitude: 
+It is thus a judgement of orientation and not magnitude: <br>
 
-•	Two vectors with the same orientation have a Cosine similarity of 1 
-•	Two vectors at 90° have a similarity of 0
-•	Two vectors diametrically opposed have a similarity of -1
+•	Two vectors with the same orientation have a Cosine similarity of 1 <br>
+•	Two vectors at 90° have a similarity of 0 <br>
+•	Two vectors diametrically opposed have a similarity of -1 <br>
 
 Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here</a>).
 
