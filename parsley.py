@@ -2,19 +2,15 @@
 from flask import Flask, render_template, session, flash, redirect, request, g, jsonify
 from passlib.hash import pbkdf2_sha256
 from factual import Factual
-import model, collections, os, jinja2
+import model, collections, os, jinja2, helper
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 KEY = os.environ.get('FACTUAL_KEY')
-SECRET= os.environ.get('FACTUAL_SECRET')
-# APP_KEY_SECRET = os.environ.get('APP_KEY_SECRET')
+SECRET= os.environ.get('FACTUAL_SECRET') 
+
 app = Flask(__name__) 
-
-
-# app.secret_key = os.environ.get('APP_KEY_SECRET')
-
-app.secret_key = ')V\xaf\xdb\x9e\xf7k\xccm\x1f\xec\x13\x7fc\xc5\xfe\xb0\x1dc\xf9\xcfz\x92\xe8'
+app.secret_key = helper.app.secret_key
 app.jinja_env.undefined = jinja2.StrictUndefined
 
 # use g in a before_request function to check and see if a user is logged in -- if they are logged in you can save it in g    
@@ -389,8 +385,8 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
         kwargs= {sorted_restaurant_features_counter_keys[0]: "1", sorted_restaurant_features_counter_keys[1]: "1", 
             sorted_restaurant_features_counter_keys[2]: "1"}
 
-        if cuisine_type == 'similar':
-        # if cuisine_type == 'all':
+        # if cuisine_type == 'similar':
+        if cuisine_type == 'all':
             rest_cuisines = {}
             for entry in range(len(user_input_rest_data)):
                 each_restaurant = model.session.query(model.Restaurant_Category).filter_by(restaurant_id = user_input_rest_data[entry].id).first()
@@ -411,8 +407,11 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
             new_restaurant_suggestion_filtered_by_cuisine= model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + sorted_rest_cuisines_keys[1]+ "%")).group_by(model.Restaurant.id).limit(20).all()
 
             #writing a for loop here to try all the variables
-            if new_restaurant_suggestion_filtered_by_cuisine == []:
+            if len(new_restaurant_suggestion_filtered_by_cuisine) <= 3 :
                 new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + "%")).group_by(model.Restaurant.id).limit(25).all()
+            
+            # if new_restaurant_suggestion_filtered_by_cuisine == []:
+                # new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + "%")).group_by(model.Restaurant.id).limit(25).all()
             
             if new_restaurant_suggestion_filtered_by_cuisine == []:
                 new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[1] + "%")).group_by(model.Restaurant.id).limit(25).all()
