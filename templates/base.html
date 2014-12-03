@@ -22,12 +22,14 @@
                 <ul class="nav navbar-nav"><li>
                 <!-- <li class="active"> -->
                 <a href="/">Home</a></li>
-                <li><a href="/restaurants">Get suggestions</a></li>
-                <li><a href="/favorites">Favorites</a></li>
-                 <li><a href="/browse">Browse</a></li>
+                
+                
                 </ul>
                    
                         {% if session %}
+                        <li><a href="/restaurants">Get suggestions</a></li>
+                        <li><a href="/favorites">Favorites</a></li>
+                        <li><a href="/browse">Browse</a></li>
                         <li><a href="/logout">Logout</a></li>
 
                         {% else %}
@@ -69,9 +71,16 @@
             </div>
             <div class="navbar-collapse collapse" id="footer-body">
                 <ul class="nav navbar-nav">
-                    <li><a href="/about">About </a></li>
-                    <li><a href="/contact">Contact </a></li>  
-                    <li><a href="/my_profile">My Profile</a></li>
+                     {% if session %}
+                        
+                        <li><a href="/about">About </a></li>
+                        <li><a href="/contact">Contact </a></li>  
+                        <li><a href="/my_profile">My Profile</a></li>
+
+                    {% else %}
+                        <li><a href="/about">About </a></li>
+                        <li><a href="/contact">Contact </a></li>  
+                        {% endif %}
                 </ul>
             </div>
         </div>

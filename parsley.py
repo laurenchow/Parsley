@@ -56,8 +56,10 @@ def other_restos():
     restaurant3 = request.form.get('restaurant_3')      
     user_geo_input = request.form.get('user_geo') 
     feedback_cuisine_id = request.form.get('cuisines_similar')
-
-    
+    # if feedback_cuisine_id:
+    #     session['cuisine_type'] = feedback_cuisine_id 
+    # else:
+    #     session['cuisine_type'] = "all"
 
     if len(user_geo_input) !=5:
         user_info= model.session.query(model.User).filter_by(user_id = current_user_id).first()
@@ -124,8 +126,7 @@ def check_db_for_restos(restaurant_data, user_geo):
 
     factual = Factual(KEY, SECRET)
     table = factual.table('restaurants')
-
-    # import pdb; pdb.set_trace()
+ 
 
     for restaurant in restaurant_data: 
         parsed_data = parse_restaurant_input(restaurant)
@@ -242,8 +243,10 @@ def suggest_new_resto(feedback_cuisine_id):
     sk_cos_sim = sk_cosine_similarity(rest_ids, db_result_new_restaurants_from_features) 
     translated_sorted_rest_feat_sim_keys = convert_restaurant_features_to_normal_words(sorted_restaurant_features_counter_keys)
 
-    new_restaurant_suggestion = check_resto_suggestions(sk_cos_sim, cuisine_type) 
+    new_restaurant_suggestion = check_resto_suggestions(sk_cos_sim) 
 
+    # import pdb; pdb.set_trace()
+        
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
@@ -262,11 +265,12 @@ def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
     return cuisine_type
 
 
-def check_resto_suggestions(restaurants, cuisine_type): 
+def check_resto_suggestions(restaurants):
+# def check_resto_suggestions(restaurants, cuisine_type): 
 # def get_resto_suggestions(sk_cos_sim):
     """
     This function:
-    (1) Takes the list of restaurant ids returned from cosine similarity function 
+    (1) Takes the list of restaurant ids returned from a function 
     (2) Loops over list to remove any restaurants the user has already rated
     (3) Returns the edited list of dictionaries of database objects containing all restaurants, ordered by preference,
     to print on new_restaurants.html page.
@@ -525,6 +529,11 @@ def browse_new_rests():
     """
 
     current_user_id = session['user_id']
+    # if session['cuisine_type']:
+    #     cuisine_type = session['cuisine_type']
+    # else:
+    #     cuisine_type = "all"
+
     current_user = model.session.query(model.User).filter_by(id = current_user_id).first()
     user_geo = current_user.zip
 
@@ -548,12 +557,24 @@ def browse_new_rests():
            
         restaurants = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).limit(25)
 
+        rest_list = []
+
+        for item in restaurants:
+            rest_list.append(item.id)
+
+        new_restaurant_suggestion = check_resto_suggestions(rest_list) 
+
+        # import pdb; pdb.set_trace()
+
         translated_sorted_rests_from_user_prefs_keys = convert_restaurant_features_to_normal_words(sorted_user_pref_results_keys)
 
-        return render_template("new_restaurant.html", new_restaurant_suggestion = restaurants, 
+        return render_template("browse.html", new_restaurant_suggestion = new_restaurant_suggestion, 
                 translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
+        # return render_template("new_restaurant.html", new_restaurant_suggestion = restaurants, 
+        #         translated_sorted_rest_feat_sim_keys = translated_sorted_rests_from_user_prefs_keys)
     else:
         return render_template("sorry.html")
+
 @app.route('/contact', methods = ['GET'])
 def contact_us():
     """
@@ -710,8 +731,7 @@ def update_user_profile():
         'smoking': 0, 'user_id': current_user_id}
  
         new_user_prof = model.User_Profile(id = existing_user_prefs.id, **kwargs)
-        new_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs)
-        # import pdb; pdb.set_trace()
+        new_user_prefs = model.User_Preference(id = existing_user_prefs.id, **kwargs) 
 
         model.session.merge(new_user_prefs)
         model.session.merge(new_user_prof)
@@ -750,8 +770,7 @@ def user_preferences():
     submits user pref data to the update_user_prefs function.
     """
 
-    # current_user_id = session['user_id']  
-    # import pdb; pdb.set_trace()
+    # current_user_id = session['user_id']   
 
     if request.method == "GET":
         return render_template("user_preferences.html")

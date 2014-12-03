@@ -31,9 +31,9 @@
 
 
       <h3><p class="help-block">
-        <!-- We noticed that you like places that {{translated_sorted_rest_feat_sim_keys[0]}},
+        We noticed that you like places that {{translated_sorted_rest_feat_sim_keys[0]}},
       {{translated_sorted_rest_feat_sim_keys [1]}} and
-      {{translated_sorted_rest_feat_sim_keys [2]}}.<br> -->
+      {{translated_sorted_rest_feat_sim_keys [2]}}.<br>
 
       <br> 
       Here's some restaurants we think you'll like.</p></h3>
@@ -42,7 +42,7 @@
       {% set entry_counter = 0 %}
 
       
-      {%for entry in new_restaurant_suggestion.data()%} 
+      {%for entry in new_restaurant_suggestion%} 
             <div id = "{{entry_counter}}" > 
               <a href = "{{entry.website}}" >{{entry['name']}} </a>
          
