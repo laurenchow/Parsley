@@ -44,7 +44,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 ####Screenshots
 
 ###<strong>Landing page</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
+![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/splash.png)<br><br>
 ###<strong>Login page</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
 ###<strong>Restaurant search</strong><br><br>
@@ -54,7 +54,7 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
 ###<strong>Favorites</strong><br><br>
 ![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
 ###<strong>Browse</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
+![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/browse.png)<br><br>
  
 
 ####Acknowledgements
