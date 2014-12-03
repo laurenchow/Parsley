@@ -48,8 +48,8 @@ Users provide feedback on suggestions as Parsley learns their preferences, using
  
 
 #### Acknowledgements
-Image credit:
-Leaf by Evan MacDonald from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
+Image credit:<br>
+Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
 Background images from <a href = "https://unsplash.com/grid"> Unsplash
  
 
