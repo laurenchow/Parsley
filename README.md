@@ -21,7 +21,7 @@ It is thus a judgement of orientation and not magnitude:
 •	Two vectors at 90° have a similarity of 0
 •	Two vectors diametrically opposed have a similarity of -1
 
-Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here </a>).
+Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here</a>).
 
 Note that these bounds apply for any number of dimensions, and Cosine similarity is most commonly used in high-dimensional positive spaces. For example, in Information Retrieval and text mining, each term is notionally assigned a different dimension and a document is characterised by a vector where the value of each dimension corresponds to the number of times that term appears in the document. 
 
