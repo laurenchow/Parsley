@@ -106,18 +106,22 @@ Cosine similarity then gives a useful measure of how similar two restaurants are
 ####<strong>Installation</strong><br> 
 
 1. Clone this repo and install all the required libraries.
+
   ```
   git clone https://github.com/laurenchow/Parsley/
   ```
-2. Create a python virtual environment::
+2. Create a python virtual environment:
+
   ```
   virtualenv env
   ```
-3. Activate the virtual environment::
+3. Activate the virtual environment:
+
   ```
   source env/bin/activate
   ```
-4. Install the requirements::
+4. Install the requirements:
+
   ```
   pip install -r requirements.txt
   ```
