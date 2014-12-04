@@ -106,27 +106,27 @@ Cosine similarity then gives a useful measure of how similar two restaurants are
 ####<strong>Installation</strong><br> 
 
 1. Clone this repo and install all the required libraries.
-
+  ```
   git clone https://github.com/laurenchow/Parsley/
-
+  ```
 2. Create a python virtual environment::
-
+  ```
   virtualenv env
-
+  ```
 3. Activate the virtual environment::
-
+  ```
   source env/bin/activate
-
+  ```
 4. Install the requirements::
-
+  ```
   pip install -r requirements.txt
-
+  ```
 5. Sign up for API access keys for Factual, Mapbox and Google Maps and store the API key for Factual and Mapbox in your environment.
 
 6. Open model.py by typing:
-
+  ```
   python model.py
-
+  ```
   into your terminal. 
 
 7.  After model.py runs successfully, run python parsley.py, then point your browser to http://localhost:5000/ and get started!
