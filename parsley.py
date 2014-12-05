@@ -94,7 +94,7 @@ def parse_restaurant_input(restaurant_text):
     restaurant_split = restaurant_text.split(',')
 
     if restaurant_split and len(restaurant_split) >=3:
-            #TODO: should this be 3 or 4
+            #TODO: check to see if entry is formatted correctly
             if restaurant_split[0]:
                 data['name'] = restaurant_split[0]
             if restaurant_split[-3]:
@@ -237,8 +237,6 @@ def suggest_new_resto(feedback_cuisine_id):
 
     new_restaurant_suggestion = check_resto_suggestions(sk_cos_sim) 
 
-    # import pdb; pdb.set_trace()
-        
     return render_template("new_restaurant.html", new_restaurant_suggestion = new_restaurant_suggestion, 
         translated_sorted_rest_feat_sim_keys = translated_sorted_rest_feat_sim_keys )
 
@@ -258,8 +256,6 @@ def filter_by_cuisine(user_input_rest_data, feedback_cuisine_id):
 
 
 def check_resto_suggestions(restaurants):
-# def check_resto_suggestions(restaurants, cuisine_type): 
-# def get_resto_suggestions(sk_cos_sim):
     """
     This function:
     (1) Takes the list of restaurant ids returned from a function 
@@ -352,9 +348,8 @@ def convert_restaurant_features_to_normal_words(translated_sorted_rest_feat_sim_
 
     return translated_sorted_rest_feat_sim_keys
 
-#TODO: pass cuisine and category to this function to evaluate whether or not to show all cuisines or all categories
+#TODO: pass category to this function to evaluate whether or not to show all categories (or specific category)
 def get_rest_features_results(sorted_restaurant_features_counter_keys, user_input_rest_data, cuisine_type):
-# def get_rest_features_results(sorted_restaurant_features_counter_keys):
     """
     This function takes the ranked restaurant features, searches 
     for matching restaurants and returns restaurants that 
@@ -406,7 +401,7 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
            
             new_restaurant_suggestion_filtered_by_cuisine= model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + sorted_rest_cuisines_keys[1]+ "%")).group_by(model.Restaurant.id).limit(20).all()
 
-            #writing a for loop here to try all the variables
+            #TODO: make simpler way to evaluate all the variables
             if len(new_restaurant_suggestion_filtered_by_cuisine) <= 3 :
                 new_restaurant_suggestion_filtered_by_cuisine = model.session.query(model.Restaurant).filter_by(postcode = user_geo).outerjoin(model.Restaurant_Features).filter_by(**kwargs).outerjoin(model.Restaurant_Category).filter(model.Restaurant_Category.cuisine.like("%" + sorted_rest_cuisines_keys[0] + "%")).group_by(model.Restaurant.id).limit(25).all()
             
@@ -425,18 +420,12 @@ def get_rest_features_results(sorted_restaurant_features_counter_keys, user_inpu
                 db_restaurant_list.append(item.id)
 
         db_result_new_restaurants_from_features = db_restaurant_list
-        #return the sorted features 
 
     else:
-        # import pdb; pdb.set_trace()
         new_restaurant_suggestion_from_features = table.filters({"postcode": user_geo}).limit(50)
-        # factual_restaurant_suggestion_from_features = table.filters({sorted_restaurant_features_counter_keys[0]: "1" ,
-        # sorted_restaurant_features_counter_keys[1]: "1", sorted_restaurant_features_counter_keys[2]:"1", 
-        # "postcode": user_geo}).limit(5)
           
         if new_restaurant_suggestion_from_features == []:
             return render_template("sorry.html") 
-        # import pdb; pdb.set_trace()
         else: 
             db_result_new_restaurants_from_features = check_db_for_restos(new_restaurant_suggestion_from_features, user_geo)
 
@@ -761,8 +750,6 @@ def user_preferences():
     Determines if user has submitted preferences. If post method, 
     submits user pref data to the update_user_prefs function.
     """
-
-    # current_user_id = session['user_id']   
 
     if request.method == "GET":
         return render_template("user_preferences.html")
