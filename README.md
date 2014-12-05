@@ -23,18 +23,26 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 
 ####Stack
 •	Python 2.7 <br>
-•	Factual API <br>
+•	Factual API 1.6.0 <br>
 •	Flask 0.9<br>
+• Flask-Login 0.2.11 <br>
+• Flash-WTF 0.8 <br>
 •	Flask-SQLAlchemy 0.16<br>
+• GeoJSON 1.0.9 <br>
 •	Google Maps JS embed API  <br>
 •	Jinja2 2.6<br>
 •	Mapbox JS API (Leaflet JS) <br>
-•	OAuth<br>
+• Numpy 1.9.1 <br>
+•	OAuth 1.0.1 <br>
+• OAuthlib 0.7.2 <br>
 •	Passlib <br>
-•	Scikit-learn (requires numpy and scipy)<br>
+•	Scikit-learn 0.15.2 <br>
+• Scipy 0.14.0 <br>
+• SQLAlchemy 0.7.9 <br>
 •	Werkzeug 0.8.3<br>
 •	Wsgiref 0.1.2<br>
 •	WTForms 1.0.2<br>
+
 
 ####How it works
 •	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. 
