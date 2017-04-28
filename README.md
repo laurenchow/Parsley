@@ -12,12 +12,6 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 - [How it works](#how-it-works)
 - [Features](#features)
 - [Screenshots](#screenshots) 
-  - [Landing Page](#landing-page)
-  - [Log in Page](#login-page)
-  - [Restaurant search page](#search)
-  - [Results](#results)
-  - [Favorites](#favorites)
-  - [Browse](#browse)
 - [Cosine similarity](#cosine-similarity)
 - [Installation](#install)
 - [Acknowledgements](#acknowledgements)
@@ -61,6 +55,7 @@ Learn more about how cosine similarity is calculated <a href =#cosine-similarity
 
 #### <strong> Landing page</strong><br><br>
 ![image](/screenshots/splash.png)<br><br>
+
 #### <strong>Login page</strong><br><br>
 ![image](/screenshots/login.png) <br><br>
 
@@ -107,7 +102,7 @@ It is thus a judgement of orientation and not magnitude: <br>
 •	Two vectors at 90° have a similarity of 0 <br>
 •	Two vectors diametrically opposed have a similarity of -1 <br>
 
-Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1]. (Read more about cosine similarity <a href "http://en.wikipedia.org/wiki/Cosine_similarity"> here</a>).
+Cosine similarity is particularly used in positive space, where the outcome is neatly bounded in [0,1].
 
 Note that these bounds apply for any number of dimensions, and Cosine similarity is most commonly used in high-dimensional positive spaces. For example, in Information Retrieval and text mining, each term is notionally assigned a different dimension and a document is characterised by a vector where the value of each dimension corresponds to the number of times that term appears in the document. 
 
