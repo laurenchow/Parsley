@@ -59,12 +59,12 @@ Learn more about how cosine similarity is calculated <a href =#cosine-similarity
 ####Screenshots
 
 ####<strong>Landing page</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/splash.png)<br><br>
+![image](/screenshots/splash.png)<br><br>
 ####<strong>Login page</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/login.png)<br><br>
+![image](/screenshots/login.png) <br><br>
 Users sign up and log in using secure pbkdf2_sha256 encryption (assuming https connection). After signup, users complete a quick preferences survey that inserts a row into the user_preferences SQLite table, which has a one-to-one relationship with the user table.  
 ####<strong>Restaurant search</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/restaurants_page.png)<br><br>
+![image](/screenshots/restaurants_page.png) 
 <strong> Restaurant suggestions: </strong> A user can enter three restaurants that he or she likes, along with the zip code that they would like to search, and receive tailored recommendations, with the option to filter by either cuisine or category (bar, coffee shop, etc.).
 <br><br>
 <strong>Google autocomplete: </strong>
@@ -75,7 +75,7 @@ Upon clicking “submit”, a call to the server is made to check whether these 
 <br>
 
 ####<strong>Results </strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/all_cuisines.png)<br>
+![image](/screenshots/all_cuisines.png) <br>
 <strong> Suggest new restaurants: </strong><br><br>
 Given that information, Parsley now loops over all restaurants a user has ever rated positively, along with a user’s initial preferences, to create a comprehensive dictionary of weighted user preferences. <br><br>
 1.	Parsley then identifies the top 3 features that are important to a user – and queries the restaurant table for
@@ -85,12 +85,12 @@ restaurants that contain these features in the zip code that the user specified 
 3. Using scikit learning’s cosine similarity algorithm, Parsley then ranks all restaurants with those top features in that zip code by which restaurants most closely match a user’s preferences. 
 <br><br>
 ####<strong>Favorites</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/favorites.png)<br><br>
+![image] (/screenshots/favorites.png)<br><br>
 Parsley returns ranked restaurants to the user on a feedback page, which contains restaurant contact information and the ability to upvote/downvote restaurants.
 <be>
 
 ####<strong>Browse</strong><br><br>
-![alt tag] (https://github.com/laurenchow/parsley/blob/master/screenshots/browse.png)<br><br>
+![image](/screenshots/browse.png)<br><br>
 An alternative path for the user to quickly view suggested restaurants using their default zipcode established at signup. Users can modify their initial set of preferences and demographic information at any time by clicking on the My Profile tab.
 <br>
 
