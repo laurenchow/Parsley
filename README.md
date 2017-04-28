@@ -1,12 +1,13 @@
 Parsley
 =======
-####Summary
+
+### Summary ###
 Parsley is a personalized restaurant recommendation engine that solves the age-old question – where should I go to eat? It addresses a gap in today’s recommendation engines landscape, using cosine similarities as a quick, simple way to understand a user's preferences and make tailored recommendations.
 
 Parsley searches more than 1.1 million US restaurants (with more than 40 restaurant-specific attributes for each) to surface relevant suggestions to users based on restaurants, bars and cafes that they already love – then allows users an easy way to store, access and visualize their favorite restaurants. 
 
 
-####Details
+### Details ###
 - [Stack](#stack)
 - [How it works](#how-it-works)
 - [Features](#features)
@@ -21,7 +22,7 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 - [Installation](#install)
 - [Acknowledgements](#acknowledgements)
 
-####Stack
+### Stack ###
 •	Python 2.7 <br>
 •	Factual API 1.6.0 <br>
 •	Flask 0.9<br>
@@ -44,19 +45,19 @@ Parsley searches more than 1.1 million US restaurants (with more than 40 restaur
 •	WTForms 1.0.2<br>
 
 
-####How it works
+### How it works ###
 •	Users provide feedback on suggestions as Parsley learns their preferences, using sci-kit learn's cosine similarity algorithm to find restaurants with feature vectors that closely match a user’s preferences for a requested zipcode and cuisine. 
 
 Learn more about how cosine similarity is calculated <a href =#cosine-similarity> below</a>. 
 
-####Features 
+### Features ###
 1.	Secure user log in functionality (pbkdf2_sha256 encryption) <br>
 2.	Search and autocomplete functionality (Google Maps JS Autocomplete)<br>
 3.	Matching/recommendation algorithm (using scikit-learn) <br>
 4.	Filter by zip code and cuisine <br>
 5.	Save and view user favorites (LeafletJS/Mapbox JS API)<br>
  
-####Screenshots
+### Screenshots ###
 
 ####<strong>Landing page</strong><br><br>
 ![image](/screenshots/splash.png)<br><br>
@@ -89,12 +90,12 @@ restaurants that contain these features in the zip code that the user specified 
 Parsley returns ranked restaurants to the user on a feedback page, which contains restaurant contact information and the ability to upvote/downvote restaurants.
 <be>
 
-####<strong>Browse</strong><br><br>
+### <strong>Browse</strong> ### <br><br>
 ![image](/screenshots/browse.png)<br><br>
 An alternative path for the user to quickly view suggested restaurants using their default zipcode established at signup. Users can modify their initial set of preferences and demographic information at any time by clicking on the My Profile tab.
 <br>
 
-#####Cosine similarity
+### Cosine similarity ###
  
 Cosine similarity measures the similarity between two vectors of an inner product space that measures the cosine of the angle between them. The cosine of 0° is 1, and it is less than 1 for any other angle. <br>
 
@@ -111,7 +112,7 @@ Note that these bounds apply for any number of dimensions, and Cosine similarity
 Cosine similarity then gives a useful measure of how similar two restaurants are likely to be in terms of their subject matter – specifically, their features.
 
 
-####<strong>Installation</strong><br> 
+###<strong>Installation</strong>###<br> 
 
 1. Clone this repo and install all the required libraries.
 
@@ -144,12 +145,12 @@ Cosine similarity then gives a useful measure of how similar two restaurants are
 7.  After model.py runs successfully, run python parsley.py, then point your browser to http://localhost:5000/ and get started!
  
 
-####Acknowledgements
+### Acknowledgements ###
 Image credit:<br>
 • Leaf by Evan MacDonald and emoticons (Happy, Sad)  by Paul F. from The Noun Project from <a href = "https://www.http://thenounproject.com/"> The Noun Project</a><br>
 • Background images from <a href = "https://unsplash.com/grid"> Unsplash
  
-#### Sources:<br>
+### Sources: ###<br>
 http://en.wikipedia.org/wiki/Collaborative_filtering#Model-based <br>
 http://en.wikipedia.org/wiki/Cosine_similarity<br>
 http://www.cs.carleton.edu/cs_comps/0607/recommend/recommender/itembased.html
